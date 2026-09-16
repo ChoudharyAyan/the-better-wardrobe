@@ -1,0 +1,8 @@
+.DS_Store
+node_modules/
+prototype/.env
+prototype/.env.*
+!prototype/.env.example
+prototype/.local-data/
+prototype/.local-tools/
+prototype/.local-models/

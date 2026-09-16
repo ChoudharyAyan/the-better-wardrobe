@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  body { margin:0; background:#1B0A15; -webkit-font-smoothing:antialiased; }
+  a { color:#EF85B7; text-decoration:none; }
+  a:hover { color:#FFF4F8; text-decoration:underline; }
+</style>
+</helmet>
+
+<section style="padding:56px 48px 96px;display:flex;flex-direction:column;gap:40px;font-family:'DM Sans',sans-serif">
+
+  <div style="display:flex;flex-direction:column;gap:12px;max-width:780px">
+    <div style="font:600 12px/1 'DM Sans',sans-serif;letter-spacing:0.16em;text-transform:uppercase;color:#D3B5C5">Turn 2 · option <span style="background:#EF85B7;color:#28101F;padding:2px 7px;border-radius:4px">2a</span></div>
+    <div style="display:flex;align-items:center;gap:14px">
+      <div style="position:relative;width:40px;height:40px;flex:none">
+        <div style="position:absolute;left:0;top:6px;width:24px;height:24px;background:#EF85B7;transform:skewY(-18deg)"></div>
+        <div style="position:absolute;right:0;bottom:4px;width:24px;height:24px;background:#A52D68;transform:skewY(18deg)"></div>
+      </div>
+      <h1 style="margin:0;font:600 44px/48px 'Cormorant Garamond',Georgia,serif;color:#FFF4F8">The Better Wardrobe — after-hours atelier</h1>
+    </div>
+    <p style="margin:0;font:400 16px/24px 'DM Sans',sans-serif;color:#D3B5C5;text-wrap:pretty">Same seven screens, rebuilt on DESIGN-2: wine and plum surfaces, rose-magenta actions, Cormorant Garamond over DM Sans, 8/14/20px radii, neutral garment wells, folded-ribbon emblem in place of the old letter tile, and garment-led collection art — no model imagery.</p>
+  </div>
+
+  <div id="2a" style="display:flex;flex-wrap:wrap;gap:48px 40px;align-items:flex-start">
+
+    <!-- 01 Discover entry -->
+    <div style="display:flex;flex-direction:column;gap:12px;flex:none">
+      <sc-if value="{{ showScreenCaptions }}" hint-placeholder-val="{{ true }}">
+        <div style="font:500 13px/1 'DM Sans',sans-serif;color:#D3B5C5">01 · Discover — entry</div>
+      </sc-if>
+      <div data-screen-label="01 Discover entry" style="width:390px;height:844px;border-radius:44px;border:10px solid #120710;background:#28101F;overflow:hidden;display:flex;flex-direction:column;position:relative;box-shadow:0 24px 56px rgba(0,0,0,0.45);flex:none">
+        <div style="height:44px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 24px;font:600 13px 'DM Sans',sans-serif;color:#FFF4F8"><span>9:41</span><span style="letter-spacing:0.08em">▮▮▮</span></div>
+        <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;gap:20px;padding:10px 16px 8px">
+          <div style="display:flex;align-items:center;gap:10px">
+            <div style="position:relative;width:26px;height:26px;flex:none">
+              <div style="position:absolute;left:0;top:4px;width:16px;height:16px;background:#EF85B7;transform:skewY(-18deg)"></div>
+              <div style="position:absolute;right:0;bottom:2px;width:16px;height:16px;background:#A52D68;transform:skewY(18deg)"></div>
+            </div>
+            <div style="font:600 15px/18px 'Cormorant Garamond',Georgia,serif;color:#D3B5C5;letter-spacing:0.02em">The Better Wardrobe</div>
+          </div>
+          <h2 style="margin:0;font:600 44px/48px 'Cormorant Garamond',Georgia,serif;color:#FFF4F8">Find your <span style="font-style:italic;color:#EF85B7">next</span> look.</h2>
+          <div style="background:#38182B;border:1px solid #694258;border-radius:14px;padding:24px 20px;display:flex;flex-direction:column;align-items:center;gap:14px">
+            <div style="width:86px;height:102px;border-radius:8px;background:repeating-linear-gradient(135deg,#F4F3F1 0 7px,#E5E3DF 7px 14px);display:flex;align-items:center;justify-content:center;font:500 10px/13px 'DM Sans',sans-serif;color:#28101F;text-align:center;padding:6px">screenshot</div>
+            <div style="font:600 22px/26px 'Cormorant Garamond',Georgia,serif;color:#FFF4F8;text-align:center">Drop a screenshot. Find the vibe.</div>
+            <div style="font:400 13px/18px 'DM Sans',sans-serif;color:#D3B5C5;text-align:center;max-width:252px">Any app, any film still, any saved photo. We chase the vibe — never a promise of the exact piece.</div>
+            <button style="margin-top:2px;height:48px;padding:0 22px;border:none;border-radius:10px;background:#EF85B7;color:#28101F;font:700 16px 'DM Sans',sans-serif;cursor:pointer">Upload screenshot</button>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px">
+              <h3 style="margin:0;font:600 24px/28px 'Cormorant Garamond',Georgia,serif;color:#FFF4F8;white-space:nowrap;min-width:0">Start from a reference</h3>
+              <span style="font:600 13px 'DM Sans',sans-serif;color:#EF85B7;flex:none">See all</span>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px">
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <div style="aspect-ratio:4/5;border-radius:8px;background:repeating-linear-gradient(135deg,#F4F3F1 0 8px,#E5E3DF 8px 16px);display:flex;align-items:flex-end;padding:8px;font:500 10px/13px 'DM Sans',sans-serif;color:#28101F">tailoring detail</div>
+                <sc-if value="{{ showAestheticLabels }}" hint-placeholder-val="{{ true }}">
+                  <div style="font:600 13px/17px 'DM Sans',sans-serif;color:#FFF4F8">Draper-coded</div>
+                </sc-if>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <div style="aspect-ratio:4/5;border-radius:8px;background:repeating-linear-gradient(135deg,#F4F3F1 0 8px,#E5E3DF 8px 16px);display:flex;align-items:flex-end;padding:8px;font:500 10px/13px 'DM Sans',sans-serif;color:#28101F">denim stack</div>
+                <sc-if value="{{ showAestheticLabels }}" hint-placeholder-val="{{ true }}">
+                  <div style="font:600 13px/17px 'DM Sans',sans-serif;color:#FFF4F8">Oversized denim</div>
+                </sc-if>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px">
+                <div style="aspect-ratio:4/5;border-radius:8px;background:repeating-linear-gradient(135deg,#F4F3F1 0 8px,#E5E3DF 8px 16px);display:flex;align-items:flex-end;padding:8px;font:500 10px/13px 'DM Sans',sans-serif;color:#28101F">zari fabric</div>
+                <sc-if value="{{ showAestheticLabels }}" hint-placeholder-val="{{ true }}">
+                  <div style="font:600 13px/17px 'DM Sans',sans-serif;color:#FFF4F8">Occasionwear</div>
+                </sc-if>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style="flex:none;height:78px;border-top:1px solid #694258;background:#38182B;display:grid;grid-template-columns:repeat(4,1fr);align-items:center;padding-bottom:10px">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:20px;height:20px;border-radius:50%;border:2px solid #FFF4F8"></div><div style="font:700 11px 'DM Sans',sans-serif;color:#FFF4F8;white-space:nowrap">Discover</div><div style="width:22px;height:3px;border-radius:2px;background:#EF85B7"></div></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:20px;height:20px;border:2px solid #D3B5C5;border-radius:4px"></div><div style="font:600 11px 'DM Sans',sans-serif;color:#D3B5C5;white-space:nowrap">My Wardrobe</div><div style="width:22px;height:3px"></div></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:16px;height:16px;border:2px solid #D3B5C5;transform:rotate(45deg);margin:2px"></div><div style="font:600 11px 'DM Sans',sans-serif;color:#D3B5C5;white-space:nowrap">Style Me</div><div style="width:22px;height:3px"></div></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:20px;height:20px;display:flex;align-items:flex-end;gap:3px"><div style="width:4px;height:9px;background:#D3B5C5"></div><div style="width:4px;height:16px;background:#D3B5C5"></div><div style="width:4px;height:12px;background:#D3B5C5"></div></div><div style="font:600 11px 'DM Sans',sans-serif;color:#D3B5C5;white-space:nowrap">Insights</div><div style="width:22px;height:3px"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 02 Discover selection -->
+    <div style="display:flex;flex-direction:column;gap:12px;flex:none">
+      <sc-if value="{{ showScreenCaptions }}" hint-placeholder-val="{{ true }}">
+        <div style="font:500 13px/1 'DM Sans',sans-serif;color:#D3B5C5">02 · Discover — choose the target</div>
+      </sc-if>
+      <div data-screen-label="02 Discover selection" style="width:390px;height:844px;border-radius:44px;border:10px solid #120710;background:#28101F;overflow:hidden;display:flex;flex-direction:column;position:relative;box-shadow:0 24px 56px rgba(0,0,0,0.45);flex:none">
+        <div style="height:44px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 24px;font:600 13px 'DM Sans',sans-serif;color:#FFF4F8"><span>9:41</span><span style="letter-spacing:0.08em">▮▮▮</span></div>
+        <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;gap:16px;padding:8px 16px 8px">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <span style="font:600 15px 'DM Sans',sans-serif;color:#FFF4F8">← Back</span>
+            <span style="font:600 13px 'DM Sans',sans-serif;color:#EF85B7">Replace image</span>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:6px">
+            <h2 style="margin:0;font:600 32px/36px 'Cormorant Garamond',Georgia,serif;color:#FFF4F8">Which piece are we chasing?</h2>
+            <div style="font:400 13px/18px 'DM Sans',sans-serif;color:#D3B5C5">Tap a garment, or search the whole look.</div>
+          </div>
+          <div style="background:#38182B;border:1px solid #694258;border-radius:14px;padding:10px;display:flex;justify-content:center">
+            <div style="width:100%;height:252px;border-radius:8px;background:repeating-linear-gradient(135deg,#F4F3F1 0 9px,#E5E3DF 9px 18px);position:relative;display:flex;align-items:flex-end;padding:8px;font:500 10px 'DM Sans',sans-serif;color:#28101F">uploaded reference
+              <div style="position:absolute;left:22%;top:12%;width:56%;height:38%;border:3px solid #EF85B7;border-radius:6px"></div>
+              <div style="position:absolute;left:22%;top:5%;background:#EF85B7;color:#28101F;font:700 11px 'DM Sans',sans-serif;padding:3px 8px;border-radius:6px;white-space:nowrap">Selected · shirt</div>
+              <div style="position:absolute;left:28%;top:54%;width:44%;height:32%;border:2px dashed #A52D68;border-radius:6px"></div>
+              <div style="position:absolute;left:28%;top:88%;background:#28101F;color:#FFF4F8;font:600 11px 'DM Sans',sans-serif;padding:3px 8px;border-radius:6px;white-space:nowrap">Trousers</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:12px;align-items:center;background:#482339;border:1px solid #694258;border-radius:14px;padding:12px">
+            <div style="width:54px;height:62px;border-radius:8px;background:repeating-linear-gradient(135deg,#F4F3F1 0 7px,#E5E3DF 7px 14px);flex:none;display:flex;align-items:center;justify-content:center;font:500 9px 'DM Sans',sans-serif;color:#28101F">cutout</div>
+            <div style="display:flex;flex-direction:column;gap:4px;min-width:0">
+              <div style="font:700 16px/21px 'DM Sans',sans-serif;color:#FFF4F8">Cream camp-collar shirt</div>
+              <div style="font:400 13px/18px 'DM Sans',sans-serif;color:#D3B5C5">Lifted from your reference · search target</div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="font:600 13px 'DM Sans',sans-serif;color:#D3B5C5">What we can see</div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px">
+              <span style="border:1px solid #694258;background:#38182B;border-radius:999px;padding:6px 12px;font:600 13px 'DM Sans',sans-serif;color:#FFF4F8;white-space:nowrap">Cream</span>
+              <span style="border:1px solid #694258;background:#38182B;border-radius:999px;padding:6px 12px;font:600 13px 'DM Sans',sans-serif;color:#FFF4F8;white-space:nowrap">Relaxed fit</span>
+              <span style="border:1px solid #694258;background:#38182B;border-radius:999px;padding:6px 12px;font:600 13px 'DM Sans',sans-serif;color:#FFF4F8;white-space:nowrap">Camp collar</span>
+              <span style="border:1px solid #F0D098;background:#38182B;border-radius:999px;padding:6px 12px;font:600 13px 'DM Sans',sans-serif;color:#F0D098;white-space:nowrap">Fabric — not clear</span>
+            </div>
+          </div>
+          <button style="margin-top:auto;height:52px;border:none;border-radius:10px;background:#EF85B7;color:#28101F;font:700 17px 'DM Sans',sans-serif;cursor:pointer">Find matches</button>
+        </div>
+        <div style="flex:none;height:78px;border-top:1px solid #694258;background:#38182B;display:grid;grid-template-columns:repeat(4,1fr);align-items:center;padding-bottom:10px">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:20px;height:20px;border-radius:50%;border:2px solid #FFF4F8"></div><div style="font:700 11px 'DM Sans',sans-serif;color:#FFF4F8;white-space:nowrap">Discover</div><div style="width:22px;height:3px;border-radius:2px;background:#EF85B7"></div></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:20px;height:20px;border:2px solid #D3B5C5;border-radius:4px"></div><div style="font:600 11px 'DM Sans',sans-serif;color:#D3B5C5;white-space:nowrap">My Wardrobe</div><div style="width:22px;height:3px"></div></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:16px;height:16px;border:2px solid #D3B5C5;transform:rotate(45deg);margin:2px"></div><div style="font:600 11px 'DM Sans',sans-serif;color:#D3B5C5;white-space:nowrap">Style Me</div><div style="width:22px;height:3px"></div></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:20px;height:20px;display:flex;align-items:flex-end;gap:3px"><div style="width:4px;height:9px;background:#D3B5C5"></div><div style="width:4px;height:16px;background:#D3B5C5"></div><div style="width:4px;height:12px;background:#D3B5C5"></div></div><div style="font:600 11px 'DM Sans',sans-serif;color:#D3B5C5;white-space:nowrap">Insights</div><div style="width:22px;height:3px"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 03 Discover results -->
+    <div style="display:flex;flex-direction:column;gap:12px;flex:none">
+      <sc-if value="{{ showScreenCaptions }}" hint-placeholder-val="{{ true }}">
+        <div style="font:500 13px/1 'DM Sans',sans-serif;color:#D3B5C5">03 · Discover — matches, India first</div>
+      </sc-if>
+      <div data-screen-label="03 Discover results" style="width:390px;height:844px;border-radius:44px;border:10px solid #120710;background:#28101F;overflow:hidden;display:flex;flex-direction:column;position:relative;box-shadow:0 24px 56px rgba(0,0,0,0.45);flex:none">
+        <div style="height:44px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 24px;font:600 13px 'DM Sans',sans-serif;color:#FFF4F8"><span>9:41</span><span style="letter-spacing:0.08em">▮▮▮</span></div>
+        <div style="flex:none;display:flex;align-items:center;gap:12px;padding:8px 16px 12px;border-bottom:1px solid #694258;background:#38182B">
+          <div style="width:42px;height:50px;border-radius:8px;background:repeating-linear-gradient(135deg,#F4F3F1 0 7px,#E5E3DF 7px 14px);flex:none;display:flex;align-items:center;justify-content:center;font:500 9px 'DM Sans',sans-serif;color:#28101F">ref</div>
+          <div style="display:flex;flex-direction:column;gap:2px;min-width:0;flex:1">
+            <div style="font:700 15px/20px 'DM Sans',sans-serif;color:#FFF4F8">Cream camp-collar shirt</div>
+            <div style="font:400 12px/16px 'DM Sans',sans-serif;color:#D3B5C5">Searching the vibe, not the exact piece</div>
+          </div>
+          <span style="font:600 13px 'DM Sans',sans-serif;color:#EF85B7;flex:none">Change</span>
+        </div>
+        <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;gap:16px;padding:16px">
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <div style="display:flex;align-items:baseline;gap:8px">
+              <h3 style="margin:0;font:600 26px/30px 'Cormorant Garamond',Georgia,serif;color:#FFF4F8">India shopping options</h3>
+              <span style="font:400 13px 'DM Sans',sans-serif;color:#D3B5C5">3</span>
+            </div>
+            <div style="background:#38182B;border:1px solid #694258;border-radius:14px;padding:12px;display:flex;gap:12px">
+              <div style="width:78px;height:92px;border-radius:8px;background:repeating-linear-gradient(135deg,#F4F3F1 0 8px,#E5E3DF 8px 16px);flex:none;display:flex;align-items:center;justify-content:center;font:500 9px/12px 'DM Sans',sans-serif;color:#28101F;text-align:center;padding:4px">product shot</div>
+              <div style="display:flex;flex-direction:column;gap:6px;min-width:0">
+                <div style="font:700 16px/21px 'DM Sans',sans-serif;color:#FFF4F8">Relaxed cotton camp shirt</div>
+                <div style="font:400 13px/18px 'DM Sans',sans-serif;color:#D3B5C5">Sample retailer · ₹2,499</div>
+                <div style="display:flex;flex-wrap:wrap;gap:6px">
+                  <span style="background:#EF85B7;color:#28101F;border-radius:999px;padding:3px 9px;font:700 12px 'DM Sans',sans-serif;white-space:nowrap">Similar style</span>
+                  <span style="border:1px solid #A5DCBC;color:#A5DCBC;border-radius:999px;padding:3px 9px;font:600 12px 'DM Sans',sans-serif;white-space:nowrap">India delivery verified</span>
+                </div>
+                <div style="font:400 13px/18px 'DM Sans',sans-serif;color:#FFF4F8">Similar shape and cream tone. Different collar.</div>
+              </div>
+            </div>
+            <div style="background:#38182B;border:1px solid #694258;border-radius:14px;padding:12px;display:flex;gap:12px">
+              <div style="width:78px;height:92px;border-radius:8px;background:repeating-linear-gradient(135deg,#F4F3F1 0 8px,#E5E3DF 8px 16px);flex:none;display:flex;align-items:center;justify-content:center;font:500 9px/12px 'DM Sans',sans-serif;color:#28101F;text-align:center;padding:4px">product shot</div>
+              <div style="display:flex;flex-direction:column;gap:6px;min-width:0">
+                <div style="font:700 16px/21px 'DM Sans',sans-serif;color:#FFF4F8">Oat linen-blend shirt</div>
+                <div style="font:400 13px/18px 'DM Sans',sans-serif;color:#D3B5C5">Sample marketplace · ₹1,799</div>
+                <div style="display:flex;flex-wrap:wrap;gap:6px">
+                  <span style="background:#EF85B7;color:#28101F;border-radius:999px;padding:3px 9px;font:700 12px 'DM Sans',sans-serif;white-space:nowrap">Similar style</span>
+                  <span style="border:1px solid #F0D098;color:#F0D098;border-radius:999px;padding:3px 9px;font:600 12px 'DM Sans',sans-serif;white-space:nowrap">Stock not confirmed</span>
+                </div>
+                <div style="font:400 13px/18px 'DM Sans',sans-serif;color:#FFF4F8">Close silhouette. Texture reads coarser than the reference.</div>
+              </div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:12px">
+            <h3 style="margin:0;font:600 26px/30px 'Cormorant Garamond',Georgia,serif;color:#FFF4F8">Global matches</h3>
+            <div style="background:#38182B;border:1px solid #694258;border-radius:14px;padding:12px;display:flex;gap:12px">
+              <div style="width:66px;height:78px;border-radius:8px;background:repeating-linear-gradient(135deg,#F4F3F1 0 8px,#E5E3DF 8px 16px);flex:none;display:flex;align-items:center;justify-content:center;font:500 9px/12px 'DM Sans',sans-serif;color:#28101F;text-align:center;padding:4px">product shot</div>
+              <div style="display:flex;flex-direction:column;gap:6px;min-width:0">
+                <div style="font:700 16px/21px 'DM Sans',sans-serif;color:#FFF4F8">Boxy cream overshirt</div>
+                <div style="font:400 13px/18px 'DM Sans',sans-serif;color:#D3B5C5">Sample store (US) · $68</div>
+                <span style="border:1px solid #F0D098;color:#F0D098;border-radius:999px;padding:3px 9px;font:600 12px 'DM Sans',sans-serif;align-self:flex-start;white-space:nowrap">Delivery to India unknown</span>
+              </div>
+            </div>
+            <div style="font:400 13px/18px 'DM Sans',sans-serif;color:#D3B5C5;border-top:1px solid #694258;padding-top:12px">No verified exact item yet. These are similar pieces — broaden the search or try a clearer crop.</div>
+          </div>
+        </div>
+        <div style="flex:none;height:78px;border-top:1px solid #694258;background:#38182B;display:grid;grid-template-columns:repeat(4,1fr);align-items:center;padding-bottom:10px">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:20px;height:20px;border-radius:50%;border:2px solid #FFF4F8"></div><div style="font:700 11px 'DM Sans',sans-serif;color:#FFF4F8;white-space:nowrap">Discover</div><div style="width:22px;height:3px;border-radius:2px;background:#EF85B7"></div></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:20px;height:20px;border:2px solid #D3B5C5;border-radius:4px"></div><div style="font:600 11px 'DM Sans',sans-serif;color:#D3B5C5;white-space:nowrap">My Wardrobe</div><div style="width:22px;height:3px"></div></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:16px;height:16px;border:2px solid #D3B5C5;transform:rotate(45deg);margin:2px"></div><div style="font:600 11px 'DM Sans',sans-serif;color:#D3B5C5;white-space:nowrap">Style Me</div><div style="width:22px;height:3px"></div></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:20px;height:20px;display:flex;align-items:flex-end;gap:3px"><div style="width:4px;height:9px;background:#D3B5C5"></div><div style="width:4px;height:16px;background:#D3B5C5"></div><div style="width:4px;height:12px;background:#D3B5C5"></div></div><div style="font:600 11px 'DM Sans',sans-serif;color:#D3B5C5;white-space:nowrap">Insights</div><div style="width:22px;height:3px"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 04 Wardrobe import review -->
+    <div style="display:flex;flex-direction:column;gap:12px;flex:none">
+      <sc-if value="{{ showScreenCaptions }}" hint-placeholder-val="{{ true }}">
+        <div style="font:500 13px/1 'DM Sans',sans-serif;color:#D3B5C5">04 · My Wardrobe — import review tray</div>
+      </sc-if>
+      <div data-screen-label="04 Wardrobe import review" style="width:390px;height:844px;border-radius:44px;border:10px solid #120710;background:#28101F;overflow:hidden;display:flex;flex-direction:column;position:relative;box-shadow:0 24px 56px rgba(0,0,0,0.45);flex:none">
+        <div style="height:44px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 24px;font:600 13px 'DM Sans',sans-serif;color:#FFF4F8"><span>9:41</span><span style="letter-spacing:0.08em">▮▮▮</span></div>
+        <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;gap:14px;padding:8px 16px 8px">
+          <div style="display:flex;align-items:center;justify-content:space-between">
+            <span style="font:600 15px 'DM Sans',sans-serif;color:#FFF4F8">← Back</span>
+            <span style="font:600 13px 'DM Sans',sans-serif;color:#EF85B7">Add more photos</span>
+          </div>
+          <div style="display:flex;gap:12px;align-items:center">
+            <div style="width:54px;height:62px;border-radius:8px;background:repeating-linear-gradient(135deg,#F4F3F1 0 7px,#E5E3DF 7px 14px);flex:none;display:flex;align-items:center;justify-content:center;font:500 9px/11px 'DM Sans',sans-serif;color:#28101F;text-align:center;padding:3px">source photo</div>
+            <div style="display:flex;flex-direction:column;gap:2px">
+              <h2 style="margin:0;font:600 30px/34px 'Cormorant Garamond',Georgia,serif;color:#FFF4F8">Found 4 pieces.</h2>
+              <div style="font:400 13px/18px 'DM Sans',sans-serif;color:#D3B5C5">Check what belongs in your wardrobe.</div>
+            </div>
+          </div>
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <div style="background:#482339;border:1px solid #EF85B7;border-radius:14px;padding:12px;display:flex;gap:12px;align-items:center">
+              <div style="width:22px;height:22px;border-radius:6px;background:#EF85B7;flex:none;display:flex;align-items:center;justify-content:center;font:700 13px 'DM Sans',sans-serif;color:#28101F">✓</div>
+              <div style="width:50px;height:58px;border-radius:8px;background:repeating-linear-gradient(135deg,#F4F3F1 0 7px,#E5E3DF 7px 14px);flex:none;display:flex;align-items:center;justify-content:center;font:500 9px 'DM Sans',sans-serif;color:#28101F">cutout</div>
+              <div style="display:flex;flex-direction:column;gap:6px;flex:1;min-width:0">
+                <div style="border:1px solid #AB8198;border-radius:8px;padding:7px 10px;font:600 15px 'DM Sans',sans-serif;color:#FFF4F8;background:#38182B">Blue full-sleeve shirt</div>
+                <div style="display:flex;gap:6px;align-items:center"><span style="border:1px solid #694258;border-radius:999px;padding:3px 9px;font:600 12px 'DM Sans',sans-serif;color:#FFF4F8;white-space:nowrap">Shirts</span><span style="font:400 12px 'DM Sans',sans-serif;color:#D3B5C5">Brand not specified</span></div>
+              </div>
+            </div>
+            <div style="background:#482339;border:1px solid #EF85B7;border-radius:14px;padding:12px;display:flex;gap:12px;align-items:center">
+              <div style="width:22px;height:22px;border-radius:6px;background:#EF85B7;flex:none;display:flex;align-items:center;justify-content:center;font:700 13px 'DM Sans',sans-serif;color:#28101F">✓</div>
+              <div style="width:50px;height:58px;border-radius:8px;background:repeating-linear-gradient(135deg,#F4F3F1 0 7px,#E5E3DF 7px 14px);flex:none;display:flex;align-items:center;justify-content:center;font:500 9px 'DM Sans',sans-serif;color:#28101F">cutout</div>
+              <div style="display:flex;flex-direction:column;gap:6px;flex:1;min-width:0">
+                <div style="border:1px solid #AB8198;border-radius:8px;padding:7px 10px;font:600 15px 'DM Sans',sans-serif;color:#FFF4F8;background:#38182B">Black chinos</div>
+                <div style="display:flex;gap:6px;align-items:center"><span style="border:1px solid #694258;border-radius:999px;padding:3px 9px;font:600 12px 'DM Sans',sans-serif;color:#FFF4F8;white-space:nowrap">Trousers</span><span style="font:400 12px 'DM Sans',sans-serif;color:#D3B5C5">Rename or add a brand</span></div>
+              </div>
+            </div>
+            <div style="background:#38182B;border:1px solid #F0D098;border-radius:14px;padding:12px;display:flex;gap:12px;align-items:center">
+              <div style="width:22px;height:22px;border-radius:6px;border:1px solid #AB8198;flex:none"></div>
+              <div style="width:50px;height:58px;border-radius:8px;background:repeating-linear-gradient(135deg,#F4F3F1 0 7px,#E5E3DF 7px 14px);flex:none;display:flex;align-items:center;justify-content:center;font:500 9px 'DM Sans',sans-serif;color:#28101F">cutout</div>
+              <div style="display:flex;flex-direction:column;gap:6px;flex:1;min-width:0">
+                <div style="font:600 15px/20px 'DM Sans',sans-serif;color:#FFF4F8">Brown leather belt</div>
+                <div style="font:600 12px/16px 'DM Sans',sans-serif;color:#F0D098">Possible repeat of an item you already own — compare</div>
+              </div>
+            </div>
+            <div style="background:#38182B;border:1px solid #F0D098;border-radius:14px;padding:12px;display:flex;gap:12px;align-items:center">
+              <div style="width:22px;height:22px;border-radius:6px;border:1px solid #AB8198;flex:none"></div>
+              <div style="width:50px;height:58px;border-radius:8px;background:repeating-linear-gradient(135deg,#F4F3F1 0 7px,#E5E3DF 7px 14px);border:1px dashed #AB8198;flex:none;display:flex;align-items:center;justify-content:center;font:500 9px/11px 'DM Sans',sans-serif;color:#28101F;text-align:center;padding:3px">partly hidden</div>
+              <div style="display:flex;flex-direction:column;gap:6px;flex:1;min-width:0">
+                <div style="font:600 15px/20px 'DM Sans',sans-serif;color:#FFF4F8">Footwear — unclear</div>
+                <div style="font:600 12px/16px 'DM Sans',sans-serif;color:#F0D098">Mostly out of frame. Add another photo to save this one.</div>
+              </div>
+            </div>
+          </div>
+          <div style="margin-top:auto;display:flex;flex-direction:column;gap:10px">
+            <div style="font:400 13px 'DM Sans',sans-serif;color:#D3B5C5">2 of 4 selected</div>
+            <div style="display:flex;gap:10px">
+              <button style="flex:none;height:52px;padding:0 20px;border:1px solid #AB8198;border-radius:10px;background:transparent;color:#FFF4F8;font:600 16px 'DM Sans',sans-serif;cursor:pointer">Discard</button>
+              <button style="flex:1;height:52px;border:none;border-radius:10px;background:#EF85B7;color:#28101F;font:700 17px 'DM Sans',sans-serif;cursor:pointer">Save 2 pieces</button>
+            </div>
+          </div>
+        </div>
+        <div style="flex:none;height:78px;border-top:1px solid #694258;background:#38182B;display:grid;grid-template-columns:repeat(4,1fr);align-items:center;padding-bottom:10px">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:20px;height:20px;border-radius:50%;border:2px solid #D3B5C5"></div><div style="font:600 11px 'DM Sans',sans-serif;color:#D3B5C5;white-space:nowrap">Discover</div><div style="width:22px;height:3px"></div></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:20px;height:20px;border:2px solid #FFF4F8;border-radius:4px"></div><div style="font:700 11px 'DM Sans',sans-serif;color:#FFF4F8;white-space:nowrap">My Wardrobe</div><div style="width:22px;height:3px;border-radius:2px;background:#EF85B7"></div></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:16px;height:16px;border:2px solid #D3B5C5;transform:rotate(45deg);margin:2px"></div><div style="font:600 11px 'DM Sans',sans-serif;color:#D3B5C5;white-space:nowrap">Style Me</div><div style="width:22px;height:3px"></div></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:20px;height:20px;display:flex;align-items:flex-end;gap:3px"><div style="width:4px;height:9px;background:#D3B5C5"></div><div style="width:4px;height:16px;background:#D3B5C5"></div><div style="width:4px;height:12px;background:#D3B5C5"></div></div><div style="font:600 11px 'DM Sans',sans-serif;color:#D3B5C5;white-space:nowrap">Insights</div><div style="width:22px;height:3px"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 05 Wardrobe collection -->
+    <div style="display:flex;flex-direction:column;gap:12px;flex:none">
+      <sc-if value="{{ showScreenCaptions }}" hint-placeholder-val="{{ true }}">
+        <div style="font:500 13px/1 'DM Sans',sans-serif;color:#D3B5C5">05 · My Wardrobe — collection</div>
+      </sc-if>
+      <div data-screen-label="05 Wardrobe collection" style="width:390px;height:844px;border-radius:44px;border:10px solid #120710;background:#28101F;overflow:hidden;display:flex;flex-direction:column;position:relative;box-shadow:0 24px 56px rgba(0,0,0,0.45);flex:none">
+        <div style="height:44px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 24px;font:600 13px 'DM Sans',sans-serif;color:#FFF4F8"><span>9:41</span><span style="letter-spacing:0.08em">▮▮▮</span></div>
+        <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;gap:14px;padding:8px 16px 8px">
+          <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:12px">
+            <div style="display:flex;flex-direction:column;gap:2px">
+              <h2 style="margin:0;font:600 34px/38px 'Cormorant Garamond',Georgia,serif;color:#FFF4F8">My Wardrobe</h2>
+              <div style="font:400 13px/18px 'DM Sans',sans-serif;color:#D3B5C5">34 pieces you own · sample data</div>
+            </div>
+            <button style="flex:none;height:44px;padding:0 16px;border:none;border-radius:10px;background:#EF85B7;color:#28101F;font:700 15px 'DM Sans',sans-serif;white-space:nowrap;cursor:pointer">Add photos</button>
+          </div>
+          <div style="display:flex;gap:6px;overflow:hidden">
+            <span style="flex:none;background:#EF85B7;color:#28101F;border-radius:999px;padding:8px 12px;font:600 13px 'DM Sans',sans-serif;white-space:nowrap">All</span>
+            <span style="flex:none;border:1px solid #694258;background:#38182B;border-radius:999px;padding:8px 12px;font:600 13px 'DM Sans',sans-serif;color:#FFF4F8;white-space:nowrap">Shirts</span>
+            <span style="flex:none;border:1px solid #694258;background:#38182B;border-radius:999px;padding:8px 12px;font:600 13px 'DM Sans',sans-serif;color:#FFF4F8;white-space:nowrap">Trousers</span>
+            <span style="flex:none;border:1px solid #694258;background:#38182B;border-radius:999px;padding:8px 12px;font:600 13px 'DM Sans',sans-serif;color:#FFF4F8;white-space:nowrap">Belts</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <div style="aspect-ratio:1/1;border-radius:8px;background:#F4F3F1;display:flex;align-items:center;justify-content:center;font:500 10px 'DM Sans',sans-serif;color:#28101F">garment cutout</div>
+              <div style="font:600 15px/20px 'DM Sans',sans-serif;color:#FFF4F8">Blue full-sleeve shirt</div>
+              <div style="font:400 13px/17px 'DM Sans',sans-serif;color:#D3B5C5">Shirts · owned</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <div style="aspect-ratio:1/1;border-radius:8px;background:#F4F3F1;display:flex;align-items:center;justify-content:center;font:500 10px 'DM Sans',sans-serif;color:#28101F">garment cutout</div>
+              <div style="font:600 15px/20px 'DM Sans',sans-serif;color:#FFF4F8">Black chinos</div>
+              <div style="font:400 13px/17px 'DM Sans',sans-serif;color:#D3B5C5">Trousers · owned</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <div style="aspect-ratio:1/1;border-radius:8px;background:#F4F3F1;display:flex;align-items:center;justify-content:center;font:500 10px 'DM Sans',sans-serif;color:#28101F">garment cutout</div>
+              <div style="font:600 15px/20px 'DM Sans',sans-serif;color:#FFF4F8">USPA khakis</div>
+              <div style="font:400 13px/17px 'DM Sans',sans-serif;color:#D3B5C5">Trousers · owned</div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:6px">
+              <div style="aspect-ratio:1/1;border-radius:8px;background:repeating-linear-gradient(135deg,#F4F3F1 0 8px,#E5E3DF 8px 16px);border:1px dashed #AB8198;display:flex;align-items:flex-start;padding:8px">
+                <span style="background:#28101F;border:1px solid #EF85B7;color:#EF85B7;border-radius:999px;padding:3px 8px;font:600 11px 'DM Sans',sans-serif;white-space:nowrap">Saved inspiration</span>
+              </div>
+              <div style="font:600 15px/20px 'DM Sans',sans-serif;color:#FFF4F8">Cream camp-collar shirt</div>
+              <div style="font:400 13px/17px 'DM Sans',sans-serif;color:#D3B5C5">Not owned · from Discover</div>
+            </div>
+          </div>
+          <div style="margin-top:auto;background:#482339;border:1px solid #694258;border-radius:14px;padding:14px;display:flex;gap:12px;align-items:center">
+            <div style="width:40px;height:40px;border-radius:50%;background:#EF85B7;flex:none;display:flex;align-items:center;justify-content:center;font:600 17px 'Cormorant Garamond',Georgia,serif;color:#28101F">5</div>
+            <div style="display:flex;flex-direction:column;gap:2px;flex:1;min-width:0">
+              <div style="font:700 15px/20px 'DM Sans',sans-serif;color:#FFF4F8">Starter collection unlocked</div>
+              <div style="font:400 13px/17px 'DM Sans',sans-serif;color:#D3B5C5">Five pieces confirmed. See the reveal.</div>
+            </div>
+            <span style="font:600 13px 'DM Sans',sans-serif;color:#D3B5C5;flex:none">Dismiss</span>
+          </div>
+        </div>
+        <div style="flex:none;height:78px;border-top:1px solid #694258;background:#38182B;display:grid;grid-template-columns:repeat(4,1fr);align-items:center;padding-bottom:10px">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:20px;height:20px;border-radius:50%;border:2px solid #D3B5C5"></div><div style="font:600 11px 'DM Sans',sans-serif;color:#D3B5C5;white-space:nowrap">Discover</div><div style="width:22px;height:3px"></div></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:20px;height:20px;border:2px solid #FFF4F8;border-radius:4px"></div><div style="font:700 11px 'DM Sans',sans-serif;color:#FFF4F8;white-space:nowrap">My Wardrobe</div><div style="width:22px;height:3px;border-radius:2px;background:#EF85B7"></div></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:16px;height:16px;border:2px solid #D3B5C5;transform:rotate(45deg);margin:2px"></div><div style="font:600 11px 'DM Sans',sans-serif;color:#D3B5C5;white-space:nowrap">Style Me</div><div style="width:22px;height:3px"></div></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:20px;height:20px;display:flex;align-items:flex-end;gap:3px"><div style="width:4px;height:9px;background:#D3B5C5"></div><div style="width:4px;height:16px;background:#D3B5C5"></div><div style="width:4px;height:12px;background:#D3B5C5"></div></div><div style="font:600 11px 'DM Sans',sans-serif;color:#D3B5C5;white-space:nowrap">Insights</div><div style="width:22px;height:3px"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 06 Style Me -->
+    <div style="display:flex;flex-direction:column;gap:12px;flex:none">
+      <sc-if value="{{ showScreenCaptions }}" hint-placeholder-val="{{ true }}">
+        <div style="font:500 13px/1 'DM Sans',sans-serif;color:#D3B5C5">06 · Style Me — the fitting studio</div>
+      </sc-if>
+      <div data-screen-label="06 Style Me studio" style="width:390px;height:844px;border-radius:44px;border:10px solid #120710;background:#28101F;overflow:hidden;display:flex;flex-direction:column;position:relative;box-shadow:0 24px 56px rgba(0,0,0,0.45);flex:none">
+        <div style="height:44px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 24px;font:600 13px 'DM Sans',sans-serif;color:#FFF4F8"><span>9:41</span><span style="letter-spacing:0.08em">▮▮▮</span></div>
+        <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;gap:12px;padding:8px 16px 8px">
+          <div style="display:flex;align-items:baseline;justify-content:space-between;gap:10px">
+            <h2 style="margin:0;font:600 30px/34px 'Cormorant Garamond',Georgia,serif;color:#FFF4F8">Kerala trip · <span style="font-style:italic">beach evening</span></h2>
+            <span style="font:600 13px 'DM Sans',sans-serif;color:#EF85B7;flex:none">Undo</span>
+          </div>
+          <div style="position:relative;flex:none;height:286px;border-radius:14px;background:repeating-linear-gradient(135deg,#F4F3F1 0 10px,#E5E3DF 10px 20px);display:flex;align-items:center;justify-content:center;font:500 10px 'DM Sans',sans-serif;color:#28101F">
+            on-person preview
+            <span style="position:absolute;left:12px;top:12px;background:#28101F;color:#FFF4F8;border-radius:999px;padding:4px 10px;font:600 12px 'DM Sans',sans-serif;white-space:nowrap">Generated preview</span>
+            <span style="position:absolute;right:12px;bottom:12px;background:#28101F;border:1px solid #694258;border-radius:999px;padding:4px 10px;font:600 12px 'DM Sans',sans-serif;color:#FFF4F8;white-space:nowrap">Compare</span>
+          </div>
+          <div style="font:400 12px/16px 'DM Sans',sans-serif;color:#D3B5C5">Illustrative approximation — not a guide to fit, fabric, or exact colour.</div>
+          <div style="display:flex;gap:10px">
+            <div style="flex:1;background:#482339;border:2px solid #EF85B7;border-radius:14px;padding:8px;display:flex;flex-direction:column;gap:6px">
+              <div style="height:50px;border-radius:8px;background:repeating-linear-gradient(135deg,#F4F3F1 0 7px,#E5E3DF 7px 14px)"></div>
+              <div style="font:600 13px/17px 'DM Sans',sans-serif;color:#FFF4F8">Black shirt</div>
+              <div style="font:600 12px/16px 'DM Sans',sans-serif;color:#A5DCBC">Owned · kept</div>
+            </div>
+            <div style="flex:1;background:#38182B;border:1px solid #EF85B7;border-radius:14px;padding:8px;display:flex;flex-direction:column;gap:6px">
+              <div style="height:50px;border-radius:8px;background:repeating-linear-gradient(135deg,#F4F3F1 0 7px,#E5E3DF 7px 14px)"></div>
+              <div style="font:600 13px/17px 'DM Sans',sans-serif;color:#FFF4F8">Khaki chinos</div>
+              <div style="font:600 12px/16px 'DM Sans',sans-serif;color:#EF85B7">Addition</div>
+            </div>
+            <div style="flex:1;background:#38182B;border:1px solid #694258;border-radius:14px;padding:8px;display:flex;flex-direction:column;gap:6px">
+              <div style="height:50px;border-radius:8px;background:repeating-linear-gradient(135deg,#F4F3F1 0 7px,#E5E3DF 7px 14px)"></div>
+              <div style="font:600 13px/17px 'DM Sans',sans-serif;color:#FFF4F8">Loafers</div>
+              <div style="font:600 12px/16px 'DM Sans',sans-serif;color:#A5DCBC">Owned</div>
+            </div>
+          </div>
+          <div style="background:#38182B;border:1px solid #694258;border-radius:14px;padding:12px;display:flex;align-items:center;gap:12px">
+            <div style="display:flex;flex-direction:column;gap:2px;flex:1;min-width:0">
+              <div style="font:700 16px/21px 'DM Sans',sans-serif;color:#FFF4F8">2 pieces owned · 1 addition</div>
+              <div style="font:400 13px/17px 'DM Sans',sans-serif;color:#D3B5C5">You own the shirt and shoes. Add khaki chinos.</div>
+            </div>
+            <button style="flex:none;height:44px;padding:0 16px;border:none;border-radius:10px;background:#EF85B7;color:#28101F;font:700 15px 'DM Sans',sans-serif;white-space:nowrap;cursor:pointer">Shop 1</button>
+          </div>
+          <div style="display:flex;gap:6px;overflow:hidden">
+            <span style="flex:none;border:1px solid #FFF4F8;background:#38182B;border-radius:999px;padding:9px 12px;font:600 13px 'DM Sans',sans-serif;color:#FFF4F8;white-space:nowrap">Keep shirt</span>
+            <span style="flex:none;border:1px solid #694258;background:#38182B;border-radius:999px;padding:9px 12px;font:600 13px 'DM Sans',sans-serif;color:#FFF4F8;white-space:nowrap">Swap trousers</span>
+            <span style="flex:none;border:1px solid #694258;background:#38182B;border-radius:999px;padding:9px 12px;font:600 13px 'DM Sans',sans-serif;color:#FFF4F8;white-space:nowrap">Add accessories</span>
+          </div>
+          <div style="margin-top:auto;display:flex;gap:10px;align-items:center;background:#482339;border:1px solid #AB8198;border-radius:12px;padding:6px 6px 6px 14px">
+            <span style="flex:1;font:400 15px 'DM Sans',sans-serif;color:#D3B5C5;min-width:0">Keep the black shirt, show khaki chinos…</span>
+            <button style="flex:none;width:44px;height:44px;border:none;border-radius:10px;background:#EF85B7;color:#28101F;font:700 16px 'DM Sans',sans-serif;cursor:pointer">→</button>
+          </div>
+        </div>
+        <div style="flex:none;height:78px;border-top:1px solid #694258;background:#38182B;display:grid;grid-template-columns:repeat(4,1fr);align-items:center;padding-bottom:10px">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:20px;height:20px;border-radius:50%;border:2px solid #D3B5C5"></div><div style="font:600 11px 'DM Sans',sans-serif;color:#D3B5C5;white-space:nowrap">Discover</div><div style="width:22px;height:3px"></div></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:20px;height:20px;border:2px solid #D3B5C5;border-radius:4px"></div><div style="font:600 11px 'DM Sans',sans-serif;color:#D3B5C5;white-space:nowrap">My Wardrobe</div><div style="width:22px;height:3px"></div></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:16px;height:16px;border:2px solid #FFF4F8;transform:rotate(45deg);margin:2px"></div><div style="font:700 11px 'DM Sans',sans-serif;color:#FFF4F8;white-space:nowrap">Style Me</div><div style="width:22px;height:3px;border-radius:2px;background:#EF85B7"></div></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:20px;height:20px;display:flex;align-items:flex-end;gap:3px"><div style="width:4px;height:9px;background:#D3B5C5"></div><div style="width:4px;height:16px;background:#D3B5C5"></div><div style="width:4px;height:12px;background:#D3B5C5"></div></div><div style="font:600 11px 'DM Sans',sans-serif;color:#D3B5C5;white-space:nowrap">Insights</div><div style="width:22px;height:3px"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 07 Insights -->
+    <div style="display:flex;flex-direction:column;gap:12px;flex:none">
+      <sc-if value="{{ showScreenCaptions }}" hint-placeholder-val="{{ true }}">
+        <div style="font:500 13px/1 'DM Sans',sans-serif;color:#D3B5C5">07 · Insights — what your clothes do for you</div>
+      </sc-if>
+      <div data-screen-label="07 Insights" style="width:390px;height:844px;border-radius:44px;border:10px solid #120710;background:#28101F;overflow:hidden;display:flex;flex-direction:column;position:relative;box-shadow:0 24px 56px rgba(0,0,0,0.45);flex:none">
+        <div style="height:44px;flex:none;display:flex;align-items:center;justify-content:space-between;padding:0 24px;font:600 13px 'DM Sans',sans-serif;color:#FFF4F8"><span>9:41</span><span style="letter-spacing:0.08em">▮▮▮</span></div>
+        <div style="flex:1;overflow:hidden;display:flex;flex-direction:column;gap:14px;padding:8px 16px 8px">
+          <h2 style="margin:0;font:600 34px/38px 'Cormorant Garamond',Georgia,serif;color:#FFF4F8">Insights</h2>
+          <div style="display:flex;gap:6px;overflow:hidden">
+            <span style="flex:none;background:#EF85B7;color:#28101F;border-radius:999px;padding:8px 12px;font:600 13px 'DM Sans',sans-serif;white-space:nowrap">Frugal maxing</span>
+            <span style="flex:none;border:1px solid #694258;background:#38182B;border-radius:999px;padding:8px 12px;font:600 13px 'DM Sans',sans-serif;color:#FFF4F8;white-space:nowrap">Splurge</span>
+            <span style="flex:none;border:1px solid #694258;background:#38182B;border-radius:999px;padding:8px 12px;font:600 13px 'DM Sans',sans-serif;color:#FFF4F8;white-space:nowrap">YOLO</span>
+            <span style="flex:none;border:1px solid #694258;background:#38182B;border-radius:999px;padding:8px 12px;font:600 13px 'DM Sans',sans-serif;color:#FFF4F8;white-space:nowrap">Custom</span>
+          </div>
+          <div style="background:#482339;border:1px solid #694258;border-radius:14px;padding:16px;display:flex;flex-direction:column;gap:6px">
+            <div style="font:600 28px/32px 'Cormorant Garamond',Georgia,serif;color:#FFF4F8">Your black shirt appears in 6 logged outfits.</div>
+            <div style="font:400 13px/17px 'DM Sans',sans-serif;color:#D3B5C5">Last 90 days · from your wear logs</div>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+            <div style="background:#38182B;border:1px solid #694258;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:4px">
+              <div style="font:400 13px 'DM Sans',sans-serif;color:#D3B5C5">Cost per wear</div>
+              <div style="font:600 36px/40px 'DM Sans',sans-serif;color:#FFF4F8;font-variant-numeric:tabular-nums">₹200</div>
+              <div style="font:400 12px/16px 'DM Sans',sans-serif;color:#D3B5C5">₹4,000 ÷ 20 wears</div>
+            </div>
+            <div style="background:#38182B;border:1px solid #694258;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:4px">
+              <div style="font:400 13px 'DM Sans',sans-serif;color:#D3B5C5">Outfit variety</div>
+              <div style="font:600 36px/40px 'DM Sans',sans-serif;color:#FFF4F8;font-variant-numeric:tabular-nums">6</div>
+              <div style="font:400 12px/16px 'DM Sans',sans-serif;color:#D3B5C5">Logged, not suggested</div>
+            </div>
+          </div>
+          <div style="background:#38182B;border:1px solid #694258;border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:10px">
+            <div style="font:600 15px 'DM Sans',sans-serif;color:#FFF4F8">Wears by occasion</div>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <div style="display:flex;align-items:center;gap:10px"><span style="width:72px;font:400 13px 'DM Sans',sans-serif;color:#D3B5C5;flex:none">Work</span><div style="flex:1;height:12px;border-radius:6px;background:#482339"><div style="width:70%;height:12px;border-radius:6px;background:#EF85B7"></div></div><span style="width:18px;font:600 13px 'DM Sans',sans-serif;color:#FFF4F8;text-align:right">9</span></div>
+              <div style="display:flex;align-items:center;gap:10px"><span style="width:72px;font:400 13px 'DM Sans',sans-serif;color:#D3B5C5;flex:none">Evenings</span><div style="flex:1;height:12px;border-radius:6px;background:#482339"><div style="width:44%;height:12px;border-radius:6px;background:#EF85B7"></div></div><span style="width:18px;font:600 13px 'DM Sans',sans-serif;color:#FFF4F8;text-align:right">6</span></div>
+              <div style="display:flex;align-items:center;gap:10px"><span style="width:72px;font:400 13px 'DM Sans',sans-serif;color:#D3B5C5;flex:none">Travel</span><div style="flex:1;height:12px;border-radius:6px;background:#482339"><div style="width:22%;height:12px;border-radius:6px;background:#EF85B7"></div></div><span style="width:18px;font:600 13px 'DM Sans',sans-serif;color:#FFF4F8;text-align:right">3</span></div>
+            </div>
+            <div style="font:400 12px/16px 'DM Sans',sans-serif;color:#D3B5C5">18 of 20 wears have an occasion tag.</div>
+          </div>
+          <div style="background:#38182B;border:1px solid #694258;border-radius:14px;padding:12px;display:flex;gap:12px;align-items:center">
+            <div style="width:54px;height:66px;border-radius:8px;background:repeating-linear-gradient(135deg,#F4F3F1 0 7px,#E5E3DF 7px 14px);flex:none;display:flex;align-items:center;justify-content:center;font:500 9px 'DM Sans',sans-serif;color:#28101F">item</div>
+            <div style="display:flex;flex-direction:column;gap:4px;flex:1;min-width:0">
+              <div style="font:700 15px/20px 'DM Sans',sans-serif;color:#FFF4F8">Black shirt · owned 7 months</div>
+              <div style="font:400 13px/17px 'DM Sans',sans-serif;color:#D3B5C5">Your note: “After six months, the buttons wore out.”</div>
+              <span style="font:600 13px 'DM Sans',sans-serif;color:#EF85B7">Style it again</span>
+            </div>
+          </div>
+          <sc-if value="{{ showDataCoverageNotes }}" hint-placeholder-val="{{ true }}">
+            <div style="margin-top:auto;border-top:1px solid #694258;padding-top:12px;font:400 13px/18px 'DM Sans',sans-serif;color:#F0D098">A few more wear logs will make this useful. 11 pieces have no price recorded.</div>
+          </sc-if>
+        </div>
+        <div style="flex:none;height:78px;border-top:1px solid #694258;background:#38182B;display:grid;grid-template-columns:repeat(4,1fr);align-items:center;padding-bottom:10px">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:20px;height:20px;border-radius:50%;border:2px solid #D3B5C5"></div><div style="font:600 11px 'DM Sans',sans-serif;color:#D3B5C5;white-space:nowrap">Discover</div><div style="width:22px;height:3px"></div></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:20px;height:20px;border:2px solid #D3B5C5;border-radius:4px"></div><div style="font:600 11px 'DM Sans',sans-serif;color:#D3B5C5;white-space:nowrap">My Wardrobe</div><div style="width:22px;height:3px"></div></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:16px;height:16px;border:2px solid #D3B5C5;transform:rotate(45deg);margin:2px"></div><div style="font:600 11px 'DM Sans',sans-serif;color:#D3B5C5;white-space:nowrap">Style Me</div><div style="width:22px;height:3px"></div></div>
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px"><div style="width:20px;height:20px;display:flex;align-items:flex-end;gap:3px"><div style="width:4px;height:9px;background:#FFF4F8"></div><div style="width:4px;height:16px;background:#FFF4F8"></div><div style="width:4px;height:12px;background:#FFF4F8"></div></div><div style="font:700 11px 'DM Sans',sans-serif;color:#FFF4F8;white-space:nowrap">Insights</div><div style="width:22px;height:3px;border-radius:2px;background:#EF85B7"></div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showAestheticLabels&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Content&quot;},&quot;showScreenCaptions&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Content&quot;},&quot;showDataCoverageNotes&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Content&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      showAestheticLabels: this.props.showAestheticLabels ?? true,
+      showScreenCaptions: this.props.showScreenCaptions ?? true,
+      showDataCoverageNotes: this.props.showDataCoverageNotes ?? true
+    };
+  }
+}
+</script>
+</body>
+</html>
