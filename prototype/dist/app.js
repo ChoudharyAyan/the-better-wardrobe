@@ -23,7 +23,11 @@ const tabs=[['discover','Discover'],['wardrobe','My Wardrobe'],['style','Style M
 let developerEnabled=false,capabilitiesLoaded=false;
 function toast(msg){clearTimeout(toastTimer);const t=document.querySelector('#toast');t.textContent=msg;t.classList.add('show');toastTimer=setTimeout(()=>t.classList.remove('show'),3500);}
 function go(next){if(next===route){render();return;}location.hash=next;}
-function nav(){const active=route.split('/')[0];const available=developerEnabled?[...tabs,['developer','Developer']]:tabs;const html=available.map(([id,name])=>`<a href="#${id}" class="nav-link ${active===id?'active':''}" ${active===id?'aria-current="page"':''}>${icon(id)}${name}</a>`).join('');document.querySelector('#desktop-nav').innerHTML=html;document.querySelector('#bottom-nav').innerHTML=html;}
+function nav(){const active=route.split('/')[0];const link=([id,name])=>`<a href="#${id}" class="nav-link ${active===id?'active':''}" ${active===id?'aria-current="page"':''}>${icon(id)}${name}</a>`;const core=tabs.map(link).join('');
+ document.querySelector('#desktop-nav').innerHTML=developerEnabled?core+link(['developer','Developer']):core;
+ document.querySelector('#bottom-nav').innerHTML=core;
+ const devLink=document.querySelector('#developer-link');if(devLink){devLink.innerHTML=icon('developer');devLink.classList.toggle('enabled',developerEnabled);devLink.classList.toggle('active',active==='developer');}
+}
 function modal(title,body,actions=''){lastFocus=document.activeElement;document.querySelector('#dialog-content').innerHTML=`<div class="modal"><div class="modal-head"><h2>${title}</h2><button class="icon-btn" data-action="close" aria-label="Close dialog">${icon('close')}</button></div>${body}${actions?`<div class="modal-actions">${actions}</div>`:''}</div>`;if(!dialog.open)dialog.showModal();}
 function close(){dialog.close();if(lastFocus?.isConnected)lastFocus.focus();}
 function img(p,extra=''){return `<div class="well ${extra}"><img src="${esc(p.image)}" alt="${esc(p.name||p.label)}" loading="lazy"></div>`;}
