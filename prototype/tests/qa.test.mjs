@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {mkdtemp,readFile,rm} from 'node:fs/promises';
+import {mkdtemp,readFile,rm,writeFile} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import path from 'node:path';
 import {pathToFileURL} from 'node:url';
@@ -33,5 +33,21 @@ test('a note without a screenshot or with an empty note is rejected',async()=>{
  try{
   await assert.rejects(()=>store.add({image:'not-an-image',note:'Something'}),/JPG, PNG or WebP/);
   await assert.rejects(()=>store.add({image,note:'   '}),/Add a note/);
+ }finally{await rm(dir,{recursive:true,force:true});}
+});
+
+test('history lists newest first, serves images by id only, and keeps edits made directly to index.json',async()=>{
+ const {dir,store}=await tempStore();
+ try{
+  const first=await store.add({image,note:'First'});const second=await store.add({image,note:'Second'});
+  const index=JSON.parse(await readFile(new URL('index.json',dir),'utf8'));index[0].status='resolved';index[0].resolution='Fixed cancel propagation';
+  await writeFile(new URL('index.json',dir),JSON.stringify(index));
+  await store.add({image,note:'Third'});
+  const items=await store.list();
+  assert.deepEqual(items.map(i=>i.note),['Third','Second','First']);
+  assert.equal(items[2].status,'resolved');assert.equal(items[2].resolution,'Fixed cancel propagation');
+  assert.equal((await store.image(second.id)).type,'image/png');
+  assert.equal(await store.image('../index.json'),null);assert.equal(await store.image('0000000000000000'),null);
+  assert.ok(first.id);
  }finally{await rm(dir,{recursive:true,force:true});}
 });

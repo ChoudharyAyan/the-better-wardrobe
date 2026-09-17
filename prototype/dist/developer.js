@@ -10,7 +10,12 @@
    <textarea name="note" placeholder="What did you notice?" maxlength="2000" required></textarea>
    <button type="submit" class="btn full">Send to QA</button>
    <p class="qa-status" data-qa-status hidden></p>
-  </form>`;
+  </form>
+  <div class="dev-title qa-history-title"><div><span class="eyebrow">QA history</span><h2>What you have reported</h2></div><button class="link-btn" data-qa-refresh>Refresh</button></div>
+  <div id="qa-history"><div class="dev-empty"><p>Loading your QA notes…</p></div></div>`;
+ const stamp=v=>{try{return new Intl.DateTimeFormat('en-IN',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'}).format(new Date(v));}catch{return '—';}};
+ const qaTable=items=>items.length?`<div class="dev-table-wrap"><table class="dev-table qa-table"><thead><tr><th>Screenshot</th><th>Note</th><th>Submitted</th><th>Status</th></tr></thead><tbody>${items.map(q=>`<tr><td><a href="/api/developer/qa/${esc(q.id)}/image" target="_blank" rel="noopener" aria-label="Open screenshot full size"><img class="qa-thumb" src="/api/developer/qa/${esc(q.id)}/image" alt="" loading="lazy"></a></td><td class="qa-note">${esc(q.note)}${q.resolution?`<small>Resolution: ${esc(q.resolution)}</small>`:''}</td><td>${stamp(q.createdAt)}</td><td><span class="dev-status ${q.status==='resolved'?'healthy':'warn'}">${q.status==='resolved'?'Resolved':'Open'}</span></td></tr>`).join('')}</tbody></table></div>`:empty('No QA notes yet','Send your first screenshot above; it will be listed here.');
+ async function loadQa(){const el=document.getElementById('qa-history');if(!el)return;try{const r=await fetch('/api/developer/qa',{headers:{Accept:'application/json'}});if(!r.ok)throw Error('QA history could not be loaded.');const {items}=await r.json();if(document.getElementById('qa-history'))document.getElementById('qa-history').innerHTML=qaTable(items);}catch(e){if(document.getElementById('qa-history'))document.getElementById('qa-history').innerHTML=empty('QA history unavailable',e.message);}}
  const render=()=>`<div class="developer-dashboard"><div class="dev-section">${qaView()}</div><div id="${rootId}" style="display:contents"><div class="dev-loading"><span class="dev-pulse"></span><div><strong>Loading local telemetry…</strong><p>Reading this app session only.</p></div></div></div></div>`;
  function view(data){
   const providers=data.providers||[],requests=[...(data.recentRequests||[])].reverse(),searches=[...(data.recentSearches||[])].reverse(),avoided=(data.totals.replays||0)+(data.totals.cacheHits||0);
@@ -25,8 +30,8 @@
   const root=document.getElementById(rootId);if(!root)return;
   try{const r=await fetch('/api/developer/observability',{headers:{Accept:'application/json'}});if(!r.ok)throw Error(r.status===404?'Developer dashboard is disabled.':'Telemetry could not be loaded.');const data=await r.json();if(document.getElementById(rootId))document.getElementById(rootId).innerHTML=view(data);}catch(e){if(document.getElementById(rootId))document.getElementById(rootId).innerHTML=empty('Observability unavailable',e.message);}
  }
- function watch(){clearInterval(timer);load();timer=setInterval(()=>{if(location.hash==='#developer')load();else clearInterval(timer);},5000);}
- document.addEventListener('click',e=>{if(e.target.closest('[data-developer-refresh]'))load();});
+ function watch(){clearInterval(timer);load();loadQa();timer=setInterval(()=>{if(location.hash==='#developer')load();else clearInterval(timer);},5000);}
+ document.addEventListener('click',e=>{if(e.target.closest('[data-developer-refresh]'))load();if(e.target.closest('[data-qa-refresh]'))loadQa();});
  async function toJpegDataUrl(file,maxDim=1600,quality=.85){
   const url=URL.createObjectURL(file);
   try{const image=new Image();image.src=url;await image.decode();
@@ -48,7 +53,7 @@
    const data=await r.json().catch(()=>({}));
    if(!r.ok)throw Error(data.error||'Could not send this note.');
    statusEl.className='qa-status success';statusEl.textContent='Sent — Claude can pick this up next.';form.reset();
-   form.querySelector('[data-qa-filename]').textContent='Choose a screenshot';
+   form.querySelector('[data-qa-filename]').textContent='Choose a screenshot';loadQa();
   }catch(err){statusEl.className='qa-status error';statusEl.textContent=err.message||'Something went wrong. Try again.';}
   finally{button.disabled=false;}
  });

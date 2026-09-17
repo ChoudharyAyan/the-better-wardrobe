@@ -39,3 +39,26 @@ test('streamed progress reports backend milestones followed by a result',async()
  const server=createServer(service);await new Promise(r=>server.listen(0,'127.0.0.1',r));
  try{const r=await fetch('http://127.0.0.1:'+server.address().port+'/api/discover/search',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/x-ndjson'},body:'{}'});const events=(await r.text()).trim().split('\n').map(JSON.parse);assert.equal(events[0].percent,40);assert.equal(events[1].type,'result');}finally{await new Promise(r=>server.close(r));}
 });
+test('developer QA history and screenshots are readable when the dashboard is enabled',async()=>{
+ const png=Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aXmQAAAAASUVORK5CYII=','base64');
+ const qaStore={list:async()=>[{id:'a1b2c3d4e5f6a7b8',note:'Slow search',createdAt:'2026-09-17T12:25:32.193Z',status:'open',resolution:''}],image:async id=>id==='a1b2c3d4e5f6a7b8'?{data:png,type:'image/png'}:null};
+ const off=createServer({status:()=>({developerDashboard:false})},qaStore);await new Promise(r=>off.listen(0,'127.0.0.1',r));
+ try{assert.equal((await fetch('http://127.0.0.1:'+off.address().port+'/api/developer/qa')).status,404);}finally{await new Promise(r=>off.close(r));}
+ const on=createServer({status:()=>({developerDashboard:true})},qaStore);await new Promise(r=>on.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+on.address().port;
+ try{
+  const list=await fetch(base+'/api/developer/qa');assert.equal(list.status,200);assert.equal((await list.json()).items[0].note,'Slow search');
+  const img=await fetch(base+'/api/developer/qa/a1b2c3d4e5f6a7b8/image');assert.equal(img.status,200);assert.equal(img.headers.get('content-type'),'image/png');
+  assert.equal((await fetch(base+'/api/developer/qa/ffffffffffffffff/image')).status,404);
+ }finally{await new Promise(r=>on.close(r));}
+});
+test('a client that disconnects mid-analysis aborts the in-flight model call',async()=>{
+ let resolveAborted;const aborted=new Promise(r=>resolveAborted=r);
+ const service={analyze:(body,progress,signal)=>new Promise((_,reject)=>{progress({percent:10,label:'Reading'});signal.addEventListener('abort',()=>{resolveAborted(true);reject(Object.assign(Error('aborted'),{name:'AbortError'}));});})};
+ const server=createServer(service);await new Promise(r=>server.listen(0,'127.0.0.1',r));
+ try{
+  const controller=new AbortController();
+  const r=await fetch('http://127.0.0.1:'+server.address().port+'/api/discover/analyze',{method:'POST',headers:{'Content-Type':'application/json',Accept:'application/x-ndjson'},body:'{}',signal:controller.signal});
+  const reader=r.body.getReader();await reader.read();controller.abort();
+  assert.equal(await Promise.race([aborted,new Promise(r=>setTimeout(()=>r(false),2000))]),true);
+ }finally{server.closeAllConnections?.();await new Promise(r=>server.close(r));}
+});
