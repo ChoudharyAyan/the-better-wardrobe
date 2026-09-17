@@ -5,7 +5,7 @@
   "scripts": {
     "start": "node server.mjs",
     "local": "./scripts/start-local.sh",
-    "check": "node --check dist/app.js && node --check dist/discovery.js && node --check dist/developer.js && node --check lib/discovery.mjs && node --check server.mjs",
+    "check": "node --check dist/app.js && node --check dist/discovery.js && node --check dist/developer.js && node --check lib/discovery.mjs && node --check lib/qa.mjs && node --check server.mjs",
     "test": "node --test tests/*.test.mjs"
   },
   "dependencies": {
