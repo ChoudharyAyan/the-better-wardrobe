@@ -140,3 +140,24 @@ test('auto mode records a result and replay mode uses it without provider calls'
  const first=await record.search({attributes:attr,image,market:'in'});assert.ok(first.results.length);assert.equal(saved.size,1);
  const replay=createDiscovery({env:{DISCOVERY_DATA_MODE:'replay'},replayStore,fetcher:()=>assert.fail('Replay must not call a provider')});const second=await replay.search({attributes:attr,image,market:'in'});assert.equal(second.trace.replayHit,true);assert.equal(second.results[0].url,first.results[0].url);
 });
+
+test('department keeps a menswear search out of womenswear listings',()=>{
+ const mens=attributes({category:'Blazer',colour:'light pink',fit:'slim',pattern:'solid',department:"Men's"});
+ assert.equal(mens.department,'menswear');
+ assert.equal(attributes({category:'Blazer',department:'ladies'}).department,'womenswear');
+ assert.equal(attributes({category:'Blazer',department:'anything else'}).department,'');
+ assert.ok(searchIntent(mens).query.startsWith("men's"),searchIntent(mens).query);
+ // The QA report: a light pink blazer search returned a woman's suit.
+ assert.equal(titleRejection({title:"Women's Light Pink Slim Blazer"},mens),'Different department');
+ assert.equal(titleRejection({title:'Ladies pink blazer'},mens),'Different department');
+ assert.equal(titleRejection({title:'Light pink slim fit blazer'},mens),'');
+ assert.equal(titleRejection({title:"Men's light pink blazer"},mens),'');
+ // "men" must not match inside "women"; unisex and unknown constrain nothing.
+ const womens=attributes({category:'Blazer',colour:'light pink',department:'womenswear'});
+ assert.equal(titleRejection({title:"Women's pink blazer"},womens),'');
+ assert.equal(titleRejection({title:"Men's pink blazer"},womens),'Different department');
+ const unknown=attributes({category:'Blazer',colour:'light pink'});
+ assert.equal(titleRejection({title:"Women's pink blazer"},unknown),'');
+ assert.equal(searchIntent(unknown).query.includes("men's"),false);
+ assert.equal(titleRejection({title:'Unisex pink blazer'},attributes({category:'Blazer',department:'unisex'})),'');
+});
