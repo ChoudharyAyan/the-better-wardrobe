@@ -51,6 +51,16 @@ test('merchant enrichment resolves supplied tokens, retains correct retailer lin
 test('hourly cap bounds public preview operations',async()=>{
  const d=createDiscovery({env:{SERPAPI_API_KEY:'test',DISCOVERY_HOURLY_LIMIT:'1'},fetcher:async()=>response({shopping_results:results}),pageFetcher:async()=>''});await d.search({attributes:attr});await assert.rejects(d.search({attributes:attr}),/hourly/);
 });
+test('detect locates multiple items and converts normalized boxes to crop percentages',async()=>{
+ const d=createDiscovery({env:{GEMINI_API_KEY:'test'},fetcher:async()=>response({candidates:[{finishReason:'STOP',content:{parts:[{text:JSON.stringify({items:[{label:'Dress',box:[100,50,600,900]},{label:'Bracelet',box:[650,700,900,780]},{label:'bad',box:[1,1]}]})}]}}]})});
+ const out=await d.detect({image});
+ assert.equal(out.items.length,2);assert.equal(out.items[0].label,'Dress');
+ assert.equal(out.items[0].crop.left,10);assert.equal(out.items[0].crop.top,5);assert.equal(out.items[0].crop.width,50);assert.equal(out.items[0].crop.height,85);
+});
+test('detect declines items with empty labels or degenerate boxes',async()=>{
+ const d=createDiscovery({env:{GEMINI_API_KEY:'test'},fetcher:async()=>response({candidates:[{finishReason:'STOP',content:{parts:[{text:JSON.stringify({items:[{label:'',box:[0,0,100,100]},{label:'Tiny',box:[0,0,10,10]},{label:'Flipped',box:[500,500,100,100]}]})}]}}]})});
+ assert.equal((await d.detect({image})).items.length,0);
+});
 test('Gemini analysis uses inline images, structured output and header-only credentials',async()=>{
  let sent;
  const d=createDiscovery({env:{GEMINI_API_KEY:'secret-test'},fetcher:async(url,opts)=>{sent={url,opts,body:JSON.parse(opts.body)};return response({candidates:[{finishReason:'STOP',content:{parts:[{text:JSON.stringify({...attr,uncertainty:'Fabric unknown'})}]}}]});}});
