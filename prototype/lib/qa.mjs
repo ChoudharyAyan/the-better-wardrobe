@@ -1,6 +1,6 @@
 import {randomBytes} from 'node:crypto';
 import {mkdir,readFile,writeFile,unlink} from 'node:fs/promises';
-import {imageData,ApiError} from './discovery.mjs';
+import {imageData,ApiError,localDataDirectory} from './discovery.mjs';
 
 const MAX_ENTRIES=200,MAX_NOTE=2000;
 const extFor=type=>type==='image/png'?'.png':type==='image/webp'?'.webp':'.jpg';
@@ -8,7 +8,7 @@ const typeFor=file=>file.endsWith('.png')?'image/png':file.endsWith('.webp')?'im
 
 // Screenshots come from the owner's own phone over the LAN/tunnel, never a shared
 // audience, so this store has no auth beyond the DEVELOPER_DASHBOARD gate in server.mjs.
-export function createQaStore({dir=new URL('../.local-data/qa/',import.meta.url),now=Date.now}={}){
+export function createQaStore({dir=new URL('qa/',localDataDirectory),now=Date.now}={}){
  const indexFile=new URL('index.json',dir);
  // Re-read on every call: Claude resolves entries by editing index.json directly, and a cached copy would overwrite that.
  async function load(){try{const parsed=JSON.parse(await readFile(indexFile,'utf8'));return Array.isArray(parsed)?parsed:[];}catch{return [];}}
