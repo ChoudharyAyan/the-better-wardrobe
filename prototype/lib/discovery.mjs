@@ -84,7 +84,9 @@ const objectSchema=properties=>({type:'object',properties,required:Object.keys(p
 const string={type:'string'};
 const attrSchema=objectSchema({category:{type:'string'},...Object.fromEntries(fields.map(k=>[k,string])),department:{type:'string',enum:['menswear','womenswear','unisex','unknown']},uncertainty:string});
 const detectSchema=objectSchema({items:{type:'array',items:objectSchema({label:string,box:{type:'array',items:{type:'number'},minItems:4,maxItems:4}})}});
-const replayDirectory=new URL('../.local-data/',import.meta.url);const replayFile=new URL('discovery-replays.json',replayDirectory);
+// Vercel's deployment filesystem is read-only; /tmp is the only writable path there (per-instance, not durable).
+export const localDataDirectory=process.env.VERCEL?new URL('file:///tmp/better-wardrobe/'):new URL('../.local-data/',import.meta.url);
+const replayDirectory=localDataDirectory;const replayFile=new URL('discovery-replays.json',replayDirectory);
 function localReplayStore(){let loaded=false,data={};async function load(){if(loaded)return;loaded=true;try{data=JSON.parse(await readFile(replayFile,'utf8'));}catch{data={};}}return {async get(key){await load();return data[key]||null;},async set(key,value){await load();data[key]=value;const entries=Object.entries(data);if(entries.length>50)data=Object.fromEntries(entries.slice(-50));await mkdir(replayDirectory,{recursive:true});await writeFile(replayFile,JSON.stringify(data));}};}
 export function createDiscovery({env=process.env,fetcher=fetch,pageFetcher=retailerPage,imageFetcher=url=>retailerPage(url,0,true),now=Date.now,replayStore=localReplayStore()}={}){
  const cache=new Map();const uploads=new Map();let active=0,windowStart=now(),calls=0;

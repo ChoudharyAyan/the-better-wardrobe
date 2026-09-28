@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createServer} from '../server.mjs';
+import {createServer,createHandler} from '../server.mjs';
 import {createDiscovery} from '../lib/discovery.mjs';
 test('HTTP boundary serves app, reports missing keys and keeps configuration private',async()=>{
  const server=createServer(createDiscovery({env:{}}));await new Promise((resolve,reject)=>{server.once('error',reject);server.listen(0,'127.0.0.1',resolve);});const base='http://127.0.0.1:'+server.address().port;
@@ -61,4 +61,9 @@ test('a client that disconnects mid-analysis aborts the in-flight model call',as
   const reader=r.body.getReader();await reader.read();controller.abort();
   assert.equal(await Promise.race([aborted,new Promise(r=>setTimeout(()=>r(false),2000))]),true);
  }finally{server.closeAllConnections?.();await new Promise(r=>server.close(r));}
+});
+test('Vercel function entry exposes the same request handler as the local server',async()=>{
+ const {default:handler}=await import('../api/index.mjs');assert.equal(typeof handler,'function');
+ const server=(await import('node:http')).createServer(createHandler(createDiscovery({env:{}})));await new Promise(r=>server.listen(0,'127.0.0.1',r));
+ try{const r=await fetch('http://127.0.0.1:'+server.address().port+'/api/discover/status');assert.equal(r.status,200);assert.equal((await r.json()).shopping,false);}finally{await new Promise(r=>server.close(r));}
 });
