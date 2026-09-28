@@ -1,8 +1,8 @@
 name: CI
 
 on:
+  # Every PR, not just ones into main — stacked PRs (branch on branch) need tests too.
   pull_request:
-    branches: [main]
   push:
     branches: [main]
 

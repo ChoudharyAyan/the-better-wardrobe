@@ -6,3 +6,5 @@ prototype/.env.*
 prototype/.local-data/
 prototype/.local-tools/
 prototype/.local-models/
+.vercel
+.env*
