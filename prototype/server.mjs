@@ -14,14 +14,15 @@ return http.createServer(async(req,res)=>{
  if(req.method==='GET'&&pathname==='/api/discover/status')return send(200,discovery.status());
  if(req.method==='GET'&&pathname==='/api/developer/observability'){const host=String(req.headers.host||'').replace(/^\[|\](?=:|$)/g,'').split(':')[0];const dashboard=discovery.observability?.();if(!dashboard?.enabled||!['localhost','127.0.0.1','::1'].includes(host))return send(404,{error:'Not found'});return send(200,dashboard);}
  if(req.method==='GET'&&/^\/api\/discover\/image\/[a-f0-9]{48}$/.test(pathname)){const img=discovery.getImage(pathname.split('/').pop());if(!img)return send(404,{error:'Image expired'});res.writeHead(200,{'Content-Type':img.type,'Cache-Control':'no-store','X-Robots-Tag':'noindex, noarchive','X-Content-Type-Options':'nosniff'});return res.end(img.data);}
- if(req.method!=='POST'||!['/api/discover/analyze','/api/discover/search'].includes(pathname))return send(404,{error:'Not found'});
+ if(req.method!=='POST'||!['/api/discover/detect','/api/discover/analyze','/api/discover/search'].includes(pathname))return send(404,{error:'Not found'});
  if(req.headers['sec-fetch-site']==='cross-site')return send(403,{error:'Open Discover to make a search.'});
  if(!req.headers['content-type']?.startsWith('application/json'))return send(415,{error:'JSON required'});
+ const action=pathname.split('/').pop();
  let bytes=0,chunks=[];for await(const chunk of req){bytes+=chunk.length;if(bytes>4500000)throw new ApiError(413,'Image too large. Try a smaller crop.');chunks.push(chunk);}let body;try{body=JSON.parse(Buffer.concat(chunks).toString());}catch{throw new ApiError(400,'Invalid request.');}if(!body||typeof body!=='object'||Array.isArray(body))throw new ApiError(400,'Invalid request.');if(req.headers.accept==='application/x-ndjson'){
  res.writeHead(200,{'Content-Type':'application/x-ndjson','Cache-Control':'no-store','X-Accel-Buffering':'no'});
  const emit=event=>{if(!res.destroyed)res.write(JSON.stringify(event)+'\n');};
- try{const result=await discovery[pathname.endsWith('analyze')?'analyze':'search'](body,p=>emit({type:'progress',...p}));emit({type:'result',data:result});}catch(e){emit({type:'error',error:e instanceof ApiError?e.message:'Unable to complete this search.'});}res.end();return;
- }return send(200,await discovery[pathname.endsWith('analyze')?'analyze':'search'](body));
+ try{const result=await discovery[action](body,p=>emit({type:'progress',...p}));emit({type:'result',data:result});}catch(e){emit({type:'error',error:e instanceof ApiError?e.message:'Unable to complete this search.'});}res.end();return;
+ }return send(200,await discovery[action](body));
  }
  if(!['GET','HEAD'].includes(req.method))return send(405,{error:'Method not allowed'});
  const target=path.resolve(root,'.'+(pathname==='/'?'/index.html':pathname));if(!target.startsWith(root)||pathname.split('/').some(p=>p.startsWith('.')))return send(403,{error:'Forbidden'});
