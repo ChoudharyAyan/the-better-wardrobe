@@ -1,3 +1,5 @@
+> Current branch update: Style Me persona onboarding and Google Photos feasibility/adapter are documented in [prototype/PERSONA-HANDOFF.md](prototype/PERSONA-HANDOFF.md). Read that first for this PR; older walkthrough details below may describe the previous navigation.
+
 # The Better Wardrobe — Development Handoff
 
 Last updated: 16 September 2026 (Asia/Kolkata)
