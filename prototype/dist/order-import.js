@@ -72,13 +72,13 @@ export function normalizeMyntra(lines){
 export function normalizeFlipkart(orders){
  const out=[];
  for(const order of Array.isArray(orders)?orders:[]){
+  if(order?.returned)continue;
   for(const p of Array.isArray(order?.products)?order.products:[]){
    if(!p?.id)continue;
    const category=classify(p.vertical,p.category,p.title);
    if(!category)continue;
    const url=typeof p.url==='string'&&p.url.startsWith('/')?'https://www.flipkart.com'+p.url:p.url;
-   // Return state isn't mapped to a field yet; the in-page picker flags orders whose units mention a return/refund.
-   out.push(toItem({retailer:'flipkart',productId:p.id,name:p.title,brand:p.brand,type:p.vertical,size:p.size,color:p.color,image:p.image,productUrl:url,orderedAt:isoDate(order.orderDate),category,flag:order.returnHint?'Flipkart shows a return or refund on this order · select only if you kept it.':''}));
+   out.push(toItem({retailer:'flipkart',productId:p.id,name:p.title,brand:p.brand,type:p.vertical,size:p.size==='Free'?'':p.size,color:p.color,image:p.image,productUrl:url,orderedAt:isoDate(order.orderDate),category}));
   }
  }
  return dedupe(out);
@@ -123,5 +123,58 @@ export function normalizeAmazon(csvText){
  return dedupe(out);
 }
 
+const priceOf=v=>{const n=Math.round(Number(String(v??'').replace(/[^\d.]/g,'')));return Number.isFinite(n)&&n>0&&n<10000000?n:null;};
+// Stable ids for stores without a product id, so re-importing marks pieces as duplicates.
+const hashId=s=>{let h=5381;for(const c of String(s))h=(h*33^c.charCodeAt(0))>>>0;return h.toString(36);};
+
+// Slikk: orders captured from the page's own /user/order responses (see extension/observer.js).
+export function normalizeSlikk(orders){
+ const out=[];
+ for(const o of Array.isArray(orders)?orders:[]){
+  if(/cancel/i.test(o?.status||''))continue;
+  // return_orders is order-level, so a two-item order with one return can't be told apart:
+  // keep its items, unticked, for the user to decide.
+  const flag=o?.returned?'This order had a return · tick it only if you kept this piece.':'';
+  for(const i of Array.isArray(o?.items)?o.items:[]){
+   const category=classify(i?.name);if(!i?.name||!category)continue;
+   out.push(toItem({retailer:'slikk',productId:hashId(i.name+'|'+(i.image||'')),name:i.name,image:i.image,orderedAt:isoDate(o.date),category,price:priceOf(i.price),flag}));
+  }
+ }
+ return dedupe(out);
+}
+
+// AJIO, Tata CLiQ and Nykaa Fashion: order endpoints are known but no test account had
+// orders, so products are found by shape: any object with a product-like name and an
+// image URL, inheriting status and date from the order that contains it.
+const KEY={name:/^(product_?name|product_?title|productdisplayname|display_?name|item_?name|name|title)$/i,image:/image|img|thumb|picture|photo/i,brand:/^brand(_?name)?$/i,size:/^size(_?label|_?value|_?name)?$/i,price:/price|amount|mrp/i,status:/status/i,date:/date|placed|created|ordered/i,id:/^(product_?id|style_?id|sku(_?id)?|item_?id|product_?code|listing_?id|fsn|ussid)$/i};
+const urlIn=v=>{if(typeof v==='string')return /^(https?:)?\/\//.test(v)?v:'';if(Array.isArray(v))for(const x of v){const u=urlIn(x);if(u)return u;}if(v&&typeof v==='object')for(const [k,x] of Object.entries(v))if(/url|src|image|path/i.test(k)){const u=urlIn(x);if(u)return u;}return '';};
+function findProducts(value,context={},out=[],depth=0){
+ if(depth>14||!value||typeof value!=='object')return out;
+ if(Array.isArray(value)){for(const v of value)findProducts(v,context,out,depth+1);return out;}
+ const ctx={...context},entries=Object.entries(value);
+ for(const [k,v] of entries){if(KEY.status.test(k)&&typeof v==='string')ctx.status=v;else if(KEY.date.test(k)&&(typeof v==='string'||typeof v==='number')&&!ctx.date)ctx.date=v;}
+ const field=(re,ok)=>entries.find(([k,v])=>re.test(k)&&ok(v))?.[1];
+ const name=field(KEY.name,v=>typeof v==='string'&&v.trim().length>=3&&v.length<=200&&!/^https?:/.test(v));
+ const image=entries.filter(([k])=>KEY.image.test(k)).map(([,v])=>urlIn(v)).find(Boolean);
+ if(name&&image){out.push({name,image,brand:field(KEY.brand,v=>typeof v==='string')||'',size:field(KEY.size,v=>typeof v==='string'||typeof v==='number')??'',price:priceOf(field(KEY.price,v=>typeof v==='number'||typeof v==='string')),id:field(KEY.id,v=>typeof v==='string'||typeof v==='number')??'',status:ctx.status||'',date:ctx.date??''});return out;}
+ for(const [,v] of entries)findProducts(v,ctx,out,depth+1);
+ return out;
+}
+export function normalizeGeneric(retailer,pages){
+ const out=[];
+ for(const p of findProducts(Array.isArray(pages)?pages:[])){
+  if(/cancel|return|refund|rto/i.test(p.status))continue;
+  // Tata CLiQ and others also sell electronics and home goods: drop anything not clearly clothing, as with Amazon.
+  const category=classify(p.name);if(!category||category==='unknown')continue;
+  out.push({...toItem({retailer,productId:String(p.id||hashId(p.name+'|'+p.image)),name:p.name,brand:p.brand,size:String(p.size),image:p.image,orderedAt:isoDate(p.date),category,price:p.price}),unverified:true});
+ }
+ return dedupe(out).map(i=>({...i,warning:i.warning||'Read with a new connector · check the name and category.'}));
+}
+
 export const normalizers={myntra:normalizeMyntra,flipkart:normalizeFlipkart,amazon:normalizeAmazon};
-if(typeof window!=='undefined')window.OrderImport={classify,normalizeAmazon,normalizeMyntra,normalizeFlipkart,CATEGORIES};
+// Store connector batches (extension → /api/connectors) keyed by store id.
+export const connectorNormalizers={
+ myntra:d=>normalizeMyntra(d?.lines),flipkart:d=>normalizeFlipkart(d?.orders),slikk:d=>normalizeSlikk(d?.orders),
+ ajio:d=>normalizeGeneric('ajio',d?.pages),tatacliq:d=>normalizeGeneric('tatacliq',d?.pages),nykaafashion:d=>normalizeGeneric('nykaafashion',d?.pages)
+};
+if(typeof window!=='undefined')window.OrderImport={classify,normalizeAmazon,normalizeMyntra,normalizeFlipkart,connectorNormalizers,CATEGORIES};

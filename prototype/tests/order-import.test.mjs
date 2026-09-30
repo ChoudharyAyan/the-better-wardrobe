@@ -54,13 +54,13 @@ test('Myntra lines skip returns, cancellations and non-clothing, and keep studio
  assert.equal(items.find(i=>i.productId==='7').size,'','Onesize is not a real size');
 });
 
-test('Flipkart orders keep one copy per product and flag orders with a return',()=>{
+test('Flipkart orders keep one copy per product and skip returned orders',()=>{
  const p=(id,title,vertical)=>({id,title,vertical,category:'',url:'/p/itm'+id,brand:'Campus',color:'Black',size:'8',image:'http://rukminim1.flixcart.com/x.jpeg'});
  const items=normalizeFlipkart([
-  {orderDate:'2025-09-06T10:00:00Z',returnHint:false,products:[p('SHOABC','Campus Running Shoes','SpRunningShoes'),p('MOBXYZ','Moto G71','Handset')]},
-  {orderDate:'2023-10-20T10:00:00Z',returnHint:true,products:[p('SARXYZ','Woven Patola Saree','WomenSari')]}
+  {orderDate:'2025-09-06T10:00:00Z',returned:false,products:[p('SHOABC','Campus Running Shoes','SpRunningShoes'),p('MOBXYZ','Moto G71','Handset')]},
+  {orderDate:'2023-10-20T10:00:00Z',returned:true,products:[p('SARXYZ','Woven Patola Saree','WomenSari')]},
+  {orderDate:'2024-01-02T10:00:00Z',returned:false,products:[p('SHOXYZ','Men Casual Shorts','MensShortUnbranded')]}
  ]);
- assert.deepEqual(items.map(i=>i.category),['Footwear','Dresses']);
+ assert.deepEqual(items.map(i=>i.category),['Footwear','Trousers'],'the refunded saree is gone');
  assert.equal(items[0].productUrl,'https://www.flipkart.com/p/itmSHOABC');assert.equal(items[0].image,'https://rukminim1.flixcart.com/x.jpeg');
- assert.equal(items[1].selected,false);assert.match(items[1].warning,/return/i);
 });
