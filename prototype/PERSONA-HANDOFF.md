@@ -1,6 +1,8 @@
 # Style persona onboarding — implementation and handoff
 
-Branch: `codex/style-persona-onboarding`. Keep this PR unmerged until reviewed.
+Source branch: `codex/style-persona-onboarding`. PR: https://github.com/ChoudharyAyan/the-better-wardrobe/pull/4
+
+The owner explicitly authorized merging on 2026-09-30. The remaining validation items below still apply after merge. Check GitHub for the final merge commit.
 
 ## Product change
 Navigation is Style Me → My Wardrobe → Discover → My Profile. Style Me opens a four-step option-based conversation: current style, everyday occasion, preference, and Target Persona. Six editable directions are offered, including “Still exploring”. Answers persist in this browser; Profile can edit or delete them. The existing outfit board remains at `#style/outfits`, the almirah and Discover flows remain available. Insights is coming soon.
@@ -47,7 +49,7 @@ No real Google account was connected during development. No new paid API request
 Preferences use `tbw-persona-v1` localStorage. Photos and access token live in tab memory only; photos disappear on reload. Google image bytes transit this server to create previews, are not written to disk or included in observability, and are returned with no-store. Cleanup deletes the Picker session after import/cancel; it never deletes library photos. Closing the tab can leave a provider session until its normal expiry. There is no cross-device account storage in this PR.
 
 ## Validation and remaining work
-Automated check and suite pass without live providers. Browser keyboard walkthrough verified all four steps, Target Persona and unconfigured Google fallback. Pointer automation in the in-app browser did not activate even navigation links; touch/pointer behaviour must be rechecked in a normal browser before merge. Do not describe this as fully mobile-QA approved.
+Automated check and suite pass without live providers. Browser keyboard walkthrough verified all four steps, Target Persona and unconfigured Google fallback. Pointer automation in the in-app browser did not activate even navigation links; touch/pointer behaviour must be rechecked in a normal browser before production use. Do not describe this as fully mobile-QA approved.
 
 Priority follow-ups for Claude:
 1. Live OAuth testing with the owner’s configured client ID and consent; test session timeout and cancellation races while downloads run.

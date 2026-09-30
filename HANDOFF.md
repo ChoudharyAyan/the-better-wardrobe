@@ -1,3 +1,5 @@
+> Claude continuation: read [CLAUDE_HANDOFF.md](CLAUDE_HANDOFF.md) first for the 2026-09-30 handoff and outstanding verification.
+
 > Current branch update: Style Me persona onboarding and Google Photos feasibility/adapter are documented in [prototype/PERSONA-HANDOFF.md](prototype/PERSONA-HANDOFF.md). Read that first for this PR; older walkthrough details below may describe the previous navigation.
 
 # The Better Wardrobe — Development Handoff
