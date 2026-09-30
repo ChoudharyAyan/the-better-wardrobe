@@ -12,8 +12,10 @@ export function createPhotos({env=process.env,fetchImpl=fetch}={}) {
  async run(action,body,token){
   if(!env.GOOGLE_PHOTOS_CLIENT_ID)throw fail(503,'Google Photos is not configured. Choose device photos instead.');
   if(typeof token!=='string'||!token||token.length>4096||/[\r\n]/.test(token))throw fail(401,'Google Photos sign-in is required.');
+  // Style references keep the original six; a wardrobe import may ask for up to twenty.
+  const limit=Math.min(20,Math.max(1,Math.floor(Number(body?.max))||6));
   if(action==='create'){
-   const session=await json('sessions',token,'POST',{pickingConfig:{maxItemCount:'6'}});
+   const session=await json('sessions',token,'POST',{pickingConfig:{maxItemCount:String(limit)}});
    const url=new URL(session.pickerUri);if(url.protocol!=='https:'||url.hostname!=='photos.google.com')throw fail(502,'Unexpected Google picker address.');
    return {id:session.id,pickerUri:session.pickerUri,pollingConfig:session.pollingConfig};
   }
@@ -24,12 +26,13 @@ export function createPhotos({env=process.env,fetchImpl=fetch}={}) {
   const session=await json('sessions/'+id,token);
   if(!session.mediaItemsSet)return {ready:false,pollingConfig:session.pollingConfig};
   const items=[];let pageToken='',pages=0;
-  do {const page=await json('mediaItems?sessionId='+id+'&pageSize=100'+(pageToken?'&pageToken='+encodeURIComponent(pageToken):''),token);items.push(...(page.mediaItems||[]).filter(x=>x.type==='PHOTO'));pageToken=page.nextPageToken||'';}while(pageToken&&items.length<6&&++pages<3);
+  do {const page=await json('mediaItems?sessionId='+id+'&pageSize=100'+(pageToken?'&pageToken='+encodeURIComponent(pageToken):''),token);items.push(...(page.mediaItems||[]).filter(x=>x.type==='PHOTO'));pageToken=page.nextPageToken||'';}while(pageToken&&items.length<limit&&++pages<3);
   const images=[];
-  for(const item of items.slice(0,6)){
+  for(const item of items.slice(0,limit)){
    const url=new URL(item.mediaFile?.baseUrl||'https://invalid.local');
    if(url.protocol!=='https:'||url.username||url.password||url.port||!/(^|\.)googleusercontent\.com$/.test(url.hostname))continue;
-   const response=await request(url.href+'=w1200-h1200',token);
+   // Twenty wardrobe photos at 640px stay under Vercel's 4.5 MB response cap; detection resizes anyway.
+   const response=await request(url.href+(limit>6?'=w640-h640':'=w1200-h1200'),token);
    const type=response.headers.get('content-type')?.split(';')[0];
    if(!['image/jpeg','image/png','image/webp'].includes(type))continue;
    const parts=[];let size=0;
