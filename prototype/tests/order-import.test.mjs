@@ -44,11 +44,11 @@ test('Amazon import rejects a file that is not an order history export',()=>{
 });
 
 test('Myntra lines skip returns, cancellations and non-clothing, and keep studio images and size',()=>{
- const line=(id,articleType,extra={},product={})=>({createdOn:'1781524960000',statusCode:'C',returned:false,cancelled:false,...extra,product:{id,name:`Brand ${articleType}`,brand:'Roadster',articleType,masterCategory:'Apparel',gender:'Men',images:[{view:'front',src:'https://assets.myntassets.com/f.jpg'},{view:'default',src:'http://assets.myntassets.com/d.jpg'}],size:'M',...product}});
+ const line=(id,articleType,extra={},product={})=>({createdOn:'1781524960000',statusCode:'C',returned:false,cancelled:false,...extra,product:{id,name:`Brand ${articleType}`,brand:'Roadster',articleType,masterCategory:'Apparel',gender:'Men',images:[{view:'front',src:'https://assets.myntassets.com/assets/images/f.jpg'},{view:'default',src:'http://assets.myntassets.com/assets/images/d.jpg'}],size:'M',...product}});
  const items=normalizeMyntra([line(1,'Shirts'),line(2,'Tshirts',{returned:true}),line(3,'Kurtas',{cancelled:true}),line(4,'Casual Shoes',{statusCode:'IC'}),line(5,'Deodorant',{},{masterCategory:'Personal Care'}),line(6,'Trunk'),line(7,'Bracelet',{},{size:'Onesize'})]);
  assert.deepEqual(items.map(i=>i.productId).sort(),['1','6','7']);
  const shirt=items.find(i=>i.productId==='1');
- assert.equal(shirt.image,'https://assets.myntassets.com/d.jpg','default view, upgraded to https');
+ assert.equal(shirt.image,'https://assets.myntassets.com/w_540,q_85/v1/assets/images/d.jpg','default view, https, resized by the CDN');
  assert.equal(shirt.size,'M');assert.equal(shirt.productUrl,'https://www.myntra.com/1');assert.equal(shirt.id,'order-myntra-1');
  assert.equal(items.find(i=>i.productId==='6').selected,false,'innerwear is kept but unselected');
  assert.equal(items.find(i=>i.productId==='7').size,'','Onesize is not a real size');

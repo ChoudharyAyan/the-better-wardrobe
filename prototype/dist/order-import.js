@@ -62,7 +62,8 @@ export function normalizeMyntra(lines){
   const category=classify(p.articleType,p.masterCategory==='Personal Care'?'personal care':'',p.masterCategory==='Free Items'?'free gift':'',p.masterCategory==='Home'?'blanket':'',p.name);
   if(!category)continue;
   const images=Array.isArray(p.images)?p.images:[];
-  const image=(images.find(i=>i.view==='default')||images[0])?.src;
+  // Myntra's CDN resizes on the fly; originals are 1080px, far heavier than a wardrobe tile needs.
+  const image=String((images.find(i=>i.view==='default')||images[0])?.src||'').replace(/^https?:\/\/assets\.myntassets\.com\/assets\//,'https://assets.myntassets.com/w_540,q_85/v1/assets/');
   out.push(toItem({retailer:'myntra',productId:p.id,name:p.name,brand:p.brand,type:p.articleType,size:p.size==='Onesize'?'':p.size,image,productUrl:`https://www.myntra.com/${encodeURIComponent(p.id)}`,orderedAt:isoDate(line.createdOn),gender:p.gender,category}));
  }
  return dedupe(out);
