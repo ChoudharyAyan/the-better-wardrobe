@@ -1,0 +1,28 @@
+{
+  "manifest_version": 3,
+  "name": "The Better Wardrobe · Order import (local dev)",
+  "version": "0.1.0",
+  "description": "Local development only. Reads your own order history on stores you are signed in to and sends product details to The Better Wardrobe running on this computer.",
+  "permissions": ["scripting", "storage", "tabs"],
+  "host_permissions": [
+    "https://www.myntra.com/*",
+    "https://www.flipkart.com/*",
+    "https://2.rome.api.flipkart.com/*",
+    "https://www.slikk.club/*",
+    "https://www.ajio.com/*",
+    "https://www.tatacliq.com/*",
+    "https://www.nykaafashion.com/*",
+    "http://127.0.0.1/*",
+    "http://localhost/*"
+  ],
+  "background": {"service_worker": "sw.js", "type": "module"},
+  "action": {"default_popup": "popup.html", "default_title": "Import orders to The Better Wardrobe"},
+  "content_scripts": [
+    {
+      "matches": ["https://www.slikk.club/*", "https://www.tatacliq.com/*", "https://www.nykaafashion.com/*"],
+      "js": ["observer.js"],
+      "run_at": "document_start",
+      "world": "MAIN"
+    }
+  ]
+}
