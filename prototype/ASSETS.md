@@ -18,4 +18,8 @@ Other image files left from earlier draft exploration are not referenced by the 
 
 ## Fonts
 
-Cormorant Garamond (500/600, regular and italic) and DM Sans (400–700), downloaded from the Google Fonts stylesheet referenced by the supplied mockup. They are served locally in assets/fonts so the interface does not need external font requests. Both families use the SIL Open Font License; license text is included alongside the fonts.
+The active interface uses locally bundled Montserrat at weights 400–800, as required by `Design Docs New/01-design-system.md`. Older Cormorant Garamond and DM Sans files remain from previous mockups but are not referenced by the current app.
+
+## Store identity icons
+
+The mall uses 94 locally bundled public storefront icons as identification marks, not as evidence of a partnership. `dist/assets/brand-icons/sources.json` records each store URL and the icon source captured during the 30 September 2026 import. `scripts/fetch-brand-icons.mjs` and `scripts/fetch-missing-brand-icons.mjs` document the acquisition process. Six stores had no identifiable icon at the checked sources; their sign uses a letter fallback rather than a fabricated logo. These are site icons, not a complete set of approved brand wordmarks or typefaces. Trademarks remain with their respective owners and should be reviewed before a public campaign.

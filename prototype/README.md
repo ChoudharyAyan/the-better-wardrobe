@@ -29,7 +29,7 @@ Wardrobe edits are saved in this browser’s local storage. Personal styling ref
 
 Uploaded screenshots now enter the real Discover integration: crop, optional AI description, attribute edits, shopping search and saved finds. Provider keys are required; missing configuration is explicitly shown. See [DISCOVERY.md](DISCOVERY.md) for setup, implemented ranking and verification limits. Reference examples still use sample matches.
 
-Below screenshot search, Discover has an **Explore new drops** store directory and a **Find it through people** community preview. The directory groups 100 links from the owner-provided `DISCOVER-INDIA-SOURCE-SHORTLIST.md` into category tabs; each store row starts collapsed. This is a research shortlist, not a live arrivals feed or an audited seller list. The community preview supports example threads, local questions and answers, helpful votes, and local reputation points. It is saved in this browser only: other users cannot see or answer posts yet, and points cannot be redeemed for merchandise. Shared community accounts, moderation, reward rules and live drop ingestion need a separate backend.
+Below screenshot search, Discover has an **Explore the mall** experience and a **Find it through people** community preview. The mall arranges 100 links from the owner-provided `DISCOVER-INDIA-SOURCE-SHORTLIST.md` into nine districts, shopping lanes, and storefronts. A small avatar walks to the selected district, lane, or store; unique visits are kept on this device. The complete store list is also available as a collapsed, accessible directory. This is a research shortlist, not a live arrivals feed or an audited seller list. The community preview supports example threads, local questions and answers, helpful votes, and local reputation points. It is saved in this browser only: other users cannot see or answer posts yet, and points cannot be redeemed for merchandise. Shared community accounts, moderation, reward rules and live drop ingestion need a separate backend.
 
 ## What is illustrated
 
@@ -37,7 +37,7 @@ The reference collections use clearly labelled sample results. Uploaded screensh
 
 ## Validation
 
-Run `npm run check` for syntax checks and `npm test` for state, flow, HTTP and Discover hub checks. These cover screen rendering, asset references, ownership separation, import edits, outfit changes, wear/review calculations, empty states, escaped user text, storage failures, category expansion, local community posts and helpful votes.
+Run `npm run check` for syntax checks and `npm test` for state, flow, HTTP and Discover checks. These cover screen rendering, asset references, ownership separation, import edits, outfit changes, wear/review calculations, empty states, escaped user text, storage failures, mall navigation, local community posts and helpful votes.
 
 Browser automation was unavailable because the browser security check could not be verified. Full browser visual and interaction QA remains pending; the checks above are code-level checks, not end-to-end browser tests.
 
