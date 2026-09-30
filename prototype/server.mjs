@@ -1,4 +1,5 @@
 import http from 'node:http';
+import {createPhotos} from './lib/photos.mjs';
 import {readFile} from 'node:fs/promises';
 import {fileURLToPath,pathToFileURL} from 'node:url';
 import path from 'node:path';
@@ -8,11 +9,22 @@ try{process.loadEnvFile(fileURLToPath(new URL('./.env',import.meta.url)));}catch
 const root=fileURLToPath(new URL('./dist/',import.meta.url));
 const mime={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.svg':'image/svg+xml','.jpg':'image/jpeg','.png':'image/png','.webp':'image/webp','.woff2':'font/woff2','.ttf':'font/ttf'};
 // The bare (req,res) listener is what Vercel's Node runtime invokes; createServer wraps it for local runs.
-export function createHandler(discovery=createDiscovery(),qaStore=createQaStore()){
+export function createHandler(discovery=createDiscovery(),qaStore=createQaStore(),photos=createPhotos()){
 return async(req,res)=>{
  const send=(status,data)=>{res.writeHead(status,{'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});res.end(JSON.stringify(data));};
  try{const pathname=decodeURIComponent(new URL(req.url,'http://localhost').pathname);
  if(pathname.startsWith('/api/')){
+ if(req.method==='GET'&&pathname==='/api/photos/config')return send(200,photos.config());
+ if(pathname.startsWith('/api/photos/')){
+  if(req.method!=='POST')return send(405,{error:'POST required'});
+  if(req.headers['sec-fetch-site']==='cross-site'||(req.headers.origin&&new URL(req.headers.origin).host!==req.headers.host))return send(403,{error:'Open the app to import photos.'});
+  if(!req.headers['content-type']?.startsWith('application/json'))return send(415,{error:'JSON required'});
+  let size=0,parts=[];for await(const part of req){size+=part.length;if(size>8192)return send(413,{error:'Request too large'});parts.push(part);}
+  let body;try{body=JSON.parse(Buffer.concat(parts).toString())}catch{return send(400,{error:'Invalid JSON'});}
+  const token=String(req.headers.authorization||'').replace(/^Bearer /,'');
+  try{return send(200,await photos.run(pathname.split('/').pop(),body,token));}catch(e){return send(e.status||502,{error:e.status?e.message:'Google Photos could not connect. Please retry.'});}
+ }
+
  if(req.method==='GET'&&pathname==='/api/discover/status')return send(200,discovery.status());
  if(req.method==='GET'&&pathname==='/api/developer/observability'){const host=String(req.headers.host||'').replace(/^\[|\](?=:|$)/g,'').split(':')[0];const dashboard=discovery.observability?.();if(!dashboard?.enabled||!['localhost','127.0.0.1','::1'].includes(host))return send(404,{error:'Not found'});return send(200,dashboard);}
  if(req.method==='GET'&&/^\/api\/discover\/image\/[a-f0-9]{48}$/.test(pathname)){const img=discovery.getImage(pathname.split('/').pop());if(!img)return send(404,{error:'Image expired'});res.writeHead(200,{'Content-Type':img.type,'Cache-Control':'no-store','X-Robots-Tag':'noindex, noarchive','X-Content-Type-Options':'nosniff'});return res.end(img.data);}

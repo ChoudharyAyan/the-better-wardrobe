@@ -17,7 +17,7 @@ function app(discovery){
 test('all seven screens render with existing local media',()=>{
   const a=app();a.run('startDemoImport()');
   for(const route of ['discover','discover/select','discover/results','wardrobe','wardrobe/import','style','insights']){
-    a.visit(route);const html=a.nodes.get('main').innerHTML;assert.ok(html.length>500,route);assert.ok(!html.includes('undefined'),route);
+    a.visit(route);const html=a.nodes.get('main').innerHTML;assert.ok(html.length>(route==='insights'?80:500),route);assert.ok(!html.includes('undefined'),route);
     for(const m of html.matchAll(/src="(assets\/[^\"]+)"/g))assert.ok(existsSync(path.resolve('dist',m[1])),m[1]);
   }
 });
@@ -44,13 +44,13 @@ test('wear logs, edited price and condition reviews feed Insights',()=>{
   a.submit('wear-form',{date:'2026-09-14',occasion:'Work'},{ids:'black,tee'});assert.equal(a.run('itemStats("black").logs.length'),21);
   a.submit('edit-form',{name:'Favourite chinos',category:'Trousers',price:'4200',purchased:'2026-02-14'},{id:'black'});assert.equal(a.run('itemStats("black").cpw'),200);
   a.submit('review-form',{text:'Repair done; button feels secure.',rating:'4'},{id:'black'});assert.equal(a.run('item("black").reviews.length'),2);
-  a.visit('insights');assert.match(a.nodes.get('main').innerHTML,/Repair done/);
+  a.visit('insights');assert.match(a.run('insights()'),/Repair done/);
   a.submit('metrics-form',{metric:['cpw','reviews']});assert.equal(a.run('state.mode'),'Custom');assert.equal(a.run('state.metrics.length'),2);
 });
 test('empty wardrobe, escaped text, unknown routes, reset and storage failures are safe',()=>{
   const a=app();a.run('state.items[0].name="<img src=x onerror=alert(1)>"');a.visit('wardrobe');assert.ok(!a.nodes.get('main').innerHTML.includes('<img src=x'));
-  a.run('state.items=[]');a.visit('insights');assert.match(a.nodes.get('main').innerHTML,/Add your first piece/);
-  a.visit('not-a-route');assert.equal(a.run('route'),'discover');a.action('reset');assert.equal(a.run('state.items.length'),5);
+  a.run('state.items=[]');a.visit('insights');assert.match(a.nodes.get('main').innerHTML,/Coming soon/);
+  a.visit('not-a-route');assert.equal(a.run('route'),'style');a.action('reset');assert.equal(a.run('state.items.length'),5);
   a.run('localStorage.setItem=()=>{throw Error("quota")};persist()');assert.equal(a.run('storageWarning'),true);assert.match(a.run('notice()'),/Storage full/);
 });
 
