@@ -6,6 +6,8 @@ test('HTTP boundary serves app, reports missing keys and keeps configuration pri
  const server=createServer(createDiscovery({env:{}}));await new Promise((resolve,reject)=>{server.once('error',reject);server.listen(0,'127.0.0.1',resolve);});const base='http://127.0.0.1:'+server.address().port;
  try{
  assert.equal((await fetch(base)).status,200);
+ const mallScript=await fetch(base+'/discover-mall.js');assert.equal(mallScript.status,200);assert.match(await mallScript.text(),/mall-lane-floor/);
+ const brandIcon=await fetch(base+'/assets/brand-icons/71.png');assert.equal(brandIcon.status,200);assert.equal(brandIcon.headers.get('content-type'),'image/png');
  assert.equal((await fetch(base+'/.env')).status,403);
  assert.equal((await fetch(base+'/api/discover/image/'+'a'.repeat(48))).status,404);
  const status=await(await fetch(base+'/api/discover/status')).json();assert.equal(status.shopping,false);

@@ -1,0 +1,796 @@
+[
+  {
+    "id": 1,
+    "name": "Myntra",
+    "file": "assets/brand-icons/1.jpg",
+    "site": "https://www.myntra.com/",
+    "iconSource": "https://constant.myntassets.com/pwa/assets/img/Icon-App-60x60@3x_2021.png",
+    "sha256": "cc0039d839f285378f2e0583711c58458bcc68623b45e3297af4d45c82579a06"
+  },
+  {
+    "id": 2,
+    "name": "Amazon India",
+    "file": "assets/brand-icons/2.png",
+    "site": "https://www.amazon.in/",
+    "iconSource": "https://www.amazon.in/favicon.ico",
+    "sha256": "7e67fb8e6c43002e09c7d363f3b158a716dc09f4043cc058bcc01b206bbd097d"
+  },
+  {
+    "id": 3,
+    "name": "Flipkart",
+    "file": "assets/brand-icons/3.png",
+    "site": "https://www.flipkart.com/category/pr?sid=clo",
+    "iconSource": "https://static-assets-web.flixcart.com/batman-returns/batman-returns/p/images/logo_lite-cbb357.png",
+    "sha256": "82d8cd8705e159cf5e0d883ebeedc9ef79a1abefbca947fbbfc22a2fd6377eb9"
+  },
+  {
+    "id": 4,
+    "name": "AJIO",
+    "file": "assets/brand-icons/4.png",
+    "site": "https://www.ajio.com/",
+    "iconSource": "https://assets-jiocdn.ajio.com/v2/dry-wildflower-b77541/ajprod/t.resize(w:24,h:24)/ajio-prod/company/1/applications/6920511ba88a0b4351d486dc/application/pictures/favicon/original/AsoojHHqs-AJIO-JCP.png",
+    "sha256": "885a7abe483e92c6a64a5dc5bc83dd5801211d5a58671967847839d3d6f63e8e"
+  },
+  {
+    "id": 5,
+    "name": "Meesho",
+    "file": "assets/brand-icons/5.png",
+    "site": "https://www.meesho.com/",
+    "iconSource": "https://www.meesho.com/favicon.ico",
+    "sha256": "f8a40cd0993c78e56c697c32b502b567866c10d5555535fb3073f94adac9ef3e"
+  },
+  {
+    "id": 6,
+    "name": "Nykaa Fashion",
+    "file": "assets/brand-icons/6.jpg",
+    "site": "https://www.nykaafashion.com/",
+    "iconSource": "https://images-static.nykaa.com/nykdesignstudio-images/pub/media/fashion-images/pwa-icon-144x144.png",
+    "sha256": "1c51d8895a2d2d34669b0c9a666e31065f6b5d4acf526b0ad56bc0035f0e17b9"
+  },
+  {
+    "id": 7,
+    "name": "Lifestyle",
+    "file": "assets/brand-icons/7.png",
+    "site": "https://www.lifestylestores.com/in/en/",
+    "iconSource": "https://assets-cloud.landmarkshops.in/website_images/in/favicons/lifestyle/180x180/appleTouchIcon.png",
+    "sha256": "93f449dd2d05fe1e084278588095d7ec30716fcd4aace54bf050ddab5c986630"
+  },
+  {
+    "id": 8,
+    "name": "Shoppers Stop",
+    "file": "assets/brand-icons/8.png",
+    "site": "https://www.shoppersstop.com/",
+    "iconSource": "https://www.shoppersstop.com/apple-touch-icon.png",
+    "sha256": "9848425d93ad0a6f43cf7760662381def5e3a4f95d416fd285686e9c2b01faba"
+  },
+  {
+    "id": 9,
+    "name": "Pantaloons",
+    "file": "assets/brand-icons/9.png",
+    "site": "https://www.pantaloons.com/",
+    "iconSource": "https://imagescdn.pantaloons.com/img/app/brands/pantaloons/favicon.ico",
+    "sha256": "2febe40e79ce8ce071b396b1228200172892bb223c0d47574115611df159b02b"
+  },
+  {
+    "id": 10,
+    "name": "Westside",
+    "file": "assets/brand-icons/10.png",
+    "site": "https://www.westside.com/",
+    "iconSource": "https://westside.com/favicon.ico",
+    "sha256": "d2f6a6282a0b68a484915083e9c3815838f1752d888f49f79c25c7a68955185e"
+  },
+  {
+    "id": 11,
+    "name": "The Souled Store",
+    "file": "assets/brand-icons/11.png",
+    "site": "https://www.thesouledstore.com/",
+    "iconSource": "https://prod-img.thesouledstore.com/static/fevicon.png",
+    "sha256": "fc42e3d792f3f42fbdba2c3be11367f8818a4862bb2419f843a42a5284478860"
+  },
+  {
+    "id": 12,
+    "name": "Bewakoof",
+    "file": "assets/brand-icons/12.png",
+    "site": "https://www.bewakoof.com/",
+    "iconSource": "https://images.bewakoof.com/lib/icon/app-logo.png",
+    "sha256": "f0e21dee2660e5c0c9e0a89322dddad209fa29240a947d9ea2ff0eb621eccaa2"
+  },
+  {
+    "id": 13,
+    "name": "Free Authority",
+    "file": "assets/brand-icons/13.png",
+    "site": "https://www.freeauthority.co/",
+    "iconSource": "https://www.freeauthority.co/cdn/shop/files/Free_Authority_Favicon_Official_Black.png?crop=center&height=32&v=1722809146&width=32",
+    "sha256": "8e3076600f3aa6338fff12bdc47985ee9802323c951610758095bebd2d4cfcf3"
+  },
+  {
+    "id": 14,
+    "name": "ComicSense",
+    "file": "assets/brand-icons/14.png",
+    "site": "https://www.comicsense.store/",
+    "iconSource": "https://www.comicsense.store/wp-content/uploads/2024/01/cropped-DATTEHAMEHA_favicon_512x512-180x180.png",
+    "sha256": "69fbfb88094fcac50630863378d12a71826df7146a91d22a10fb12cd0317a387"
+  },
+  {
+    "id": 15,
+    "name": "Fully Filmy",
+    "file": "assets/brand-icons/15.png",
+    "site": "https://fullyfilmy.in/",
+    "iconSource": "https://fullyfilmy.in/cdn/shop/files/favicon.png?crop=center&height=152&v=1742023470&width=152",
+    "sha256": "23b0b72fcd845a6877a6614df500424b1a417756f2ec10208eb218b997b4b67e"
+  },
+  {
+    "id": 16,
+    "name": "Otaku Haus",
+    "file": null,
+    "site": "https://otakuhaus.com/",
+    "error": "HTTP 404"
+  },
+  {
+    "id": 17,
+    "name": "DrippyX",
+    "file": null,
+    "site": "https://drippyx.in/",
+    "error": "Only a generic Shopify icon was available"
+  },
+  {
+    "id": 18,
+    "name": "MoodyMonk",
+    "file": "assets/brand-icons/18.jpg",
+    "site": "https://www.moodymonk.com/",
+    "iconSource": "https://www.moodymonk.com/moodymonk-favicon.svg",
+    "sha256": "6b8f0a94b0307050cdff0181640aa7a71154592737a1430b4409f2c23c92f856"
+  },
+  {
+    "id": 19,
+    "name": "Zenrobe",
+    "file": "assets/brand-icons/19.png",
+    "site": "https://www.zenrobe.com/",
+    "iconSource": "https://www.zenrobe.com/cdn/shop/files/instagram_DP.jpg?crop=center&height=32&v=1722170492&width=32",
+    "sha256": "a0663f68ba1e566fbd015f9a3c93dc54cfe3b84dff44fcb3188ba6e562cedd11"
+  },
+  {
+    "id": 20,
+    "name": "CLOAK",
+    "file": null,
+    "site": "https://cloakclothing.in/",
+    "error": "HTTP 404"
+  },
+  {
+    "id": 21,
+    "name": "Urban Monkey",
+    "file": null,
+    "site": "https://www.urbanmonkey.com/",
+    "error": "HTTP 404"
+  },
+  {
+    "id": 22,
+    "name": "Bonkers Corner",
+    "file": "assets/brand-icons/22.png",
+    "site": "https://www.bonkerscorner.com/",
+    "iconSource": "https://www.bonkerscorner.com/cdn/shop/files/B_logo_smol_1.jpg?crop=center&height=32&v=1752137105&width=32",
+    "sha256": "3c8fc2d5bbeb519cb6913b79d2185b7d88e44f54330b52336ae7776c5e058bd5"
+  },
+  {
+    "id": 23,
+    "name": "BLUORNG",
+    "file": "assets/brand-icons/23.png",
+    "site": "https://bluorng.com/",
+    "iconSource": "https://bluorng.com/cdn/shop/files/logo_2.png?crop=center&height=32&v=1614299608&width=32",
+    "sha256": "dddad06831056646bcc40ff7c2ce2765fbe853995ffcc56cca939ed4038b5e70"
+  },
+  {
+    "id": 24,
+    "name": "Jaywalking",
+    "file": "assets/brand-icons/24.png",
+    "site": "https://www.jaywalking.in/",
+    "iconSource": "https://www.jaywalking.in/cdn/shop/files/119571796_324771835299141_4130826360760882606_n.jpg?crop=center&height=48&v=1694262388&width=48",
+    "sha256": "9adcb29c6f14bac328ee78a314bd14b8c1ac1a630c7a09e0061f1e4e612aea04"
+  },
+  {
+    "id": 25,
+    "name": "Almost Gods",
+    "file": "assets/brand-icons/25.png",
+    "site": "https://almostgods.com/",
+    "iconSource": "https://almostgods.com/cdn/shop/files/512x512_favicon.svg?crop=center&height=32&v=1770721041&width=32",
+    "sha256": "d1a72faac225195c0e948e40d5c941a83f29232d92a98e38bcc5b0878452b0d1"
+  },
+  {
+    "id": 26,
+    "name": "Toffle",
+    "file": "assets/brand-icons/26.jpg",
+    "site": "https://toffle.in/",
+    "iconSource": "https://toffle.in/cdn/shop/files/Icon.jpg?v=1735380479&width=180",
+    "sha256": "d10bd1b9255faf822c9d431a9d3529f86d4e0ca01f64f7c45bcecc5c65b6653e"
+  },
+  {
+    "id": 27,
+    "name": "NorBlack NorWhite",
+    "file": "assets/brand-icons/27.png",
+    "site": "https://norblacknorwhite.in/",
+    "iconSource": "https://norblacknorwhite.in/cdn/shop/files/nbnw-fav_32x32.png?v=1689234124",
+    "sha256": "d5373634a33ac95851ec835148c0b9658eaf94991040018612b8d70f0ee89ffe"
+  },
+  {
+    "id": 28,
+    "name": "No Grey Area",
+    "file": "assets/brand-icons/28.jpg",
+    "site": "https://nogreyarea.com/",
+    "iconSource": "https://nogreyarea.com/cdn/shop/files/No-Grey-Area---Luxury-Designer-Streetwear-India_ab07f230-94dc-40d2-92a4-28a405764972.jpg?v=1755843047&width=180",
+    "sha256": "439f91b374cbbb46f6fb43dcbc9c3520ac7a0fdd0d8f6904bb2d91df57aa8d1b"
+  },
+  {
+    "id": 29,
+    "name": "HUEMN",
+    "file": "assets/brand-icons/29.png",
+    "site": "https://huemn.in/collections/all",
+    "iconSource": "https://huemn.in/cdn/shop/files/WHite_ABCHUEMNXYZ_937f1cf6-54bb-4182-8903-bfebec74a39c_32x32.png?v=1765364541",
+    "sha256": "89f8260f118617e7cd0b2a5cdeabf3b0b34bde635217fde3930d138f6d9583ac"
+  },
+  {
+    "id": 30,
+    "name": "BISKIT",
+    "file": "assets/brand-icons/30.png",
+    "site": "https://spacebiskit.com/collections/all",
+    "iconSource": "https://spacebiskit.com/cdn/shop/files/Biskit_with_Logo-BW_95a3c4fb-c6e8-45f5-9f7e-415c3dbf3e8a_32x32.jpg?v=1683019756",
+    "sha256": "def03452bd578c528d307f5726b5d76f093881d8a958aeede604c6548dc4b1ed"
+  },
+  {
+    "id": 31,
+    "name": "SIX5SIX STREET",
+    "file": "assets/brand-icons/31.png",
+    "site": "https://www.six5sixstreet.com/collections/all",
+    "iconSource": "https://www.six5sixstreet.com/cdn/shop/files/123_32x32.png?v=1613692494",
+    "sha256": "b950761d0864791b8a19c8723a72cc318b9bc83782074b2daf1f684c8197a72f"
+  },
+  {
+    "id": 32,
+    "name": "OSMO Apparel",
+    "file": "assets/brand-icons/32.png",
+    "site": "https://osmoapparel.com/",
+    "iconSource": "https://osmoapparel.com/cdn/shop/files/FAVICON-WHArtboard_1.png?crop=center&height=32&v=1739445407&width=32",
+    "sha256": "6a725648c2a7af7ca9c57edd8fb56b57aa9fbb279f13d01c852a390313e48c09"
+  },
+  {
+    "id": 33,
+    "name": "Overlays",
+    "file": "assets/brand-icons/33.png",
+    "site": "https://overlaysnow.com/",
+    "iconSource": "https://overlaysnow.com/cdn/shop/files/IMG_7696.png?crop=center&height=32&v=1782195226&width=32",
+    "sha256": "0f72007300e009e4f2b65f1861c03b8ba9fc0e0af855b4e05eb327ef85e02a99"
+  },
+  {
+    "id": 34,
+    "name": "Powerlook",
+    "file": "assets/brand-icons/34.png",
+    "site": "https://www.powerlook.in/",
+    "iconSource": "https://www.powerlook.in/cdn/shop/files/Favicon_5138074e-cdc5-41b8-a681-96d41ffd3ad8.jpg?crop=center&height=32&v=1783086619&width=32",
+    "sha256": "1f768caa6a26ca00059cc8d5c84af58c418cd495ff1f36f1dd15d1db7968c2e0"
+  },
+  {
+    "id": 35,
+    "name": "Freakins",
+    "file": null,
+    "site": "https://freakins.com/",
+    "error": "HTTP 404"
+  },
+  {
+    "id": 36,
+    "name": "Off Duty",
+    "file": "assets/brand-icons/36.png",
+    "site": "https://offduty.in/",
+    "iconSource": "https://offduty.in/cdn/shop/files/OFDlogofavicon.png?crop=center&height=32&v=1778901119&width=32",
+    "sha256": "c5478266e747271cd9ffaf71ef549b904bfe7d4eb6e2d559a6d9f4f3aa909dfa"
+  },
+  {
+    "id": 37,
+    "name": "BurgerBae",
+    "file": "assets/brand-icons/37.png",
+    "site": "https://www.burgerbaeclothing.com/",
+    "iconSource": "https://www.burgerbaeclothing.com/cdn/shop/files/jucy_logo.pdf.png?crop=center&height=32&v=1773343731&width=32",
+    "sha256": "e01e3da706ff553415d97068bbc6f15ef9f500d4e67366559c446c2a337a72fa"
+  },
+  {
+    "id": 38,
+    "name": "GENRAGE",
+    "file": "assets/brand-icons/38.png",
+    "site": "https://genrage.com/",
+    "iconSource": "https://genrage.com/cdn/shop/files/GENRAGE.png?v=1736145362&width=180",
+    "sha256": "c0b5dcefeda6a4d00e53b1733cafaa4ce1222d4031393818f3bd00a2092428d7"
+  },
+  {
+    "id": 39,
+    "name": "Snitch",
+    "file": "assets/brand-icons/39.png",
+    "site": "https://www.snitch.co.in/",
+    "iconSource": "https://www.snitch.co.in/cdn/shop/files/FAVICON_494005fc-86bf-4fca-b279-d8618baac5f7.png?v=1721458209&width=32",
+    "sha256": "84345d006bdf3e899c13d312428162f4b61beb8cd2992b6b43c705dd67206a8c"
+  },
+  {
+    "id": 40,
+    "name": "The House of Rare",
+    "file": "assets/brand-icons/40.png",
+    "site": "https://thehouseofrare.com/",
+    "iconSource": "https://thehouseofrare.com/cdn/shop/files/LOGO-01_5fda7926-13e3-42c0-ad1a-30b6e76d7b5a_32x32.png?v=1614290012",
+    "sha256": "dd19e16c1f89b32bae2d83701e87049c9385693e691de9069a1e9ef4f6a1ee49"
+  },
+  {
+    "id": 41,
+    "name": "Bombay Shirt Company",
+    "file": "assets/brand-icons/41.jpg",
+    "site": "https://bombayshirts.com/collections/allshirts",
+    "iconSource": "https://bombayshirts.com/apple-icon.png?apple-icon.1b8kz4ufwgq_5.png",
+    "sha256": "f3c97e3a39db6541310719600205a105e5df2dbd3201b850f86884632508bdae"
+  },
+  {
+    "id": 42,
+    "name": "Andamen",
+    "file": "assets/brand-icons/42.png",
+    "site": "https://www.andamen.com/",
+    "iconSource": "https://www.andamen.com/cdn/shop/files/favicon.png?crop=center&height=32&v=1646385369&width=32",
+    "sha256": "93bfd00b7493a31cd8ba72e2c6e3e37829ac28a58ba227e58c99d8b91eebeec3"
+  },
+  {
+    "id": 43,
+    "name": "March",
+    "file": "assets/brand-icons/43.jpg",
+    "site": "https://www.marchtee.com/",
+    "iconSource": "https://www.marchtee.com/assets/core/static/images/favicon-hero.ico?v=12556",
+    "sha256": "f81b446e4506d487861e9a35b9cbc61edb205af9e82f7bac0ec66bf9168b4199"
+  },
+  {
+    "id": 44,
+    "name": "The Bear House",
+    "file": "assets/brand-icons/44.png",
+    "site": "https://thebearhouse.com/",
+    "iconSource": "https://thebearhouse.com/cdn/shop/files/32_x_32_bear_180x180.png?v=1767072321",
+    "sha256": "650a01055188f9aed9d2b0179e2927e81226c8f1ab2aa21f3c7a9791da0e7257"
+  },
+  {
+    "id": 45,
+    "name": "DaMENSCH",
+    "file": "assets/brand-icons/45.png",
+    "site": "https://www.damensch.com/",
+    "iconSource": "https://www.damensch.com/favicon.ico?favicon.02o-ommmoge.4.ico",
+    "sha256": "a06738ec72da66e2804dbaefa342608c1488dd498bceb7247a0f10808eb2540b"
+  },
+  {
+    "id": 46,
+    "name": "The Pant Project",
+    "file": "assets/brand-icons/46.png",
+    "site": "https://pantproject.com/",
+    "iconSource": "https://pantproject.com/cdn/shop/files/Group_123_8e81053c-82fa-4d76-9cd5-7a7791e272d6.png?v=1638988020&width=96",
+    "sha256": "ded65af43bb57f6aef4dc3b4d6ba681a29b45cb8034519bc095e1a513c9b8439"
+  },
+  {
+    "id": 47,
+    "name": "Louis Philippe",
+    "file": "assets/brand-icons/47.png",
+    "site": "https://louisphilippe.abfrl.in/",
+    "iconSource": "https://imagescdn.louisphilippe.com/img/app/brands/superapp/favicon/favicon_lp.ico",
+    "sha256": "9ef8a7c121d4d54c65adcd44c2129b2b3d97f6b8f6c00c2e769cc5aa5928074f"
+  },
+  {
+    "id": 48,
+    "name": "Van Heusen India",
+    "file": "assets/brand-icons/48.png",
+    "site": "https://vanheusenindia.abfrl.in/",
+    "iconSource": "https://imagescdn.vanheusenindia.com/img/app/brands/superapp/favicon/favicon_vh.ico",
+    "sha256": "06dbe70674b09ef19e2b04afb018c6a6a540abeb6843f063f4670340b5bfd7f8"
+  },
+  {
+    "id": 49,
+    "name": "Allen Solly",
+    "file": "assets/brand-icons/49.png",
+    "site": "https://allensolly.abfrl.in/",
+    "iconSource": "https://imagescdn.allensolly.com/img/app/brands/superapp/favicon/favicon_as.ico",
+    "sha256": "2eb10e2fd3010cad0b1a4db7aed56d91bd96364467f49f9adee5e4002b84f4e9"
+  },
+  {
+    "id": 50,
+    "name": "Peter England",
+    "file": "assets/brand-icons/50.png",
+    "site": "https://peterengland.abfrl.in/",
+    "iconSource": "https://imagescdn.peterengland.com/img/app/brands/superapp/favicon/favicon_pe.ico",
+    "sha256": "bc0da745752c78894158445167f211ac3827c5209939d5a7fae9c0b6ab06d29f"
+  },
+  {
+    "id": 51,
+    "name": "Blackberrys",
+    "file": "assets/brand-icons/51.png",
+    "site": "https://blackberrys.com/",
+    "iconSource": "https://blackberrys.com/cdn/shop/files/favicon.png?v=1626849602&width=180",
+    "sha256": "41e29685f485c7f3a759af20d8cdfb4541d30b48cf70df01d254fa4c2d851a71"
+  },
+  {
+    "id": 52,
+    "name": "Nobero",
+    "file": "assets/brand-icons/52.png",
+    "site": "https://nobero.com/",
+    "iconSource": "https://nobero.com/cdn/shop/files/favicon-v02.png?v=1670242711&width=32",
+    "sha256": "6418630dcb746016d9506064ec998c4702c41959bc4f66d40a7c661a2d8891c8"
+  },
+  {
+    "id": 53,
+    "name": "Beyoung",
+    "file": "assets/brand-icons/53.png",
+    "site": "https://www.beyoung.in/",
+    "iconSource": "https://www.beyoung.in/favicon.svg",
+    "sha256": "0e2e6272858bc79c597b8489b8084d00e9d4ec646be474ad1146359a38fb17d5"
+  },
+  {
+    "id": 54,
+    "name": "NEWME",
+    "file": "assets/brand-icons/54.png",
+    "site": "https://newme.asia/",
+    "iconSource": "https://newme.asia/apple-touch-icon.png",
+    "sha256": "127808cb2c30d8bdd4c895fe1972fc4d6e4ca5b2036ec22b8ab236a8bb80dcb3"
+  },
+  {
+    "id": 55,
+    "name": "FableStreet",
+    "file": "assets/brand-icons/55.png",
+    "site": "https://www.fablestreet.com/",
+    "iconSource": "http://www.fablestreet.com/icon.svg",
+    "sha256": "ce4404dcad86b718ec1a4e67eb38fcd0394f53689cdb5d3b6e774eda85a256dc"
+  },
+  {
+    "id": 56,
+    "name": "AND",
+    "file": "assets/brand-icons/56.png",
+    "site": "https://www.andindia.com/",
+    "iconSource": "https://www.andindia.com/on/demandware.static/Sites-AND-Site/-/default/dw04c7cee4/images/favicons/and-fevicon-192x120.png",
+    "sha256": "a042fa70c9b261288885e47be60fba5374c4be2b47a2fcc14b4f1cf44f6924bf"
+  },
+  {
+    "id": 57,
+    "name": "SALT Attire",
+    "file": "assets/brand-icons/57.png",
+    "site": "https://saltattire.com/",
+    "iconSource": "https://saltattire.com/cdn/shop/files/salticon.png?crop=center&height=32&v=1713209808&width=32",
+    "sha256": "d00879c0fb3c7a653868336632aa67031856c58116ca9fb085ee14d84a8d03b4"
+  },
+  {
+    "id": 58,
+    "name": "Qua",
+    "file": "assets/brand-icons/58.png",
+    "site": "https://www.qua.clothing/",
+    "iconSource": "https://www.qua.clothing/cdn/shop/files/square_qua_96x.png?v=1683640344",
+    "sha256": "2d093305abcefaefc022b2bda7f4b80d11e1ddbb0180be4df29f4dbd38e58e4d"
+  },
+  {
+    "id": 59,
+    "name": "Summer Away",
+    "file": "assets/brand-icons/59.png",
+    "site": "https://summeraway.in/",
+    "iconSource": "https://summeraway.in/cdn/shop/files/FAVICON_4e2d89b7-57c3-4b73-ac32-7070e5546f7d.png?crop=center&height=32&v=1736478313&width=32",
+    "sha256": "23c1bff063aa3e50f2980145cf07932ce9aa21b7062a6c17eb387db79d74e7c6"
+  },
+  {
+    "id": 60,
+    "name": "The Label Life",
+    "file": "assets/brand-icons/60.png",
+    "site": "https://thelabellife.com/",
+    "iconSource": "https://thelabellife.com/cdn/shop/files/favicon.ico?v=10152500249622970965",
+    "sha256": "45d92d2f34364c9f64225467163dbbd1378d54180f2a693472cf2297c51fb054"
+  },
+  {
+    "id": 61,
+    "name": "Cord",
+    "file": "assets/brand-icons/61.png",
+    "site": "https://www.cordstudio.in/",
+    "iconSource": "https://www.cordstudio.in/cdn/shop/files/cord_2_c2879c52-746b-4287-969c-6182d282ab9a_1_48x.webp?v=1787027638",
+    "sha256": "660518e3c431aec0a18829a71c89d30819668ba2d0a8b9b9f7928abe0f479af5"
+  },
+  {
+    "id": 62,
+    "name": "The Summer House",
+    "file": "assets/brand-icons/62.png",
+    "site": "https://thesummerhouse.in/",
+    "iconSource": "https://thesummerhouse.in/cdn/shop/files/fav-icon_afaa05c6-e29f-4c9b-80df-f25dddf2b186.png?crop=center&height=32&v=1739189283&width=32",
+    "sha256": "542b02fec7907e9fea410f02550fb62255a2fd4700386a8bfd3b2f89663a9d82"
+  },
+  {
+    "id": 63,
+    "name": "KAZO",
+    "file": "assets/brand-icons/63.png",
+    "site": "https://kazo.com/",
+    "iconSource": "https://kazo.com/cdn/shop/files/fav-icon_32x32.png?v=1640589602",
+    "sha256": "999e9380b3f5919d5fe9dde7cbadb61487f4ab92a502b745ef21617ba8f8cb45"
+  },
+  {
+    "id": 64,
+    "name": "VIRGIO",
+    "file": "assets/brand-icons/64.png",
+    "site": "https://www.virgio.com/",
+    "iconSource": "https://www.virgio.com/favicon.ico?favicon.367m9tn6ghodz.ico",
+    "sha256": "e0fb45cb43a76ddf3c80350d56fad18678623fb3e978c95bfb0d5c86c19501f9"
+  },
+  {
+    "id": 65,
+    "name": "Nicobar",
+    "file": "assets/brand-icons/65.png",
+    "site": "https://www.nicobar.com/",
+    "iconSource": "https://www.nicobar.com/cdn/shop/files/favicon_96x.png?v=1614319784",
+    "sha256": "7cce9b0ef2fe7740c096bb019327f63d49d3825c23af6472482681698d03fa7b"
+  },
+  {
+    "id": 66,
+    "name": "Fabindia",
+    "file": "assets/brand-icons/66.png",
+    "site": "https://www.fabindia.com/",
+    "iconSource": "https://www.fabindia.com/favicon.ico",
+    "sha256": "609decdfe03f52f4262c03c5cd54a058bf4de76a4808b0b9b8b96162896eb047"
+  },
+  {
+    "id": 67,
+    "name": "Libas",
+    "file": "assets/brand-icons/67.png",
+    "site": "https://www.libas.in/",
+    "iconSource": "https://www.libas.in/cdn/shop/files/favicon_2_32x32.png?v=1784285082",
+    "sha256": "3706a43c5387b705ab7817f46851d10744c96418320ba89acd3ed1594762cfd0"
+  },
+  {
+    "id": 68,
+    "name": "BIBA",
+    "file": "assets/brand-icons/68.png",
+    "site": "https://www.biba.in/",
+    "iconSource": "https://www.biba.in/on/demandware.static/Sites-BibaGlobal-Site/-/default/dwcbe37a43/images/favicons/biba-favicon-48x48.ico",
+    "sha256": "4cb7b0fffdebac84bdc47cf2d5b096f50efc901f052e55840b6522ff278cf492"
+  },
+  {
+    "id": 69,
+    "name": "W for Woman",
+    "file": "assets/brand-icons/69.jpg",
+    "site": "https://www.wforwoman.com/",
+    "iconSource": "https://www.wforwoman.com/cdn/shop/files/fav.png?crop=center&height=32&v=1712562280&width=32",
+    "sha256": "ed9cf9d00be0381208e571e3803d55daa0b21bab2b628edfbfd11d86f8dbcb00"
+  },
+  {
+    "id": 70,
+    "name": "Soch",
+    "file": "assets/brand-icons/70.png",
+    "site": "https://www.soch.com/in/",
+    "iconSource": "https://www.soch.com/media/favicon/stores/1/apple-touch-icon_1_.png",
+    "sha256": "45a3cf167ebd60d9e324f79b7d2dddc486f8270022f9faec42814ea10d6056dc"
+  },
+  {
+    "id": 71,
+    "name": "Suta",
+    "file": "assets/brand-icons/71.png",
+    "site": "https://suta.in/",
+    "iconSource": "https://suta.in/cdn/shop/files/suta-favicon-white.png?v=1690788115&width=180",
+    "sha256": "5d19ac27b41650f00864b7ac2872903a773da1c617079fe5aa44ce9d4dfd4db3"
+  },
+  {
+    "id": 72,
+    "name": "Okhai",
+    "file": "assets/brand-icons/72.png",
+    "site": "https://okhai.org/",
+    "iconSource": "https://okhai.org/cdn/shop/files/Untitled-2_4f3bcc48-2046-4ea9-ae48-a6a834fefc64.jpg?crop=center&height=32&v=1613520674&width=32",
+    "sha256": "c929de1ef54ac003809af16e9a80844f2a6782b5b3dc33b4d14bc9f076b86951"
+  },
+  {
+    "id": 73,
+    "name": "Indya",
+    "file": "assets/brand-icons/73.png",
+    "site": "https://www.houseofindya.com/",
+    "iconSource": "https://www.houseofindya.com/favicon.ico",
+    "sha256": "88a24267186eacb0d327ee64924e00ab1e4f7e296a245cb32e56731e8aee0c5c"
+  },
+  {
+    "id": 74,
+    "name": "Aachho",
+    "file": "assets/brand-icons/74.png",
+    "site": "https://www.aachho.com/",
+    "iconSource": "https://www.aachho.com/cdn/shop/files/unit-logo_32x32.png?v=1684735724",
+    "sha256": "bb1bb4e2fb4f4a2d735fea7b2641a9960c7145230273bcf0420aa813c4f6040a"
+  },
+  {
+    "id": 75,
+    "name": "Ambraee",
+    "file": "assets/brand-icons/75.png",
+    "site": "https://ambraee.com/",
+    "iconSource": "https://ambraee.com/cdn/shop/files/32.png?crop=center&height=32&v=1692437450&width=32",
+    "sha256": "6388bc6f2ffaca2cb896aa33b8217c3450df888d1c4ed0a9faef16caaa157a96"
+  },
+  {
+    "id": 76,
+    "name": "Buna Studio",
+    "file": "assets/brand-icons/76.png",
+    "site": "https://www.bunastudio.com/",
+    "iconSource": "https://www.bunastudio.com/cdn/shop/files/Untitled_design_11.png?v=1718006899&width=180",
+    "sha256": "0570cfefb1f3bc7728677699eac7ea90cda6f0f6d853c4ceeb4e804332b48d14"
+  },
+  {
+    "id": 77,
+    "name": "Cottons Jaipur",
+    "file": "assets/brand-icons/77.png",
+    "site": "https://cottonsjaipur.com/collections",
+    "iconSource": "https://cottonsjaipur.com/cdn/shop/files/Favicon_96x.png?v=1614316117",
+    "sha256": "f4a1c8123ad836616e9cae9fe3709c0d5d1e74c6fbf4594d9747264c20e9525e"
+  },
+  {
+    "id": 78,
+    "name": "Manyavar",
+    "file": "assets/brand-icons/78.png",
+    "site": "https://www.manyavar.com/",
+    "iconSource": "https://www.manyavar.com/on/demandware.static/Sites-manyavar-int-Site/-/default/dw4041f828/images/favicons/favicon-128x128.png",
+    "sha256": "c011db1588ca7bd240f7a60d3ad1b33041f76592a94b7e162598b05323e35785"
+  },
+  {
+    "id": 79,
+    "name": "Tasva",
+    "file": "assets/brand-icons/79.png",
+    "site": "https://www.tasva.com/",
+    "iconSource": "https://imagescdn.tasva.com/img/app/brands/tasva/tasva-fav.png?w=50&auto=format",
+    "sha256": "8a9ef8ffa685569fe8e689587437220062e38ccc40b942d5777ee2b13c7cab44"
+  },
+  {
+    "id": 80,
+    "name": "trueBrowns",
+    "file": "assets/brand-icons/80.png",
+    "site": "https://www.truebrowns.com/",
+    "iconSource": "https://www.truebrowns.com/cdn/shop/files/TB-logo_60x60_9888e207-5040-45b3-9c31-06254a8c1ec4.webp?v=1656687531&width=180",
+    "sha256": "7105629af9c027e81b46f1e0396d2e532951b4ba1e4842bf7aef5759dc3e3f8f"
+  },
+  {
+    "id": 81,
+    "name": "Tilfi",
+    "file": "assets/brand-icons/81.png",
+    "site": "https://tilfi.com/",
+    "iconSource": "https://tilfi.com/cdn/shop/files/Tilfi_Favicon_228x228.png?v=1613557708",
+    "sha256": "8c488b9d1a7f68b3fab6407ccfb36c6a6276d92e5fae9efbf0a44fb5a29d23f6"
+  },
+  {
+    "id": 82,
+    "name": "Taneira",
+    "file": "assets/brand-icons/82.png",
+    "site": "https://www.taneira.com/",
+    "iconSource": "https://www.taneira.com/on/demandware.static/Sites-Taneira-Site/-/default/dw664e2c3e/images/favicons/favicon-128x128.png",
+    "sha256": "40fdb6df9da2628385636745b4f5e52ea861557fc2eb0fc7e2b0d0847b67480b"
+  },
+  {
+    "id": 83,
+    "name": "Mulmul",
+    "file": "assets/brand-icons/83.jpg",
+    "site": "https://shopmulmul.com/collections/all",
+    "iconSource": "https://shopmulmul.com/cdn/shop/files/mu_96x96_b0f62ddf-5e7c-4e09-b1a0-7269592cbe71.webp?v=1754989380&width=96",
+    "sha256": "a297f92f8d4c96b1de0fdf7f7ba62fed8367c3ad4feda91eac83e6d3b1b4844e"
+  },
+  {
+    "id": 84,
+    "name": "Malmal Studio",
+    "file": null,
+    "site": "https://malmalstudio.in/",
+    "error": "HTTP 404"
+  },
+  {
+    "id": 85,
+    "name": "Terhataali",
+    "file": "assets/brand-icons/85.png",
+    "site": "https://terhataali.com/",
+    "iconSource": "https://terhataali.com/cdn/shop/files/Group_21084.png?crop=center&height=180&v=1732796452&width=180",
+    "sha256": "80addbc517219a352723dea3317377b7967208a64c112e5f2ce73b8f17257940"
+  },
+  {
+    "id": 86,
+    "name": "Blissclub",
+    "file": "assets/brand-icons/86.png",
+    "site": "https://blissclub.com/",
+    "iconSource": "https://blissclub.com/cdn/shop/files/bliss.png?v=1673007221&width=180",
+    "sha256": "b2ef536a8478585fef8f1028900eb9672dc653dcb9f142566f042261db76b312"
+  },
+  {
+    "id": 87,
+    "name": "CAVA",
+    "file": "assets/brand-icons/87.png",
+    "site": "https://cavaathleisure.com/",
+    "iconSource": "https://cavaathleisure.com/cdn/shop/files/logo-01_32x32.png?v=1710322846",
+    "sha256": "8655be3106053a93b9ad0ecd28be59ea66918e602ea6ad0d59efa5e425345c15"
+  },
+  {
+    "id": 88,
+    "name": "TechnoSport",
+    "file": "assets/brand-icons/88.jpg",
+    "site": "https://www.technosport.in/",
+    "iconSource": "https://www.technosport.in/favicon.ico",
+    "sha256": "69c84efc7d3e0ecf308e875fabbe7812f4585d1792c2881263c527d2ea78c46e"
+  },
+  {
+    "id": 89,
+    "name": "Silvertraq",
+    "file": "assets/brand-icons/89.jpg",
+    "site": "https://www.silvertraq.com/",
+    "iconSource": "https://www.silvertraq.com/cdn/shop/files/pp_17e0652c-ea5b-41ba-9025-61307cdaa4f8_96x96.jpg?v=1724751432",
+    "sha256": "41f5283686e01d04c827df9319b932798e766a699a163280c0660f51e93fc6fd"
+  },
+  {
+    "id": 90,
+    "name": "Angrakhaa",
+    "file": "assets/brand-icons/90.png",
+    "site": "https://www.angrakhaa.com/",
+    "iconSource": "https://www.angrakhaa.com/cdn/shop/files/B_W_1498d1f1-67e6-4258-9ab0-66e6e5f5322b.jpg?v=1739284350&width=180",
+    "sha256": "48f820d1df5e648b64911536471c08673bf3e0364ec8d848beeaa3ce73f3a299"
+  },
+  {
+    "id": 91,
+    "name": "Crepdog Crew",
+    "file": "assets/brand-icons/91.png",
+    "site": "https://crepdogcrew.com/",
+    "iconSource": "https://crepdogcrew.com/cdn/shop/files/favicon-png_6950c6bb-4730-4e79-940c-a7a7f1efa483.png?v=1781096859&width=180",
+    "sha256": "48329c81d2776fd53fbcbd4865017f54ff3f042aef91cd02529c4a15d0a7cbe3"
+  },
+  {
+    "id": 92,
+    "name": "Pernia's Pop-Up Shop",
+    "file": "assets/brand-icons/92.png",
+    "site": "https://www.perniaspopupshop.com/",
+    "iconSource": "https://img.perniaspopupshop.com/ppus-assets/icons/ppus-logo-120*120.png",
+    "sha256": "db18f0df6c6a4392bad5ee207e17b8773f65f0d95032c7de01c8a94fba3bd60f"
+  },
+  {
+    "id": 93,
+    "name": "Aza Fashions",
+    "file": "assets/brand-icons/93.png",
+    "site": "https://www.azafashions.com/",
+    "iconSource": "https://www.azafashions.com/images/favicon.png",
+    "sha256": "5e35603e5a1a203ac9ef9032cd0df5018b21dc51b6e61b10c73e4d9a969cda04"
+  },
+  {
+    "id": 94,
+    "name": "Ogaan",
+    "file": "assets/brand-icons/94.png",
+    "site": "https://www.ogaan.com/",
+    "iconSource": "https://www.ogaan.com/pub/media/ogaanImages/ogaan_icon_2.png",
+    "sha256": "6ab096e44d57e86419a2e4a546ceac3f7dd636a1612c56da8b97c3a33591fe6c"
+  },
+  {
+    "id": 95,
+    "name": "Jaypore",
+    "file": "assets/brand-icons/95.png",
+    "site": "https://www.jaypore.com/",
+    "iconSource": "https://imagescdn.jaypore.com/img/app/brands/jaypore/favicon.png?w=50&auto=format",
+    "sha256": "1c04aba35c9212fbb444b1299370d8ab9cea4dff4666f0eb34f4d6e774db115c"
+  },
+  {
+    "id": 96,
+    "name": "No Nasties",
+    "file": "assets/brand-icons/96.png",
+    "site": "https://www.nonasties.in/",
+    "iconSource": "https://www.nonasties.in/cdn/shop/files/Black-plus.png?v=1729160543&width=180",
+    "sha256": "ee0533c70eaee80835c62221199da532fe07cce9303cc9eaa4468cc7b8851f9e"
+  },
+  {
+    "id": 97,
+    "name": "Doodlage",
+    "file": "assets/brand-icons/97.png",
+    "site": "https://doodlage.in/",
+    "iconSource": "https://doodlage.in/cdn/shop/files/doodlage.png?v=1715175227&width=180",
+    "sha256": "f0e8f2ccaf8f0e99cc6a30f9659f07c8c719da5faa85bce34218ad5ed54326a4"
+  },
+  {
+    "id": 98,
+    "name": "Ka-Sha",
+    "file": "assets/brand-icons/98.png",
+    "site": "https://www.ka-sha.com/",
+    "iconSource": "https://www.ka-sha.com/cdn/shop/files/KS_Logo_Black_2021.png?crop=center&height=48&v=1711105842&width=48",
+    "sha256": "df636e2d63d34784d1f7603f991936726bc576b24a3c6270a62a3441d3fbd784"
+  },
+  {
+    "id": 99,
+    "name": "Leave The Rest",
+    "file": "assets/brand-icons/99.png",
+    "site": "https://leavetherest.com/",
+    "iconSource": "https://leavetherest.com/cdn/shop/files/LOGO_STAR_LTR.png?crop=center&height=32&v=1770464589&width=32",
+    "sha256": "b5e523266b9cf1ac18e6232d408fb621f24a433bf226020782577e09f307d32d"
+  },
+  {
+    "id": 100,
+    "name": "Kalt Culture",
+    "file": "assets/brand-icons/100.jpg",
+    "site": "https://www.kaltculture.in/",
+    "iconSource": "https://static.wixstatic.com/media/31e192_cb89f2a4f93547389ba4e5815f1f5f38~mv2.jpg/v1/fill/w_180%2Ch_180%2Clg_1%2Cusm_0.66_1.00_0.01/31e192_cb89f2a4f93547389ba4e5815f1f5f38~mv2.jpg",
+    "sha256": "38c2b7b1e11c94619e4d6a0a371bfa286c96a4ff7e66f1355b1bcdacd69aa01e"
+  }
+]

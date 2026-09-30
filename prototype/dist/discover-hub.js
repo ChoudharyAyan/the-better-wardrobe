@@ -1,7 +1,6 @@
-/* Discover extensions: a researched store directory and a local community preview. */
+/* Discover extensions: the mall and a local community preview. */
 (() => {
   const brands = Array.isArray(window.DiscoverBrands) ? window.DiscoverBrands : [];
-  const categories = [...new Set(brands.map((brand) => brand.category))];
   const storageKey = 'tbw-discover-community-v1';
   const examplePosts = [
     {
@@ -33,8 +32,6 @@
   const savedCommunity = readCommunity();
   let posts = savedCommunity.posts;
   const votedReplies = new Set(savedCommunity.votes);
-  let activeCategory = 'All brands';
-  let allBrandsVisible = false;
   let communityFilter = 'All questions';
   let composing = false;
   let openThread = '';
@@ -44,32 +41,6 @@
     catch { message = 'Device storage is full. This change will last until you leave the page.'; return false; }
   };
   const points = () => posts.reduce((total, post) => total + post.replies.filter((reply) => reply.author === 'You').length * 5, 0);
-  const filteredBrands = () => {
-    const inCategory = activeCategory === 'All brands' ? brands : brands.filter((brand) => brand.category === activeCategory);
-    if (activeCategory !== 'All brands') return inCategory;
-    const spotlight = [11, 21, 39, 54, 66, 86];
-    return [...inCategory].sort((left, right) => {
-      const a = spotlight.indexOf(left.id), b = spotlight.indexOf(right.id);
-      return a < 0 && b < 0 ? left.id - right.id : a < 0 ? 1 : b < 0 ? -1 : a - b;
-    });
-  };
-  const brandRow = (brand) => `<details class="hub-brand">
-    <summary><span class="hub-brand-number">${String(brand.id).padStart(2, '0')}</span><strong>${escapeHtml(brand.name)}</strong><span class="hub-chevron" aria-hidden="true">⌄</span></summary>
-    <div class="hub-brand-body"><p>${escapeHtml(brand.focus)}</p><a href="${escapeHtml(safeUrl(brand.url))}" target="_blank" rel="noopener noreferrer">Visit store ↗</a></div>
-  </details>`;
-  const marketplace = () => {
-    const listed = filteredBrands();
-    const visible = allBrandsVisible ? listed : listed.slice(0, 6);
-    return `<section class="hub-section" aria-labelledby="hub-market-title">
-      <div class="hub-heading"><div><p class="hub-eyebrow">Discover / 02</p><h2 id="hub-market-title">Explore new drops</h2><p>Browse labels and stores, then check what is new at the source.</p></div><span class="hub-count">${brands.length} sources</span></div>
-      <div class="hub-tabs" role="tablist" aria-label="Store categories">
-        ${['All brands', ...categories].map((category) => `<button type="button" role="tab" aria-selected="${activeCategory === category}" class="${activeCategory === category ? 'active' : ''}" data-hub="brand-category" data-value="${escapeHtml(category)}">${escapeHtml(category)}<span>${category === 'All brands' ? brands.length : brands.filter((brand) => brand.category === category).length}</span></button>`).join('')}
-      </div>
-      <div class="hub-brand-list" role="tabpanel">${visible.map(brandRow).join('')}</div>
-      ${listed.length > 6 ? `<button class="hub-more" type="button" data-hub="brands-expand">${allBrandsVisible ? 'Show fewer' : `Show all ${listed.length} stores`} <span aria-hidden="true">${allBrandsVisible ? '↑' : '↓'}</span></button>` : ''}
-      <p class="hub-fineprint">Store links come from a research shortlist. New arrivals, stock, seller quality and delivery are checked on each store, not here.</p>
-    </section>`;
-  };
   const replyView = (post, reply) => `<div class="hub-reply"><div><strong>${escapeHtml(reply.author)}</strong><p>${escapeHtml(reply.text)}</p>${safeUrl(reply.link) ? `<a href="${escapeHtml(safeUrl(reply.link))}" target="_blank" rel="noopener noreferrer">View source ↗</a>` : ''}</div><button type="button" data-hub="helpful" data-post="${escapeHtml(post.id)}" data-reply="${escapeHtml(reply.id)}" aria-pressed="${votedReplies.has(reply.id)}" ${reply.author === 'You' ? 'disabled title="You cannot mark your own answer helpful"' : ''}>Helpful · ${Number(reply.helpful) || 0}</button></div>`;
   const questionView = (post) => {
     const opened = openThread === post.id;
@@ -94,16 +65,16 @@
       <p class="hub-fineprint">Community posts and points are saved only in this browser preview. Example discussions are labelled. Links and local shop sightings are leads, not verified stock.</p>
     </section>`;
   };
-  const render = () => `<div id="discover-hub" class="discover-hub">${marketplace()}${community()}<p class="hub-message" role="status" aria-live="polite">${escapeHtml(message)}</p></div>`;
+  const render = () => `<div id="discover-hub" class="discover-hub">${window.DiscoverMall?.render() || ''}${community()}<p class="hub-message" role="status" aria-live="polite">${escapeHtml(message)}</p></div>`;
   const update = () => {
     const root = document.querySelector('#discover-hub');
     if (!root) return;
-    const tabsScroll = root.querySelector?.('.hub-tabs')?.scrollLeft || 0;
     const focused = document.activeElement?.dataset;
+    const directoryOpen = root.querySelector?.('.mall-directory')?.open;
     root.outerHTML = render();
     const nextRoot = document.querySelector('#discover-hub');
-    const tabs = nextRoot?.querySelector?.('.hub-tabs');
-    if (tabs) tabs.scrollLeft = tabsScroll;
+    const directory = nextRoot?.querySelector?.('.mall-directory');
+    if (directory) directory.open = !!directoryOpen;
     if (focused?.hub) {
       [...(nextRoot?.querySelectorAll?.('[data-hub]') || [])]
         .find((item) => item.dataset.hub === focused.hub && item.dataset.value === focused.value && item.dataset.id === focused.id)
@@ -115,9 +86,7 @@
     if (!button || !document.querySelector('#discover-hub')) return;
     message = '';
     const action = button.dataset.hub;
-    if (action === 'brand-category' && categories.concat('All brands').includes(button.dataset.value)) { activeCategory = button.dataset.value; allBrandsVisible = false; }
-    else if (action === 'brands-expand') allBrandsVisible = !allBrandsVisible;
-    else if (action === 'community-filter') { communityFilter = button.dataset.value; openThread = ''; }
+    if (action === 'community-filter') { communityFilter = button.dataset.value; openThread = ''; }
     else if (action === 'compose') composing = !composing;
     else if (action === 'thread') openThread = openThread === button.dataset.id ? '' : button.dataset.id;
     else if (action === 'helpful') {
