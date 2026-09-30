@@ -5,15 +5,39 @@ import {fileURLToPath,pathToFileURL} from 'node:url';
 import path from 'node:path';
 import {createDiscovery,ApiError} from './lib/discovery.mjs';
 import {createQaStore} from './lib/qa.mjs';
+import {createConnectorStore,STORES} from './lib/connectors.mjs';
 try{process.loadEnvFile(fileURLToPath(new URL('./.env',import.meta.url)));}catch(e){if(e.code!=='ENOENT')throw e;}
 const root=fileURLToPath(new URL('./dist/',import.meta.url));
 const mime={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.svg':'image/svg+xml','.jpg':'image/jpeg','.png':'image/png','.webp':'image/webp','.woff2':'font/woff2','.ttf':'font/ttf'};
 // The bare (req,res) listener is what Vercel's Node runtime invokes; createServer wraps it for local runs.
-export function createHandler(discovery=createDiscovery(),qaStore=createQaStore(),photos=createPhotos()){
+export function createHandler(discovery=createDiscovery(),qaStore=createQaStore(),photos=createPhotos(),connectors=createConnectorStore()){
 return async(req,res)=>{
  const send=(status,data)=>{res.writeHead(status,{'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});res.end(JSON.stringify(data));};
  try{const pathname=decodeURIComponent(new URL(req.url,'http://localhost').pathname);
  if(pathname.startsWith('/api/')){
+ // Store connectors: local development only (ORDER_CONNECTORS=true, never on Vercel, localhost only).
+ if(pathname.startsWith('/api/connectors/')){
+  const host=String(req.headers.host||'').replace(/^\[|\](?=:|$)/g,'').split(':')[0];
+  if(!connectors.enabled||!['localhost','127.0.0.1','::1'].includes(host))return send(404,{error:'Not found'});
+  const origin=String(req.headers.origin||'');
+  if(req.method==='POST'&&pathname==='/api/connectors/import'){
+   // Only the extension's service worker (or a non-browser client) may submit; a web page may not.
+   if(origin&&!origin.startsWith('chrome-extension://'))return send(403,{error:'Forbidden'});
+   if(!req.headers['content-type']?.startsWith('application/json'))return send(415,{error:'JSON required'});
+   let size=0,parts=[];for await(const part of req){size+=part.length;if(size>5_000_000)return send(413,{error:'Import too large'});parts.push(part);}
+   let body;try{body=JSON.parse(Buffer.concat(parts).toString());}catch{return send(400,{error:'Invalid JSON'});}
+   if(!STORES.includes(body?.store))return send(400,{error:'Unknown store.'});
+   await connectors.put(body.store,body.data);return send(200,{ok:true});
+  }
+  if(req.headers['sec-fetch-site']==='cross-site'||(origin&&new URL(origin).host!==req.headers.host))return send(403,{error:'Forbidden'});
+  if(req.method==='GET'&&pathname==='/api/connectors/status')return send(200,{enabled:true,batches:await connectors.list()});
+  const store=pathname.match(/^\/api\/connectors\/batch\/([a-z]+)$/)?.[1];
+  if(store&&STORES.includes(store)){
+   if(req.method==='GET'){const batch=await connectors.get(store);return batch?send(200,batch):send(404,{error:'No orders imported yet.'});}
+   if(req.method==='DELETE'){await connectors.clear(store);return send(200,{ok:true});}
+  }
+  return send(404,{error:'Not found'});
+ }
  if(req.method==='GET'&&pathname==='/api/photos/config')return send(200,photos.config());
  if(pathname.startsWith('/api/photos/')){
   if(req.method!=='POST')return send(405,{error:'POST required'});
@@ -38,7 +62,7 @@ return async(req,res)=>{
   const {id}=await qaStore.add(body);
   return send(200,{ok:true,id});
  }
- if(req.method!=='POST'||!['/api/discover/detect','/api/discover/analyze','/api/discover/search'].includes(pathname))return send(404,{error:'Not found'});
+ if(req.method!=='POST'||!['/api/discover/detect','/api/discover/orders','/api/discover/analyze','/api/discover/search'].includes(pathname))return send(404,{error:'Not found'});
  if(req.headers['sec-fetch-site']==='cross-site')return send(403,{error:'Open Discover to make a search.'});
  if(!req.headers['content-type']?.startsWith('application/json'))return send(415,{error:'JSON required'});
  const action=pathname.split('/').pop();
@@ -55,5 +79,5 @@ return async(req,res)=>{
  const content=await readFile(target);res.writeHead(200,{'Content-Type':mime[path.extname(target)]||'application/octet-stream','Cache-Control':'no-cache','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer'});res.end(req.method==='HEAD'?undefined:content);
  }catch(e){send(e.status|| (e.code==='ENOENT'?404:500),{error:e instanceof ApiError?e.message:'Unable to complete this request.'});}
 };}
-export function createServer(discovery,qaStore){return http.createServer(createHandler(discovery,qaStore));}
+export function createServer(discovery,qaStore,photos,connectors){return http.createServer(createHandler(discovery,qaStore,photos,connectors));}
 if(process.argv[1]&&import.meta.url===pathToFileURL(path.resolve(process.argv[1])).href){const port=Number(process.env.PORT||5173),host=process.env.HOST||'0.0.0.0';createServer().listen(port,host,()=>console.log(`The Better Wardrobe: http://127.0.0.1:${port} · network enabled`));}

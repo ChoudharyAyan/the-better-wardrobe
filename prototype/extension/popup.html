@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Order import</title>
+<style>
+ body{font:14px/1.4 -apple-system,system-ui,sans-serif;margin:0;padding:14px;width:320px;color:#2a1520}
+ h1{font-size:15px;margin:0 0 4px}
+ p{margin:0 0 10px;color:#6b5a60;font-size:12px}
+ ul{list-style:none;margin:0;padding:0}
+ li{display:flex;align-items:center;gap:8px;padding:8px 0;border-top:1px solid #eee}
+ li span{flex:1}
+ small{display:block;color:#6b5a60;font-size:11px}
+ small.error{color:#b3261e}
+ button{background:#8e1b4d;color:#fff;border:0;border-radius:8px;padding:6px 10px;font-weight:600;cursor:pointer}
+ button:disabled{opacity:.5}
+ label{display:block;font-size:11px;color:#6b5a60;margin-top:10px}
+ input{width:100%;box-sizing:border-box;padding:6px;border:1px solid #ddd;border-radius:6px}
+ .tag{font-size:10px;font-weight:700;text-transform:uppercase;color:#8e1b4d}
+</style>
+</head>
+<body>
+<h1>Import your orders</h1>
+<p>Sign in to the store in this browser, then run it. Only product names, photos, sizes and dates are sent to your local app.</p>
+<ul id="stores"></ul>
+<label for="app-url">Local app address</label>
+<input id="app-url" value="http://127.0.0.1:5190">
+<script type="module" src="popup.js"></script>
+</body>
+</html>
