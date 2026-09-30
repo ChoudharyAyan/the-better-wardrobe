@@ -42,3 +42,10 @@
 .insta-pick input{position:absolute;top:6px;left:6px;width:22px;height:22px;accent-color:#8e1b4d;z-index:1}
 .insta-pick:has(input:checked){outline:3px solid #8e1b4d;outline-offset:-3px}
 @media (min-width:700px){.insta-grid{grid-template-columns:repeat(5,1fr)}}
+/* Review tools for long imports */
+.draft-tools{margin:4px 0 12px}
+.draft-filters{display:flex;gap:8px;overflow-x:auto;padding-bottom:4px;scrollbar-width:none}
+.draft-filters::-webkit-scrollbar{display:none}
+.draft-chip{flex:none;border:1px solid var(--line);background:#fff;border-radius:999px;padding:7px 12px;font-size:13px;font-weight:600;min-height:36px;color:inherit}
+.draft-chip.active{background:#8e1b4d;border-color:#8e1b4d;color:#fff}
+.draft-select{display:flex;gap:16px;margin-top:8px}

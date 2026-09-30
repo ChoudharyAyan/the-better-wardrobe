@@ -47,7 +47,7 @@ async function screenshots(files,progress=()=>{}){
    const category=classify(it.name);
    if(!category){skipped++;continue;}
    const unclear=category==='unknown'||category==='innerwear';
-   items.push({id:'shot-'+crypto.randomUUID(),name:it.name,brand:it.brand,size:it.size,color:it.colour,price:it.price,orderedAt:it.date||null,
+   items.push({id:'shot-'+crypto.randomUUID(),name:it.name,brand:it.brand,size:it.size,color:it.colour,price:it.price,priceFromScreenshot:it.price!=null,orderedAt:it.date||null,
     category:unclear?'Accessories':category,image:it.crop?await crop(image,it.crop):'',retailer:retailer||'',
     selected:!unclear&&it.status!=='in_progress',warning:it.status==='in_progress'?'Not delivered yet · select once it arrives.':unclear?'Category unclear · check before saving.':''});
   }

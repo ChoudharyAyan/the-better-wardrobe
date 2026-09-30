@@ -61,3 +61,18 @@ test('live Discover saves real inspiration separately from owned wardrobe',()=>{
  assert.equal(a.run('state.items.length'),5);assert.equal(a.run('state.saved.includes("live-real123")'),true);assert.equal(a.run('product("live-real123").name'),'Blue linen shirt');
  a.action('item',{id:'live-real123'});assert.match(a.nodes.get('#dialog-content').innerHTML,/retailer.example.com/);assert.ok(!a.nodes.get('#dialog-content').innerHTML.includes('sample price'));
 });
+test('long imports can be filtered by category and bulk-selected per filter',()=>{
+  const a=app();
+  a.run(`importDraft=Array.from({length:9},(_,i)=>({id:'o'+i,draftId:'d'+i,name:'Piece '+i,category:i<5?'Shirts':'Footwear',image:'assets/tee.jpg',selected:true,source:'Myntra orders'}));route='wardrobe/import';render()`);
+  let html=a.nodes.get('main').innerHTML;assert.match(html,/All 9/);assert.match(html,/Shirts 5/);assert.match(html,/Footwear 4/);
+  a.action('draft-filter',{value:'Footwear'});html=a.nodes.get('main').innerHTML;
+  assert.equal((html.match(/class="import-card /g)||[]).length,4,'only footwear cards are shown');
+  a.action('draft-select',{value:'none'});
+  assert.equal(a.run('importDraft.filter(p=>p.selected).length'),5,'select none only touches the visible footwear');
+  a.action('draft-filter',{value:'<script>'});assert.equal(a.run('importFilter'),'All','unknown filters fall back to All');
+  a.action('draft-select',{value:'all'});assert.equal(a.run('importDraft.filter(p=>p.selected).length'),9);
+});
+test('Google Photos stays out of the import hub until the server has a client ID',()=>{
+  const a=app();a.visit('wardrobe/add');assert.doesNotMatch(a.nodes.get('main').innerHTML,/import-google/);
+  a.run('googlePhotosReady=true;render()');assert.match(a.nodes.get('main').innerHTML,/import-google/);
+});
