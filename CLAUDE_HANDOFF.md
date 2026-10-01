@@ -6,7 +6,7 @@ The owner authorized merging [PR #4](https://github.com/ChoudharyAyan/the-better
 Fetch origin and verify PR #4 is on main. Inspect local changes before switching branches; pull main when safe and create a new `claude/<task>` branch for follow-up. Never discard another agent's or the owner's local changes.
 
 ## What landed
-- Style Me is the default tab, followed by My Wardrobe, Discover and My Profile.
+- Navigation (since 2026-10-01): Discover is the default tab, followed by My Wardrobe, Style Me and My Profile.
 - Four option-based conversation steps: current style, occasion, priority, Target Persona; six style directions and edit/back controls.
 - Preferences persist in localStorage; Profile supports deletion. This is deterministic onboarding, not a live LLM chatbot.
 - Device photos and Google Photos Picker adapter provide temporary references. Photos are not yet analysed or imported into owned wardrobe items.

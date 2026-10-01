@@ -5,7 +5,7 @@ Source branch: `codex/style-persona-onboarding`. PR: https://github.com/Choudhar
 The owner explicitly authorized merging on 2026-09-30. The remaining validation items below still apply after merge. Check GitHub for the final merge commit.
 
 ## Product change
-Navigation is Style Me → My Wardrobe → Discover → My Profile. Style Me opens a four-step option-based conversation: current style, everyday occasion, preference, and Target Persona. Six editable directions are offered, including “Still exploring”. Answers persist in this browser; Profile can edit or delete them. The existing outfit board remains at `#style/outfits`, the almirah and Discover flows remain available. Insights is coming soon.
+Navigation is Discover → My Wardrobe → Style Me → My Profile (reordered 2026-10-01 to follow the funnel; Discover is the default tab). Style Me opens a four-step option-based conversation: current style, everyday occasion, preference, and Target Persona. Six editable directions are offered, including “Still exploring”. Answers persist in this browser; Profile can edit or delete them. The existing outfit board remains at `#style/outfits`, the almirah and Discover flows remain available. Insights is coming soon.
 
 This is deterministic guided onboarding, not an LLM conversation. Optional notes are stored but not interpreted. Photos are temporary references, not automatically recognised garments or persona inference. The outfit board still contains preset demo looks. Rich animation/mascot work and recommendation integration are deliberately future work.
 

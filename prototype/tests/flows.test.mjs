@@ -50,7 +50,7 @@ test('wear logs, edited price and condition reviews feed Insights',()=>{
 test('empty wardrobe, escaped text, unknown routes, reset and storage failures are safe',()=>{
   const a=app();a.run('state.items[0].name="<img src=x onerror=alert(1)>"');a.visit('wardrobe');assert.ok(!a.nodes.get('main').innerHTML.includes('<img src=x'));
   a.run('state.items=[]');a.visit('insights');assert.match(a.nodes.get('main').innerHTML,/Coming soon/);
-  a.visit('not-a-route');assert.equal(a.run('route'),'style');a.action('reset');assert.equal(a.run('state.items.length'),5);
+  a.visit('not-a-route');assert.equal(a.run('route'),'discover');a.action('reset');assert.equal(a.run('state.items.length'),5);
   a.run('localStorage.setItem=()=>{throw Error("quota")};persist()');assert.equal(a.run('storageWarning'),true);assert.match(a.run('notice()'),/Storage full/);
 });
 
@@ -75,4 +75,9 @@ test('long imports can be filtered by category and bulk-selected per filter',()=
 test('Google Photos stays out of the import hub until the server has a client ID',()=>{
   const a=app();a.visit('wardrobe/add');assert.doesNotMatch(a.nodes.get('main').innerHTML,/import-google/);
   a.run('googlePhotosReady=true;render()');assert.match(a.nodes.get('main').innerHTML,/import-google/);
+});
+test('navigation follows the funnel: Discover, My Wardrobe, Style Me, then Profile, opening on Discover',()=>{
+  const a=app();
+  assert.equal(a.run('JSON.stringify(tabs.map(t=>t[1]))'),JSON.stringify(['Discover','My Wardrobe','Style Me','My Profile']));
+  assert.equal(a.run('route'),'discover','a fresh visit with no hash lands on Discover');
 });
