@@ -8,11 +8,12 @@ import {createQaStore} from './lib/qa.mjs';
 import {createConnectorStore,STORES} from './lib/connectors.mjs';
 import {readFeed} from './lib/mall-feed.mjs';
 import mallSnapshot from './dist/assets/mall-updates.json' with {type:'json'};
+import {createEvalLab} from './evals/lab.mjs';
 try{process.loadEnvFile(fileURLToPath(new URL('./.env',import.meta.url)));}catch(e){if(e.code!=='ENOENT')throw e;}
 const root=fileURLToPath(new URL('./dist/',import.meta.url));
-const mime={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.svg':'image/svg+xml','.jpg':'image/jpeg','.png':'image/png','.webp':'image/webp','.woff2':'font/woff2','.ttf':'font/ttf'};
+const mime={'.html':'text/html; charset=utf-8','.json':'application/json; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.svg':'image/svg+xml','.jpg':'image/jpeg','.png':'image/png','.webp':'image/webp','.woff2':'font/woff2','.ttf':'font/ttf'};
 // The bare (req,res) listener is what Vercel's Node runtime invokes; createServer wraps it for local runs.
-export function createHandler(discovery=createDiscovery(),qaStore=createQaStore(),photos=createPhotos(),connectors=createConnectorStore()){
+export function createHandler(discovery=createDiscovery(),qaStore=createQaStore(),photos=createPhotos(),connectors=createConnectorStore(),lab=createEvalLab()){
 return async(req,res)=>{
  const send=(status,data)=>{res.writeHead(status,{'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});res.end(JSON.stringify(data));};
  try{const pathname=decodeURIComponent(new URL(req.url,'http://localhost').pathname);
@@ -55,6 +56,24 @@ return async(req,res)=>{
   try{return send(200,await photos.run(pathname.split('/').pop(),body,token));}catch(e){return send(e.status||502,{error:e.status?e.message:'Google Photos could not connect. Please retry.'});}
  }
 
+ // Model lab: local-only, like observability. Runs spend real API money, so they never start from a deployed site.
+ if(pathname.startsWith('/api/developer/evals/')){
+  const host=String(req.headers.host||'').replace(/^\[|\](?=:|$)/g,'').split(':')[0];
+  if(!lab?.enabled||!['localhost','127.0.0.1','::1'].includes(host))return send(404,{error:'Not found'});
+  if(req.method==='GET'&&pathname==='/api/developer/evals/status')return send(200,await lab.status());
+  const chart=pathname.match(/^\/api\/developer\/evals\/runs\/([0-9]{8}-[0-9]{6}-[a-f0-9]{4})\/frontier-(look|query)\.svg$/);
+  if(req.method==='GET'&&chart){const svg=await lab.chart(chart[1],chart[2]);if(!svg)return send(404,{error:'Not found'});res.writeHead(200,{'Content-Type':'image/svg+xml','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});return res.end(svg);}
+  const one=pathname.match(/^\/api\/developer\/evals\/runs\/([0-9]{8}-[0-9]{6}-[a-f0-9]{4})$/);
+  if(req.method==='GET'&&one){const s=await lab.summary(one[1]);return s?send(200,s):send(404,{error:'Not found'});}
+  if(req.method==='POST'&&['/api/developer/evals/run','/api/developer/evals/cancel'].includes(pathname)){
+   if(req.headers['sec-fetch-site']==='cross-site'||(req.headers.origin&&new URL(req.headers.origin).host!==req.headers.host))return send(403,{error:'Forbidden'});
+   if(!req.headers['content-type']?.startsWith('application/json'))return send(415,{error:'JSON required'});
+   let size=0,parts=[];for await(const part of req){size+=part.length;if(size>16384)return send(413,{error:'Request too large'});parts.push(part);}
+   let body;try{body=JSON.parse(Buffer.concat(parts).toString()||'{}');}catch{return send(400,{error:'Invalid JSON'});}
+   try{return send(200,pathname.endsWith('/run')?await lab.start(body):lab.cancel());}catch(e){return send(e.status||500,{error:e.status?e.message:'Could not start the run.'});}
+  }
+  return send(404,{error:'Not found'});
+ }
  if(req.method==='GET'&&pathname==='/api/discover/status')return send(200,discovery.status());
  if(req.method==='GET'&&pathname==='/api/developer/observability'){const host=String(req.headers.host||'').replace(/^\[|\](?=:|$)/g,'').split(':')[0];const dashboard=discovery.observability?.();if(!dashboard?.enabled||!['localhost','127.0.0.1','::1'].includes(host))return send(404,{error:'Not found'});return send(200,dashboard);}
  if(req.method==='GET'&&/^\/api\/discover\/image\/[a-f0-9]{48}$/.test(pathname)){const img=discovery.getImage(pathname.split('/').pop());if(!img)return send(404,{error:'Image expired'});res.writeHead(200,{'Content-Type':img.type,'Cache-Control':'no-store','X-Robots-Tag':'noindex, noarchive','X-Content-Type-Options':'nosniff'});return res.end(img.data);}
@@ -85,5 +104,5 @@ return async(req,res)=>{
  const content=await readFile(target);res.writeHead(200,{'Content-Type':mime[path.extname(target)]||'application/octet-stream','Cache-Control':'no-cache','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer'});res.end(req.method==='HEAD'?undefined:content);
  }catch(e){send(e.status|| (e.code==='ENOENT'?404:500),{error:e instanceof ApiError?e.message:'Unable to complete this request.'});}
 };}
-export function createServer(discovery,qaStore,photos,connectors){return http.createServer(createHandler(discovery,qaStore,photos,connectors));}
+export function createServer(discovery,qaStore,photos,connectors,lab){return http.createServer(createHandler(discovery,qaStore,photos,connectors,lab));}
 if(process.argv[1]&&import.meta.url===pathToFileURL(path.resolve(process.argv[1])).href){const port=Number(process.env.PORT||5173),host=process.env.HOST||'0.0.0.0';createServer().listen(port,host,()=>console.log(`The Better Wardrobe: http://127.0.0.1:${port} · network enabled`));}

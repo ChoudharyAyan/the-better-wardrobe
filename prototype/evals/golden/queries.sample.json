@@ -1,0 +1,659 @@
+{
+ "version": 1,
+ "description": "Starter keyword queries for India. Add real queries from search logs; keep only fields you are sure about in expect.",
+ "queries": [
+  {
+   "id": "q01",
+   "query": "black kurta for men under 1500",
+   "status": "verified",
+   "tags": [
+    "ethnic",
+    "price"
+   ],
+   "expect": {
+    "category": "kurta",
+    "department": "menswear",
+    "colour": "black",
+    "ethnic": true,
+    "min_price_inr": null,
+    "max_price_inr": 1500,
+    "language": "english"
+   }
+  },
+  {
+   "id": "q02",
+   "query": "white sneakers",
+   "status": "verified",
+   "tags": [
+    "simple"
+   ],
+   "expect": {
+    "category": "sneakers",
+    "colour": "white",
+    "department": "unknown",
+    "min_price_inr": null,
+    "max_price_inr": null,
+    "brand": "",
+    "language": "english"
+   }
+  },
+  {
+   "id": "q03",
+   "query": "haldi outfit yellow for women",
+   "status": "verified",
+   "tags": [
+    "ethnic",
+    "occasion"
+   ],
+   "expect": {
+    "department": "womenswear",
+    "colour": "yellow",
+    "occasion": "festive",
+    "ethnic": true,
+    "min_price_inr": null,
+    "max_price_inr": null,
+    "language": "english"
+   }
+  },
+  {
+   "id": "q04",
+   "query": "linen shirt men summer under 2k",
+   "status": "verified",
+   "tags": [
+    "price",
+    "shorthand"
+   ],
+   "expect": {
+    "category": "shirt",
+    "department": "menswear",
+    "min_price_inr": null,
+    "max_price_inr": 2000,
+    "language": "english"
+   }
+  },
+  {
+   "id": "q05",
+   "query": "lehenga for sangeet below 10000",
+   "status": "verified",
+   "tags": [
+    "ethnic",
+    "occasion",
+    "price"
+   ],
+   "expect": {
+    "category": "lehenga",
+    "department": "womenswear",
+    "occasion": "festive",
+    "ethnic": true,
+    "max_price_inr": 10000,
+    "language": "english"
+   }
+  },
+  {
+   "id": "q06",
+   "query": "kurti cotton daily wear 500 se kam",
+   "status": "verified",
+   "tags": [
+    "ethnic",
+    "hinglish",
+    "price"
+   ],
+   "expect": {
+    "category": "kurti",
+    "occasion": "casual",
+    "ethnic": true,
+    "max_price_inr": 500,
+    "min_price_inr": null,
+    "language": "hinglish"
+   }
+  },
+  {
+   "id": "q07",
+   "query": "office wear formal trousers for women",
+   "status": "verified",
+   "tags": [
+    "occasion"
+   ],
+   "expect": {
+    "category": "trousers",
+    "department": "womenswear",
+    "occasion": "work",
+    "ethnic": false,
+    "language": "english"
+   }
+  },
+  {
+   "id": "q08",
+   "query": "mustard saree silk",
+   "status": "verified",
+   "tags": [
+    "ethnic",
+    "colour synonym"
+   ],
+   "expect": {
+    "category": "saree",
+    "colour": "yellow",
+    "ethnic": true,
+    "department": "womenswear",
+    "max_price_inr": null,
+    "language": "english"
+   }
+  },
+  {
+   "id": "q09",
+   "query": "oversized t shirt graphic print",
+   "status": "verified",
+   "tags": [
+    "pattern"
+   ],
+   "expect": {
+    "category": "t-shirt",
+    "pattern": "printed",
+    "department": "unknown",
+    "ethnic": false,
+    "language": "english"
+   }
+  },
+  {
+   "id": "q10",
+   "query": "party wear dress red 2000 to 3000",
+   "status": "verified",
+   "tags": [
+    "occasion",
+    "price range"
+   ],
+   "expect": {
+    "category": "dress",
+    "colour": "red",
+    "occasion": "party",
+    "min_price_inr": 2000,
+    "max_price_inr": 3000,
+    "language": "english"
+   }
+  },
+  {
+   "id": "q11",
+   "query": "shaadi ke liye sherwani",
+   "status": "verified",
+   "tags": [
+    "ethnic",
+    "hinglish",
+    "occasion"
+   ],
+   "expect": {
+    "category": "sherwani",
+    "department": "menswear",
+    "occasion": "wedding",
+    "ethnic": true,
+    "language": "hinglish"
+   }
+  },
+  {
+   "id": "q12",
+   "query": "navy blazer",
+   "status": "verified",
+   "tags": [
+    "simple"
+   ],
+   "expect": {
+    "category": "blazer",
+    "colour": "navy",
+    "department": "unknown",
+    "min_price_inr": null,
+    "max_price_inr": null,
+    "language": "english"
+   }
+  },
+  {
+   "id": "q13",
+   "query": "kolhapuri chappal",
+   "status": "verified",
+   "tags": [
+    "ethnic",
+    "hinglish"
+   ],
+   "expect": {
+    "category": "kolhapuris",
+    "ethnic": true,
+    "colour": "",
+    "language": "hinglish"
+   }
+  },
+  {
+   "id": "q14",
+   "query": "jeans for men slim fit under 1200",
+   "status": "verified",
+   "tags": [
+    "price"
+   ],
+   "expect": {
+    "category": "jeans",
+    "department": "menswear",
+    "max_price_inr": 1200,
+    "min_price_inr": null,
+    "language": "english"
+   }
+  },
+  {
+   "id": "q15",
+   "query": "checked shirt",
+   "status": "verified",
+   "tags": [
+    "pattern"
+   ],
+   "expect": {
+    "category": "shirt",
+    "pattern": "checked",
+    "colour": "",
+    "department": "unknown",
+    "language": "english"
+   }
+  },
+  {
+   "id": "q16",
+   "query": "floral co ord set for vacation",
+   "status": "verified",
+   "tags": [
+    "occasion",
+    "pattern"
+   ],
+   "expect": {
+    "category": "co-ord set",
+    "pattern": "floral",
+    "occasion": "vacation",
+    "language": "english"
+   }
+  },
+  {
+   "id": "q17",
+   "query": "gym shorts men",
+   "status": "verified",
+   "tags": [
+    "occasion"
+   ],
+   "expect": {
+    "category": "shorts",
+    "department": "menswear",
+    "occasion": "sports",
+    "ethnic": false,
+    "language": "english"
+   }
+  },
+  {
+   "id": "q18",
+   "query": "white chikankari kurta",
+   "status": "verified",
+   "tags": [
+    "ethnic",
+    "pattern"
+   ],
+   "expect": {
+    "category": "kurta",
+    "colour": "white",
+    "pattern": "embroidered",
+    "ethnic": true,
+    "language": "english"
+   }
+  },
+  {
+   "id": "q19",
+   "query": "black heels for party under 1500",
+   "status": "verified",
+   "tags": [
+    "occasion",
+    "price"
+   ],
+   "expect": {
+    "category": "heels",
+    "colour": "black",
+    "occasion": "party",
+    "max_price_inr": 1500,
+    "language": "english"
+   }
+  },
+  {
+   "id": "q20",
+   "query": "dupatta pink",
+   "status": "verified",
+   "tags": [
+    "ethnic"
+   ],
+   "expect": {
+    "category": "dupatta",
+    "colour": "pink",
+    "ethnic": true,
+    "language": "english"
+   }
+  },
+  {
+   "id": "q21",
+   "query": "sunglasses for men",
+   "status": "verified",
+   "tags": [
+    "accessory"
+   ],
+   "expect": {
+    "category": "sunglasses",
+    "department": "menswear",
+    "colour": "",
+    "max_price_inr": null,
+    "language": "english"
+   }
+  },
+  {
+   "id": "q22",
+   "query": "brown leather belt",
+   "status": "verified",
+   "tags": [
+    "accessory"
+   ],
+   "expect": {
+    "category": "belt",
+    "colour": "brown",
+    "brand": "",
+    "language": "english"
+   }
+  },
+  {
+   "id": "q23",
+   "query": "beige chinos",
+   "status": "verified",
+   "tags": [
+    "simple"
+   ],
+   "expect": {
+    "category": "chinos",
+    "colour": "beige",
+    "department": "unknown",
+    "language": "english"
+   }
+  },
+  {
+   "id": "q24",
+   "query": "green anarkali suit",
+   "status": "verified",
+   "tags": [
+    "ethnic"
+   ],
+   "expect": {
+    "category": "salwar suit",
+    "colour": "green",
+    "ethnic": true,
+    "department": "womenswear",
+    "language": "english"
+   }
+  },
+  {
+   "id": "q25",
+   "query": "zara style satin slip dress",
+   "status": "verified",
+   "tags": [
+    "brand-like"
+   ],
+   "expect": {
+    "category": "dress",
+    "colour": "",
+    "max_price_inr": null,
+    "language": "english"
+   }
+  },
+  {
+   "id": "q26",
+   "query": "nike running shoes",
+   "status": "verified",
+   "tags": [
+    "brand"
+   ],
+   "expect": {
+    "category": "sneakers",
+    "brand": "nike",
+    "occasion": "sports",
+    "language": "english"
+   }
+  },
+  {
+   "id": "q27",
+   "query": "hoodie under 999",
+   "status": "verified",
+   "tags": [
+    "price"
+   ],
+   "expect": {
+    "category": "hoodie",
+    "max_price_inr": 999,
+    "min_price_inr": null,
+    "department": "unknown",
+    "language": "english"
+   }
+  },
+  {
+   "id": "q28",
+   "query": "maroon velvet blazer for wedding",
+   "status": "verified",
+   "tags": [
+    "occasion",
+    "colour synonym"
+   ],
+   "expect": {
+    "category": "blazer",
+    "colour": "maroon",
+    "occasion": "wedding",
+    "language": "english"
+   }
+  },
+  {
+   "id": "q29",
+   "query": "palazzo pants cotton",
+   "status": "verified",
+   "tags": [
+    "bottomwear"
+   ],
+   "expect": {
+    "category": "palazzo",
+    "colour": "",
+    "max_price_inr": null,
+    "language": "english"
+   }
+  },
+  {
+   "id": "q30",
+   "query": "polo t shirt men olive",
+   "status": "verified",
+   "tags": [
+    "simple"
+   ],
+   "expect": {
+    "category": "polo",
+    "colour": "olive",
+    "department": "menswear",
+    "language": "english"
+   }
+  },
+  {
+   "id": "q31",
+   "query": "festive kurta set for diwali men",
+   "status": "verified",
+   "tags": [
+    "ethnic",
+    "occasion"
+   ],
+   "expect": {
+    "category": "kurta",
+    "department": "menswear",
+    "occasion": "festive",
+    "ethnic": true,
+    "language": "english"
+   }
+  },
+  {
+   "id": "q32",
+   "query": "white shirt size L",
+   "status": "verified",
+   "tags": [
+    "size"
+   ],
+   "expect": {
+    "category": "shirt",
+    "colour": "white",
+    "size": "L",
+    "language": "english"
+   }
+  },
+  {
+   "id": "q33",
+   "query": "black saree for farewell",
+   "status": "verified",
+   "tags": [
+    "ethnic",
+    "occasion"
+   ],
+   "expect": {
+    "category": "saree",
+    "colour": "black",
+    "occasion": "party",
+    "ethnic": true,
+    "department": "womenswear",
+    "language": "english"
+   }
+  },
+  {
+   "id": "q34",
+   "query": "denim jacket",
+   "status": "verified",
+   "tags": [
+    "simple"
+   ],
+   "expect": {
+    "category": "jacket",
+    "department": "unknown",
+    "min_price_inr": null,
+    "max_price_inr": null,
+    "language": "english"
+   }
+  },
+  {
+   "id": "q35",
+   "query": "loafers tan",
+   "status": "verified",
+   "tags": [
+    "colour synonym"
+   ],
+   "expect": {
+    "category": "loafers",
+    "colour": "beige",
+    "language": "english"
+   }
+  },
+  {
+   "id": "q36",
+   "query": "boots",
+   "status": "verified",
+   "tags": [
+    "simple"
+   ],
+   "expect": {
+    "category": "boots",
+    "colour": "",
+    "department": "unknown",
+    "min_price_inr": null,
+    "max_price_inr": null,
+    "brand": "",
+    "language": "english"
+   }
+  },
+  {
+   "id": "q37",
+   "query": "summer dress under 1000 cotton",
+   "status": "verified",
+   "tags": [
+    "price"
+   ],
+   "expect": {
+    "category": "dress",
+    "max_price_inr": 1000,
+    "min_price_inr": null,
+    "colour": "",
+    "language": "english"
+   }
+  },
+  {
+   "id": "q38",
+   "query": "mojari for groom",
+   "status": "verified",
+   "tags": [
+    "ethnic",
+    "occasion"
+   ],
+   "expect": {
+    "category": "juttis",
+    "department": "menswear",
+    "occasion": "wedding",
+    "ethnic": true
+   }
+  },
+  {
+   "id": "q39",
+   "query": "lal saree",
+   "status": "verified",
+   "tags": [
+    "ethnic",
+    "hinglish",
+    "colour synonym"
+   ],
+   "expect": {
+    "category": "saree",
+    "colour": "red",
+    "ethnic": true,
+    "department": "womenswear",
+    "language": "hinglish"
+   }
+  },
+  {
+   "id": "q40",
+   "query": "sasta jeans 500 tak",
+   "status": "verified",
+   "tags": [
+    "hinglish",
+    "price"
+   ],
+   "expect": {
+    "category": "jeans",
+    "max_price_inr": 500,
+    "min_price_inr": null,
+    "language": "hinglish"
+   }
+  },
+  {
+   "id": "q41",
+   "query": "puma sneakers white size 9",
+   "status": "verified",
+   "tags": [
+    "brand",
+    "size"
+   ],
+   "expect": {
+    "category": "sneakers",
+    "colour": "white",
+    "brand": "puma",
+    "size": "9",
+    "language": "english"
+   }
+  },
+  {
+   "id": "q42",
+   "query": "striped shirt between 800 and 1500",
+   "status": "verified",
+   "tags": [
+    "pattern",
+    "price range"
+   ],
+   "expect": {
+    "category": "shirt",
+    "pattern": "striped",
+    "min_price_inr": 800,
+    "max_price_inr": 1500,
+    "language": "english"
+   }
+  }
+ ]
+}

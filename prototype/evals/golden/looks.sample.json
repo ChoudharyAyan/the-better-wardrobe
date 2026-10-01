@@ -1,0 +1,388 @@
+{
+ "version": 1,
+ "description": "Starter set: the prototype's own sample images. Real screenshots go in .local-data/evals/golden (gitignored).",
+ "images": [
+  {
+   "id": "sample-outfit-flatlay",
+   "file": "../../dist/assets/outfit.png",
+   "status": "verified",
+   "labeledBy": "claude (visual pass) - owner to confirm",
+   "tags": [
+    "sample",
+    "flat lay",
+    "menswear",
+    "multi-item"
+   ],
+   "scene": "flat lay",
+   "exhaustive": true,
+   "items": [
+    {
+     "label": "cream camp-collar shirt",
+     "category": "shirt",
+     "box": [
+      10,
+      80,
+      670,
+      615
+     ],
+     "department": "menswear",
+     "colour": "cream",
+     "pattern": "solid",
+     "sleeve": "short",
+     "neckline": "camp collar",
+     "fabric": "linen",
+     "features": [
+      "camp collar",
+      "button front"
+     ]
+    },
+    {
+     "label": "black chinos",
+     "category": "chinos",
+     "box": [
+      630,
+      160,
+      980,
+      890
+     ],
+     "colour": "black",
+     "pattern": "solid",
+     "length": "full"
+    },
+    {
+     "label": "brown penny loafers",
+     "category": "loafers",
+     "box": [
+      90,
+      630,
+      360,
+      915
+     ],
+     "colour": "brown",
+     "fabric": "leather",
+     "features": [
+      "penny strap"
+     ]
+    },
+    {
+     "label": "black sunglasses",
+     "category": "sunglasses",
+     "box": [
+      395,
+      680,
+      585,
+      735
+     ],
+     "colour": "black"
+    }
+   ]
+  },
+  {
+   "id": "sample-cream-shirt",
+   "file": "../../dist/assets/cream.png",
+   "status": "verified",
+   "labeledBy": "claude (visual pass) - owner to confirm",
+   "tags": [
+    "sample",
+    "product shot",
+    "menswear"
+   ],
+   "scene": "product shot",
+   "exhaustive": true,
+   "items": [
+    {
+     "label": "cream camp-collar linen shirt",
+     "category": "shirt",
+     "department": "menswear",
+     "colour": "cream",
+     "pattern": "solid",
+     "sleeve": "short",
+     "neckline": "camp collar",
+     "fabric": "linen",
+     "features": [
+      "camp collar",
+      "chest pocket",
+      "button front"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "sample-denim",
+   "file": "../../dist/assets/denim.jpg",
+   "status": "verified",
+   "labeledBy": "claude (visual pass) - owner to confirm",
+   "tags": [
+    "sample",
+    "product shot"
+   ],
+   "scene": "product shot",
+   "exhaustive": true,
+   "items": [
+    {
+     "label": "mid-blue straight jeans",
+     "category": "jeans",
+     "colour": "blue",
+     "pattern": "solid",
+     "fit": "regular",
+     "length": "full",
+     "fabric": "denim"
+    }
+   ]
+  },
+  {
+   "id": "sample-floral-street",
+   "file": "../../dist/assets/floral.jpg",
+   "status": "verified",
+   "labeledBy": "claude (visual pass) - owner to confirm",
+   "tags": [
+    "sample",
+    "on person",
+    "womenswear",
+    "multi-item"
+   ],
+   "scene": "on person",
+   "exhaustive": false,
+   "items": [
+    {
+     "label": "pink floral off-shoulder mini dress",
+     "category": "dress",
+     "department": "womenswear",
+     "colour": "pink",
+     "pattern": "floral",
+     "neckline": "off-shoulder",
+     "features": [
+      "off-shoulder"
+     ]
+    },
+    {
+     "label": "white strappy heeled sandals",
+     "category": "heels",
+     "colour": "white"
+    }
+   ]
+  },
+  {
+   "id": "sample-puma-sneaker",
+   "file": "../../dist/assets/sneaker.jpg",
+   "status": "verified",
+   "labeledBy": "claude (visual pass) - owner to confirm",
+   "tags": [
+    "sample",
+    "product shot",
+    "brand visible"
+   ],
+   "scene": "product shot",
+   "exhaustive": true,
+   "items": [
+    {
+     "label": "white Puma leather sneaker",
+     "category": "sneakers",
+     "colour": "white",
+     "fabric": "leather",
+     "brand_visible": "puma",
+     "features": [
+      "lace-up"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "sample-sneakers-in-hand",
+   "file": "../../dist/assets/sneakers.jpg",
+   "status": "verified",
+   "labeledBy": "claude (visual pass) - owner to confirm",
+   "tags": [
+    "sample",
+    "on person",
+    "multi-item"
+   ],
+   "scene": "on person",
+   "exhaustive": false,
+   "items": [
+    {
+     "label": "white low-top sneakers",
+     "category": "sneakers",
+     "colour": "white",
+     "features": [
+      "lace-up"
+     ]
+    },
+    {
+     "label": "black smartwatch",
+     "category": "watch",
+     "colour": "black"
+    }
+   ]
+  },
+  {
+   "id": "sample-summer-dress",
+   "file": "../../dist/assets/summer.jpg",
+   "status": "verified",
+   "labeledBy": "claude (visual pass) - owner to confirm",
+   "tags": [
+    "sample",
+    "on person",
+    "womenswear",
+    "multi-item"
+   ],
+   "scene": "on person",
+   "exhaustive": false,
+   "items": [
+    {
+     "label": "white sleeveless midi sundress",
+     "category": "dress",
+     "department": "womenswear",
+     "colour": "white",
+     "sleeve": "sleeveless",
+     "occasion": "vacation"
+    },
+    {
+     "label": "straw sun hat",
+     "category": "hat",
+     "colour": "beige",
+     "fabric": "straw"
+    },
+    {
+     "label": "round wicker bag",
+     "category": "bag",
+     "fabric": "straw"
+    },
+    {
+     "label": "black sunglasses",
+     "category": "sunglasses",
+     "colour": "black"
+    }
+   ]
+  },
+  {
+   "id": "sample-sunglasses",
+   "file": "../../dist/assets/sunglasses.jpg",
+   "status": "verified",
+   "labeledBy": "claude (visual pass) - owner to confirm",
+   "tags": [
+    "sample",
+    "product shot"
+   ],
+   "scene": "product shot",
+   "exhaustive": true,
+   "items": [
+    {
+     "label": "black round sunglasses",
+     "category": "sunglasses",
+     "colour": "black",
+     "features": [
+      "round frames"
+     ]
+    }
+   ]
+  },
+  {
+   "id": "sample-black-suit",
+   "file": "../../dist/assets/tailoring.jpg",
+   "status": "verified",
+   "labeledBy": "claude (visual pass) - owner to confirm",
+   "tags": [
+    "sample",
+    "on person",
+    "menswear",
+    "multi-item"
+   ],
+   "scene": "on person",
+   "exhaustive": false,
+   "items": [
+    {
+     "label": "black suit blazer",
+     "category": "blazer",
+     "department": "menswear",
+     "colour": "black",
+     "sleeve": "long",
+     "neckline": "lapel",
+     "occasion": "formal"
+    },
+    {
+     "label": "black dress shirt",
+     "category": "shirt",
+     "department": "menswear",
+     "colour": "black"
+    },
+    {
+     "label": "black suit trousers",
+     "category": "trousers",
+     "colour": "black"
+    },
+    {
+     "label": "black formal shoes",
+     "category": "formal shoes",
+     "colour": "black"
+    }
+   ]
+  },
+  {
+   "id": "sample-white-tee",
+   "file": "../../dist/assets/tee.jpg",
+   "status": "verified",
+   "labeledBy": "claude (visual pass) - owner to confirm",
+   "tags": [
+    "sample",
+    "product shot"
+   ],
+   "scene": "product shot",
+   "exhaustive": true,
+   "items": [
+    {
+     "label": "white crew-neck t-shirt",
+     "category": "t-shirt",
+     "colour": "white",
+     "pattern": "solid",
+     "sleeve": "short",
+     "neckline": "crew"
+    }
+   ]
+  },
+  {
+   "id": "sample-black-trousers",
+   "file": "../../dist/assets/trousers.png",
+   "status": "verified",
+   "labeledBy": "claude (visual pass) - owner to confirm",
+   "tags": [
+    "sample",
+    "product shot"
+   ],
+   "scene": "product shot",
+   "exhaustive": true,
+   "items": [
+    {
+     "label": "black flat-front trousers",
+     "category": "trousers",
+     "colour": "black",
+     "pattern": "solid",
+     "length": "full"
+    }
+   ]
+  },
+  {
+   "id": "sample-brown-belt",
+   "file": "../../dist/assets/belt.jpg",
+   "status": "verified",
+   "labeledBy": "claude (visual pass) - owner to confirm",
+   "tags": [
+    "sample",
+    "product shot"
+   ],
+   "scene": "product shot",
+   "exhaustive": true,
+   "items": [
+    {
+     "label": "brown leather belt",
+     "category": "belt",
+     "colour": "brown",
+     "fabric": "leather",
+     "features": [
+      "metal buckle"
+     ]
+    }
+   ]
+  }
+ ]
+}
