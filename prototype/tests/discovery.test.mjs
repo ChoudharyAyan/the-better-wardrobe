@@ -32,6 +32,24 @@ test('metadata falls back to OpenGraph tags when JSON-LD is missing or incomplet
 test('missing credentials are explicit and no provider calls occur',async()=>{
  const d=createDiscovery({env:{},fetcher:()=>assert.fail('No network without keys')});assert.deepEqual(d.status(),{vision:false,visionProvider:'gemini',shopping:false,lens:false,model:'gemini-3.5-flash',developerDashboard:false,dataMode:'live'});await assert.rejects(d.analyze({image,category:'Shirt'}),/Gemini/);await assert.rejects(d.search({attributes:attr}),/SerpApi/);
 });
+test('conversation interpretation accepts text, screenshot, or both without inventing product facts',async()=>{
+ const calls=[];const answer={...attr,category:'Blazer',colour:'brown',subtype:'blazer',features:'single button',department:'womenswear',query:'relaxed brown blazer',budget:4000,uncertainty:'Fabric is unclear',question:''};
+ const d=createDiscovery({env:{GEMINI_API_KEY:'test'},fetcher:async(url,opts)=>{calls.push(JSON.parse(opts.body));return response({candidates:[{finishReason:'STOP',content:{parts:[{text:JSON.stringify(answer)}]}}]});}});
+ const textOnly=await d.interpret({text:'Find a brown blazer under ₹4,000'});assert.equal(textOnly.attributes.category,'Blazer');assert.equal(textOnly.budget,4000);assert.equal(textOnly.query,'relaxed brown blazer');assert.equal(calls[0].contents[0].parts.some(p=>p.inlineData),false);
+ await d.interpret({text:'Something like this',image});assert.equal(calls[1].contents[0].parts.some(p=>p.inlineData),true);
+ await d.interpret({image});assert.equal(calls[2].contents[0].parts.some(p=>p.inlineData),true);
+ await d.interpret({text:'show me a cheaper version',previous:textOnly});assert.match(calls[3].contents[0].parts[0].text,/Previous search for conversational context/);
+ await assert.rejects(d.interpret({}),/description or a screenshot/);
+});
+test('conversation asks for a garment type when the request is ambiguous',async()=>{
+ const d=createDiscovery({env:{GEMINI_API_KEY:'test'},fetcher:async()=>response({candidates:[{finishReason:'STOP',content:{parts:[{text:JSON.stringify({category:'',colour:'',fit:'',pattern:'',details:'',subtype:'',features:'',department:'unknown',query:'Cannes 2008',budget:null,uncertainty:'',question:'Which item do you mean?'})}]}}]})});
+ const out=await d.interpret({text:'Cannes 2008'});assert.equal(out.attributes,null);assert.equal(out.question,'Which item do you mean?');
+});
+test('a confirmed conversational phrase reaches shopping search',async()=>{
+ const queries=[];const d=createDiscovery({env:{SERPAPI_API_KEY:'test'},fetcher:async url=>{queries.push(new URL(url).searchParams.get('q'));return response({shopping_results:results});},pageFetcher:async()=>''});
+ const out=await d.search({attributes:{category:'Dress'},query:'Cannes 2008 inspired black dress',market:'in'});
+ assert.equal(out.query,'Cannes 2008 inspired black dress');assert.ok(queries.some(q=>q.includes('Cannes 2008 inspired black dress')));
+});
 test('manual India search retains unknown availability and excludes above-budget prices',async()=>{
  const calls=[];const d=createDiscovery({env:{SERPAPI_API_KEY:'test'},fetcher:async url=>{calls.push(new URL(url));return response({shopping_results:results});},pageFetcher:async()=>{throw Error('blocked')}});
  const data=await d.search({attributes:attr,market:'in',budget:1000});assert.equal(data.results.length,0);assert.equal(calls[0].searchParams.get('gl'),'in');assert.ok(calls[0].searchParams.get('q').includes('pastel blue'));
