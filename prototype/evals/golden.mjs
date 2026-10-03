@@ -12,10 +12,12 @@ export const PROTOTYPE_DIR=path.resolve(EVALS_DIR,'..');
 export const GOLDEN_DIRS=[path.join(EVALS_DIR,'golden'),path.join(PROTOTYPE_DIR,'.local-data','evals','golden')];
 
 async function jsonFiles(dir){try{return (await readdir(dir)).filter(f=>f.endsWith('.json')).map(f=>path.join(dir,f));}catch{return [];}}
-export async function loadGolden({dirs=GOLDEN_DIRS,includeDrafts=false}={}){
- const looks=[],queries=[],warnings=[],seen=new Set();
+export async function loadGolden({dirs=GOLDEN_DIRS,includeDrafts=false,only}={}){
+ const looks=[],queries=[],warnings=[],seen=new Set();let keyAgreement=null;
  for(const dir of dirs)for(const file of await jsonFiles(dir)){
+  if(only&&!path.basename(file,'.json').startsWith(only))continue;
   let data;try{data=JSON.parse(await readFile(file,'utf8'));}catch(e){warnings.push(`${path.basename(file)}: not valid JSON (${e.message})`);continue;}
+  if(data.agreement)keyAgreement=data.agreement;
   for(const g of data.images||[]){
    if(!g.id||seen.has('l:'+g.id)){warnings.push(`${path.basename(file)}: duplicate or missing image id ${g.id}`);continue;}seen.add('l:'+g.id);
    if(g.status!=='verified'&&!includeDrafts)continue;
@@ -28,7 +30,7 @@ export async function loadGolden({dirs=GOLDEN_DIRS,includeDrafts=false}={}){
    if(q.status!=='verified'&&!includeDrafts)continue;queries.push({...q,tags:q.tags||[]});
   }
  }
- return {looks,queries,warnings};
+ return {looks,queries,warnings,keyAgreement};
 }
 export const composition=list=>{const out={};for(const x of list)for(const t of x.tags||[])out[t]=(out[t]||0)+1;return out;};
 

@@ -6,6 +6,7 @@ import {costOf} from './models.mjs';
 import {callModel,EvalError} from './providers.mjs';
 import {prepareImage,composition,PROTOTYPE_DIR} from './golden.mjs';
 import {scoreLook,scoreQuery,aggregate} from './scoring.mjs';
+import {scaleAnalysis} from './scale.mjs';
 
 export const LAB_DIR=path.join(PROTOTYPE_DIR,'.local-data','evals');
 export const newRunId=(now=Date.now())=>new Date(now).toISOString().replace(/[-:]/g,'').replace(/\..+/,'').replace('T','-')+'-'+randomBytes(2).toString('hex');
@@ -47,7 +48,7 @@ export async function runEval({models,tasks=['look','query'],golden,limit,repeat
     if(!res){const t0=now();const out=await callModel({model:m,system:SYSTEM,prompt:T.prompt(g),image:img,schema:T.schema,schemaName:T.schemaName,env,fetcher,signal,timeoutMs:120000,gold:g,seed:[m.id,g.id,r].join('|')});res={...out,latencyMs:now()-t0};if(m.provider!=='mock')await writeFile(cacheFile,JSON.stringify(res));}
     const costUsd=costOf(m,res.usage);if(!cached&&typeof costUsd==='number'){spent+=costUsd;if(spent>=maxUsd)stopped=true;}
     const s=task==='look'?scoreLook(res.json,g):scoreQuery(res.json,g);
-    rec={...base,ok:true,cached,score:s.score,recall:s.recall??null,precision:s.precision??null,iou:s.iou??null,fields:s.fields,details:s.details,usage:res.usage,costUsd,latencyMs:res.latencyMs,notes:res.notes||[],output:res.json};
+    rec={...base,ok:true,cached,score:s.score,parts:s.parts||null,recall:s.recall??null,precision:s.precision??null,iou:s.iou??null,fields:s.fields,details:s.details,usage:res.usage,costUsd,latencyMs:res.latencyMs,notes:res.notes||[],output:res.json};
    }catch(e){
     if(e?.code==='aborted')stopped=true;
     rec={...base,ok:false,error:{code:e?.code||'error',message:String(e?.message||e).slice(0,300)}};
@@ -62,6 +63,8 @@ export async function runEval({models,tasks=['look','query'],golden,limit,repeat
   config:{tasks,repeat,maxDim,limit:limit??null,maxUsd,models:models.map(m=>({id:m.id,label:m.label,provider:m.provider,model:m.model,tier:m.tier,price:m.price,priceVerified:m.verified,openWeights:m.openWeights,options:m.options}))},
   dataset:{looks:itemsFor('look',golden,limit).length,queries:itemsFor('query',golden,limit).length,lookComposition:composition(itemsFor('look',golden,limit)),queryComposition:composition(itemsFor('query',golden,limit)),warnings:golden.warnings||[]},
   estimateUsd:est.usd,spentUsd:spent,stoppedEarly:stopped,rows:aggregate(records),hardest,failures};
+ if(tasks.includes('look'))summary.scale=scaleAnalysis(records,summary.rows);
+ const keyMakers=[...new Set(itemsFor('look',golden,limit).map(g=>g.labeledBy).filter(l=>String(l).startsWith('ai-consensus:')))];if(keyMakers.length)summary.answerKey={labeledBy:keyMakers,agreement:golden.keyAgreement||null};
  await writeFile(path.join(runDir,'summary.json'),JSON.stringify(summary,null,1));
  onProgress({type:'done',runId,spentUsd:spent});
  return summary;

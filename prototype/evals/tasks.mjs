@@ -1,6 +1,6 @@
 import {CATEGORIES,DEPARTMENTS,COLOURS,PATTERNS,SLEEVES,FITS,LENGTHS,NECKLINES,FABRICS,OCCASIONS,SCENES,LANGUAGES,TAXONOMY_VERSION} from './taxonomy.mjs';
 // Bump when any prompt or schema below changes: cached responses are keyed on it, and reports print it.
-export const PROMPT_VERSION='look-v1+query-v1';
+export const PROMPT_VERSION='look-v2+query-v1';
 
 const obj=properties=>({type:'object',properties,required:Object.keys(properties),additionalProperties:false});
 const str={type:'string'};const en=values=>({type:'string',enum:values});
@@ -23,6 +23,7 @@ const itemSchema=obj({
  occasion:en(OCCASIONS),
  ethnic:{type:'boolean'},
  features:{type:'array',items:str},
+ search_query:str,
  brand_visible:str,
  confidence:{type:'number'}
 });
@@ -43,6 +44,7 @@ For each item return:
 - pattern, sleeve, fit, length, neckline, fabric, occasion: closest values; "not applicable" where the attribute cannot apply (sleeve on shoes), "unknown" where it applies but is not visible.
 - ethnic: true only for Indian ethnic wear (kurta, saree, lehenga, sherwani, juttis and similar).
 - features: up to 5 short defining details a shopper would search for, for example "camp collar", "chest pocket", "tie-up shoulder", "pleated front".
+- search_query: the 3 to 8 words a shopper in India would type to find this exact item, for example "ivory chikankari straight kurta women".
 - brand_visible: brand text or logo clearly visible on the item; empty string otherwise.
 - confidence: 0 to 1.
 Also return scene, caption_text (any visible caption, handle or shop name, empty if none) and known_item: is_specific is true only if this looks like a specific, identifiable designer or viral product; guess is your best short description of it, empty otherwise.`;

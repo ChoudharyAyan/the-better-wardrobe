@@ -40,14 +40,16 @@ function watermark(w,h,summary){return summary.mock?`<text x="${w/2}" y="${h/2}"
 export function frontierChart(summary,task='look'){
  const rows=rowsFor(summary,task).filter(r=>r.score!==null);const W=1200,H=720,L=110,R=300,T=110,B=90,pw=W-L-R,ph=H-T-B;
  const costs=rows.map(r=>r.costPer1k).filter(v=>v>0);const lo=Math.log10(Math.max(0.01,Math.min(...costs,1)/2)),hi=Math.log10(Math.max(...costs,1)*2);
- const x=c=>L+(c>0?(Math.log10(c)-lo)/(hi-lo):0)*pw;const ys=rows.map(r=>r.score);const ymin=Math.max(0,Math.floor((Math.min(...ys,0.5)-0.05)*10)/10),ymax=1;const y=v=>T+(1-(v-ymin)/(ymax-ymin))*ph;
+ const x=c=>L+(c>0?(Math.log10(c)-lo)/(hi-lo):0)*pw;const ys=[...rows.map(r=>r.score),...(task==='look'?(summary.scale?.options||[]).filter(o=>o.kind==='cascade').map(o=>o.score):[])];const ymin=Math.max(0,Math.floor((Math.min(...ys,0.5)-0.05)*10)/10),ymax=1;const y=v=>T+(1-(v-ymin)/(ymax-ymin))*ph;
  let g='';for(let e=Math.ceil(lo);e<=Math.floor(hi);e++){const xv=x(10**e);g+=`<line x1="${xv}" y1="${T}" x2="${xv}" y2="${T+ph}" stroke="${C.line}"/><text x="${xv}" y="${T+ph+28}" text-anchor="middle" font-size="15" fill="${C.muted}">${usd(10**e)}</text>`;}
  for(let v=ymin;v<=1.0001;v+=0.1){g+=`<line x1="${L}" y1="${y(v)}" x2="${L+pw}" y2="${y(v)}" stroke="${C.line}"/><text x="${L-12}" y="${y(v)+5}" text-anchor="end" font-size="15" fill="${C.muted}">${Math.round(v*100)}%</text>`;}
- const f=frontier(rows);if(f.length>1)g+=`<polyline points="${f.map(r=>`${x(r.costPer1k)},${y(r.score)}`).join(' ')}" fill="none" stroke="${C.rose}" stroke-width="2.5" stroke-dasharray="7 6"/>`;
+ const casc=task==='look'?(summary.scale?.options||[]).filter(o=>o.kind==='cascade'):[];
+ const f=task==='look'&&summary.scale?(summary.scale.options.filter(o=>summary.scale.frontier.includes(o.id)).sort((a,b)=>a.costPer1k-b.costPer1k)):frontier(rows);if(f.length>1)g+=`<polyline points="${f.map(r=>`${x(r.costPer1k)},${y(r.score)}`).join(' ')}" fill="none" stroke="${C.rose}" stroke-width="2.5" stroke-dasharray="7 6"/>`;
+ casc.forEach((c,i)=>{const px=x(c.costPer1k),py=y(c.score);g+=`<rect x="${px-8}" y="${py-8}" width="16" height="16" transform="rotate(45 ${px} ${py})" fill="${C.bg}" stroke="${C.rose}" stroke-width="3"/><text x="${px+14}" y="${py-12}" font-size="14" fill="${C.rose}">C${i+1}</text>`;});
  const placed=[];for(const r of [...rows].sort((a,b)=>b.score-a.score)){if(typeof r.costPer1k!=='number')continue;const px=x(r.costPer1k),py=y(r.score);let ly=py+5;while(placed.some(p=>Math.abs(p.x-px)<170&&Math.abs(p.y-ly)<18))ly+=18;placed.push({x:px,y:ly});
   g+=`<circle cx="${px}" cy="${py}" r="9" fill="${TIER_COLOURS[r.tier]||C.rose}" stroke="${C.panel}" stroke-width="2"/><text x="${px+14}" y="${ly}" font-size="15" fill="${C.text}">${esc(r.label)}</text>`;}
  const lg=TIERS.filter(t=>rows.some(r=>r.tier===t.id)).map((t,i)=>`<circle cx="${W-R+50}" cy="${T+20+i*30}" r="8" fill="${TIER_COLOURS[t.id]}"/><text x="${W-R+66}" y="${T+26+i*30}" font-size="16" fill="${C.text}">${esc(t.label)}</text>`).join('');
- const sub=`<text x="40" y="82" font-size="16" fill="${C.muted}">${task==='look'?'Screenshot task score':'Keyword task score'} vs cost per 1,000 calls (log scale). Dashed line: models nobody beats on both.</text>`;
+ const sub=`<text x="40" y="82" font-size="16" fill="${C.muted}">${task==='look'?'Screenshot task score':'Keyword task score'} vs cost per 1,000 calls (log scale). Dashed line: options nobody beats on both. Diamonds: cheap-then-strong cascades.</text>`;
  const axes=`<text x="${L+pw/2}" y="${H-24}" text-anchor="middle" font-size="16" fill="${C.muted}">Cost per 1,000 calls (USD, log scale)</text>`;
  return svgWrap(W,H,sub+g+lg+axes+watermark(W,H,summary),task==='look'?'Accuracy vs cost: screenshot understanding':'Accuracy vs cost: keyword understanding');
 }
@@ -67,6 +69,32 @@ export function latencyChart(summary,task='look'){
  return svgWrap(W,H,`<text x="40" y="82" font-size="16" fill="${C.muted}">Median latency per call; the tick marks p95. Measured from India against public APIs.</text>`+g+watermark(W,H,summary),task==='look'?'How long a screenshot takes':'How long a query takes');
 }
 
+
+function keySection(s){
+ const k=s.answerKey,v=s.validation?.keyCheck;if(!k&&!v)return '';
+ return `## How the answer key was made and checked
+
+Nobody labelled these images by hand. ${k?`Two strong models from different companies (${k.labeledBy.map(x=>x.replace('ai-consensus:','').replace('+',' and ')).join(', ')}) labelled every image independently and were left out of the test. An item counts only if both saw it; a field counts only if both agreed${k.agreement?`: they agreed on ${pct(k.agreement.items,0)} of items and ${pct(k.agreement.fields,0)} of fields`:''}. Everything else is unscored.`:''}${v?` A third model from another company (${v.judge}) then checked ${v.images} random images against the key: ${pct(v.itemAccuracy,0)} of key items were really in the image and ${pct(v.fieldAccuracy,0)} of key fields were correct.`:' The key has not been spot-checked yet (run `validate`).'}
+
+`;
+}
+function scaleSection(s){
+ const sc=s.scale;if(!sc)return '';
+ const casc=sc.options.filter(o=>o.kind==='cascade');
+ return `## Which model for the first 1,000 users, and after
+
+At low volume the cost difference between models is a few dollars a month, so the best model is the right call. As volume grows, a cheaper model, or a cascade where a cheap model handles the easy images and passes the hard ones to a stronger one, gives up a few points to save most of the bill.
+
+![Cost vs quality with cascades](charts/frontier-look.png)
+
+${table(['Monthly image searches','Use','Score','Monthly cost','Best possible','Rule'],sc.bands.map(b=>[b.label.replace(' / month',''),b.pick?b.pick.label+(b.pick.rule?` (${b.pick.rule})`:''):'—',pct(b.pick?.score),usd(b.pick?.monthlyUsd),b.best?`${b.best.label}, ${pct(b.best.score)}, ${usd(b.best.monthlyUsd)}`:'—',b.why]))}
+
+${casc.length?`Cascades worth considering (diamonds on the chart):\n\n${table(['#','Cheap model → strong model','When to escalate','Images escalated','Score','$ / image'],casc.map((c,i)=>['C'+(i+1),c.label,c.rule,pct(c.escalation,0),pct(c.score),usd(c.costPer1k/1000)]))}\n\n`:''}By kind of extraction (best value = the cheapest model within 3 points of the best):
+
+${table(['Extraction','Best','Best value'],sc.byExtraction.map(e=>[e.label,`${e.best.model} (${pct(e.best.score,0)})`,e.value?`${e.value.model} (${pct(e.value.score,0)}, ${usd(e.value.costPer1k/1000)} / image)`:'—']))}
+
+`;
+}
 const table=(head,rows)=>`| ${head.join(' | ')} |\n|${head.map(()=>'---').join('|')}|\n${rows.map(r=>`| ${r.join(' | ')} |`).join('\n')}`;
 export function buildReport(summary,{author='The Better Wardrobe team'}={}){
  const look=rowsFor(summary,'look'),query=rowsFor(summary,'query'),f=findings(summary);
@@ -80,7 +108,7 @@ export function buildReport(summary,{author='The Better Wardrobe team'}={}){
 
 ${warn}
 
-We are building the Discover tab of The Better Wardrobe: you share a screenshot of an outfit (an Instagram reel, a Pinterest pin, a celebrity look) or type what you want, and we find it, or something close, from Indian stores within your budget. Every search starts with a model turning pixels or words into structured attributes. Pick the wrong model and every result downstream is wrong, or the bill explodes. So instead of trusting benchmarks, we tested the candidates on our own data.
+We are building the Discover tab of The Better Wardrobe: you share a screenshot of an outfit (an Instagram reel, a Pinterest pin, a celebrity look) or type what you want, and we find it, or something close, from Indian stores within your budget. Every search starts with a model turning pixels or words into structured attributes. This study tests only that first step, image understanding; finding products comes after it and is tested separately. Pick the wrong model and every result downstream is wrong, or the bill explodes, so we tested the candidates on our own images.
 
 ## What we found
 
@@ -88,15 +116,15 @@ ${f.map(x=>'- '+x).join('\n')}
 
 ![Accuracy vs cost](charts/frontier-look.png)
 
-## Leaderboard: screenshot understanding
+## Leaderboard: image understanding
 
-${look.length?table(['#','Model','Tier','Score','Items found','Precision','Box overlap','Failures','p50 latency','$ / 1k images'],look.map((r,i)=>[i+1,r.label+(r.openWeights?' (open)':'')+(r.priceVerified?'':' *'),tierLabel(r.tier),pct(r.score)+ci(r),pct(r.recall),pct(r.precision),pct(r.iou,0),pct(1-r.okRate,0),ms(r.latencyP50),usd(r.costPer1k)])):'_Not run._'}
+${look.length?table(['#','Model','Tier','Image understanding','Spots items','Names type','Describes','Search-ready','Failures','Named a person','$ / image','p50 latency'],look.map((r,i)=>[i+1,r.label+(r.openWeights?' (open)':'')+(r.priceVerified?'':' *'),tierLabel(r.tier),pct(r.score)+ci(r),pct(r.parts?.spots),pct(r.parts?.names),pct(r.parts?.describes),pct(r.parts?.search),pct(1-r.okRate,0),r.privacyRate===undefined?'not checked':pct(r.privacyRate,1),usd(r.costPer1k===null?null:r.costPer1k/1000),ms(r.latencyP50)])):'_Not run._'}
 
-Score is the share of labelled attributes each model got right per item, averaged over items, with missed items counted as zero and failed calls counted as zero. The ± is a 95% confidence interval across images.${unverified?'\n\n\\* Price carried over from the previous model in the family; check the provider pricing page.':''}
+Image understanding = 25% spots every item + 25% names the product type + 30% describes its attributes + 20% search-ready phrasing, all compared against the answer key; failed calls score zero. Nothing is searched on the web. The ± is a 95% confidence interval across images. A model that names a person in more than 2% of celebrity images, or fails more than 2% of calls, is not eligible for production.${unverified?'\n\n\\* Price carried over from the previous model in the family; check the provider pricing page.':''}
 
 ![Attribute accuracy](charts/fields-look.png)
 
-## Leaderboard: keyword understanding
+${keySection(summary)}${scaleSection(summary)}## Leaderboard: keyword understanding
 
 ${query.length?table(['#','Model','Tier','Filter accuracy','Failures','p50 latency','$ / 1k queries'],query.map((r,i)=>[i+1,r.label,tierLabel(r.tier),pct(r.score)+ci(r),pct(1-r.okRate,0),ms(r.latencyP50),usd(r.costPer1k)])):'_Not run._'}
 
@@ -104,8 +132,8 @@ Queries test what Indian shoppers actually type: Hinglish ("500 se kam"), rupee 
 
 ## Method
 
-- **Data.** ${summary.dataset.looks} images (${comp(summary.dataset.lookComposition)}) and ${summary.dataset.queries} queries (${comp(summary.dataset.queryComposition)}), each labelled by hand against a fixed taxonomy (version ${summary.taxonomyVersion}).
-- **Task 1, screenshot.** One call per image returns every fashion item with a bounding box and ${'13'} attributes: category, department, colour family, pattern, sleeve, fit, length, neckline, fabric, occasion, Indian ethnic wear, defining features, and any visible brand. Close answers get half credit (navy for black, loafers for formal shoes).
+- **Data.** ${summary.dataset.looks} images (${comp(summary.dataset.lookComposition)}) and ${summary.dataset.queries} queries (${comp(summary.dataset.queryComposition)}), each scored against a fixed taxonomy (version ${summary.taxonomyVersion})${summary.answerKey?' and an AI consensus answer key (see below)':''}.
+- **Task 1, screenshot.** One call per image returns every fashion item with its location, product type, 11 attributes (department, colour, pattern, sleeve, fit, length, neckline, fabric, occasion, Indian ethnic wear, visible brand) and the phrase a shopper would type to find it. Close answers get half credit (navy for black, loafers for formal shoes).
 - **Task 2, keywords.** One call per query returns search filters (category, colour, occasion, rupee price range, size, brand, language).
 - **Fairness.** Same prompt (version ${summary.promptVersion}), same JSON schema, temperature 0 where supported, images resized to ${summary.config.maxDim}px for everyone, low reasoning effort where configurable, ${summary.config.repeat} run${summary.config.repeat>1?'s':''} per item.
 - **Cost.** Billed tokens × list price (or the provider's reported cost), including reasoning tokens. Total spend for this study: ${usd(summary.spentUsd)}.

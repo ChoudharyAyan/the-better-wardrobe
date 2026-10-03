@@ -13,6 +13,9 @@ import {buildReport,writeReport,frontier} from '../evals/report.mjs';
 import {createEvalLab} from '../evals/lab.mjs';
 import {lookSchema,querySchema} from '../evals/tasks.mjs';
 import {createServer} from '../server.mjs';
+import {mergeKeys,tagsFor,idFor,buildKey} from '../evals/autokey.mjs';
+import {scaleAnalysis,frontierOf} from '../evals/scale.mjs';
+import {checkPrivacy,checkKey} from '../evals/validate.mjs';
 
 const tmp=()=>mkdtemp(path.join(tmpdir(),'tbw-evals-'));
 const mock=(id,quality,extra={})=>({id,label:id,provider:'mock',model:id,tier:'cheap',price:{input:1,output:5},verified:true,openWeights:false,enabled:true,options:{quality,...extra}});
@@ -28,14 +31,16 @@ test('taxonomy maps shopper words onto the frozen enums with partial credit for 
  assert.equal(canonicalEnum('pattern','Plaid'),'checked');assert.equal(canonicalEnum('occasion','Haldi'),'festive');assert.equal(canonicalEnum('neckline','Cuban collar'),'camp collar');
 });
 
-test('look scoring rewards found items and attributes, penalises misses and extras',()=>{
- const gold={exhaustive:true,items:[{category:'shirt',box:[0,0,500,500],colour:'cream',pattern:'solid',features:['camp collar']},{category:'loafers',box:[0,600,300,900],colour:'brown'}]};
- const perfect={items:[{category:'shirt',box:[0,0,500,500],colour:'cream',pattern:'solid',features:['Camp collar','short sleeves']},{category:'loafers',box:[0,600,300,900],colour:'brown'}]};
- const p=scoreLook(perfect,gold);assert.equal(p.score,1);assert.equal(p.recall,1);assert.equal(p.precision,1);assert.equal(p.iou,1);
- const partial=scoreLook({items:[{label:'ivory camp collar shirt',category:'shirt',box:[0,0,480,520],colour:'white',pattern:'solid',features:[]},{category:'sunglasses',box:[400,400,500,450]}]},gold);
- assert.equal(partial.recall,0.5);assert.equal(partial.precision,0.5);assert.ok(partial.score>0.3&&partial.score<0.5,'shirt partly right, loafers missed');
- assert.equal(partial.fields.features.sum,1,'feature found in the label counts');
- assert.equal(scoreLook({items:[{category:'formal shoes',box:[0,600,300,900],colour:'brown'}]},{exhaustive:false,items:[gold.items[1]]}).score,0.75);
+test('image understanding score combines spotting, naming, describing and search-readiness',()=>{
+ const gold={exhaustive:true,items:[{category:'shirt',box:[0,0,500,500],colour:'cream',pattern:'solid',search_terms:['cream','camp','collar','shirt']},{category:'loafers',box:[0,600,300,900],colour:'brown'}]};
+ const perfect={items:[{category:'shirt',box:[0,0,500,500],colour:'cream',pattern:'solid',search_query:'cream camp collar linen shirt men'},{category:'loafers',box:[0,600,300,900],colour:'brown'}]};
+ const p=scoreLook(perfect,gold);assert.equal(p.score,1);assert.deepEqual(p.parts,{spots:1,names:1,describes:1,search:1});assert.equal(p.iou,1);
+ const half=scoreLook({items:[{label:'ivory shirt',category:'shirt',box:[0,0,480,520],colour:'white',pattern:'solid',search_query:'white shirt'}]},gold);
+ assert.equal(half.parts.spots,0.5);assert.equal(half.parts.names,1);assert.equal(half.parts.describes,0.75);assert.equal(half.parts.search,0.25);
+ assert.ok(Math.abs(half.score-(0.25*0.5+0.25*1+0.3*0.75+0.2*0.25))<1e-9);
+ const sibling=scoreLook({items:[{category:'formal shoes',box:[0,600,300,900],colour:'brown'}]},{exhaustive:false,items:[gold.items[1]]});
+ assert.equal(sibling.parts.names,0.5);assert.equal(sibling.parts.search,null,'nothing labelled for search: weight rescaled');assert.ok(Math.abs(sibling.score-(0.25+0.125+0.3)/0.8)<1e-9);
+ assert.equal(scoreLook({items:[{category:'shirt',colour:'black'}]},{items:[{category:'shirt',categoryUnscored:true,colour:'black'}]}).parts.names,null);
  assert.equal(scoreLook(null,gold).score,0);assert.equal(iou([0,0,10,10],[5,5,15,15]).toFixed(3),'0.143');
 });
 
@@ -81,7 +86,7 @@ test('model selection understands tiers, ids and opt-in models',()=>{
  const pareto=selectModels('pareto');assert.equal(pareto.length,16);assert.deepEqual(pareto,selectModels('all'));
  for(const id of ['gemini-2.5-flash-lite','gpt-5.5','claude-fable-5.1','ollama-qwen3-vl-2b'])assert.ok(!pareto.some(m=>m.id===id),id+' is opt-in');
  assert.equal(selectModels('everything').length,MODELS.length);
- const pilot=selectModels('pilot');assert.equal(pilot.length,12);assert.ok(pilot.some(m=>m.id==='gemini-3.1-pro')&&!pilot.some(m=>m.id==='claude-opus-5.5'));
+ const pilot=selectModels('pilot');assert.equal(pilot.length,11);assert.ok(!pilot.some(m=>['gemini-3.1-pro','claude-sonnet-5.5','claude-opus-5.5'].includes(m.id)),'key makers and flagships stay out of the pilot');
  const routed=route(pilot,'openrouter');assert.ok(routed.filter(m=>m.routedFrom).every(m=>m.provider==='openrouter'&&m.model.includes('/')));
  assert.ok(routed.filter(m=>m.id.startsWith('gemini')).every(m=>m.provider==='gemini'),'Gemini stays on its own key');
  assert.equal(routed.find(m=>m.id==='gpt-5.4-mini').options.reasoning,'low');assert.deepEqual(route(pilot,undefined),pilot);
@@ -122,7 +127,7 @@ test('report writes findings, a watermark for simulated data, charts and a Linke
  const labDir=await tmp();
  try{
   const golden=await loadGolden();const s=await runEval({models:[mock('alpha',0.9),{...mock('beta',0.6),price:{input:5,output:25}},{...mock('gamma',0.75),openWeights:true,price:{input:0.1,output:0.4}}],golden,labDir,maxUsd:5});
-  const r=buildReport(s);assert.match(r.markdown,/SIMULATED DATA/);assert.match(r.linkedin,/DO NOT POST/);assert.match(r.markdown,/Leaderboard: screenshot understanding/);
+  const r=buildReport(s);assert.match(r.markdown,/SIMULATED DATA/);assert.match(r.linkedin,/DO NOT POST/);assert.match(r.markdown,/Leaderboard: image understanding/);
   assert.ok(r.charts['frontier-look'].startsWith('<svg'));assert.ok(frontier(s.rows.filter(x=>x.task==='look')).length>=1);
   const out=await writeReport(s,path.join(labDir,'report'));assert.ok(out.files.includes('charts/frontier-look.png'));
   const png=await readFile(path.join(labDir,'report','charts','frontier-look.png'));assert.equal(png.subarray(1,4).toString(),'PNG');
@@ -152,4 +157,59 @@ test('model lab endpoints are local-only, same-origin, and refuse runs without k
 test('aggregate counts failures as zero and reports errors by kind',()=>{
  const row=aggregate([{modelId:'m',label:'m',task:'look',repeat:0,ok:true,score:1,costUsd:0.002,latencyMs:100,usage:{input:1,output:1},tags:['a']},{modelId:'m',label:'m',task:'look',repeat:0,ok:false,error:{code:'invalid_json'},tags:['a']}])[0];
  assert.equal(row.score,0.5);assert.equal(row.errors.invalid_json,1);assert.equal(row.okRate,0.5);assert.equal(row.slices.a.score,0.5);assert.equal(row.costPer1k,2);
+});
+
+test('answer key keeps only the items and fields both key makers agree on, at most four items',()=>{
+ const a={scene:'on person',known_item:{is_specific:true,guess:'designer red lehenga'},items:[
+  {label:'red bridal lehenga',category:'lehenga',box:[100,200,600,950],colour:'red',pattern:'embroidered',fabric:'silk',ethnic:true,department:'womenswear',features:['zari border','heavy embroidery'],search_query:'red embroidered bridal lehenga silk'},
+  {label:'gold jhumka earrings',category:'earrings',box:[300,100,340,160],colour:'gold'},
+  {label:'potli bag',category:'bag',box:[700,500,800,650],colour:'red'},{label:'juttis',category:'juttis',box:[300,900,500,990],colour:'gold'},{label:'dupatta',category:'dupatta',box:[50,150,700,900],colour:'red'}]};
+ const b={scene:'on person',known_item:{is_specific:true,guess:'bridal lehenga'},items:[
+  {label:'bridal lehenga',category:'lehenga',box:[110,210,590,940],colour:'maroon',pattern:'embroidered',fabric:'velvet',ethnic:true,department:'womenswear',features:['zari border'],search_query:'embroidered bridal lehenga red'},
+  {label:'earrings',category:'jewellery',box:[300,100,340,160],colour:'gold'},{label:'clutch',category:'bag',box:[700,500,800,650],colour:'red'},{label:'mojari',category:'juttis',box:[300,900,500,990],colour:'gold'},{label:'dupatta',category:'dupatta',box:[50,150,700,900],colour:'red'}]};
+ const k=mergeKeys(a,b);assert.equal(k.items.length,4,'capped at four');
+ const lehenga=k.items[0];assert.equal(lehenga.category,'lehenga');assert.equal(lehenga.pattern,'embroidered');assert.equal(lehenga.ethnic,true);
+ assert.equal(lehenga.colour,undefined,'red vs maroon: left unscored');assert.equal(lehenga.fabric,undefined,'silk vs velvet: left unscored');
+ assert.deepEqual(lehenga.features,['zari border']);assert.ok(lehenga.search_terms.includes('embroidered')&&lehenga.search_terms.includes('bridal'));
+ assert.deepEqual(k.distinctive,{a:'designer red lehenga',b:'bridal lehenga'});assert.ok(k.agreement.fields>0&&k.agreement.fields<1);
+ assert.deepEqual(tagsFor('celebrity/Women\'s Ethnic/look 1.png'),['celebrity','women-s-ethnic']);assert.equal(idFor('celebrity/Women Ethnic/Look 1.PNG'),'celebrity-women-ethnic-look-1');
+});
+
+test('autolabel builds a key from a folder tree, caches key-maker answers and tags from folders',async()=>{
+ const dir=await tmp();const {mkdir:mk,copyFile}=await import('node:fs/promises');
+ try{
+  await mk(path.join(dir,'shots','everyday','footwear'),{recursive:true});await copyFile(path.join(process.cwd(),'dist','assets','sneaker.jpg'),path.join(dir,'shots','everyday','footwear','white sneaker.jpg'));
+  let calls=0;const fetcher=async()=>{calls++;return respond(200,{candidates:[{finishReason:'STOP',content:{parts:[{text:JSON.stringify({scene:'product shot',caption_text:'',known_item:{is_specific:false,guess:''},items:[{label:'white sneaker',category:'sneakers',box:[100,100,900,800],colour:'white',fabric:'leather',features:['lace-up'],search_query:'white leather sneakers'}]})}]}}],usageMetadata:{promptTokenCount:1500,candidatesTokenCount:200}});};
+  const g=n=>({...MODELS.find(m=>m.id==='gemini-3-flash'),id:n});const opts={dir:path.join(dir,'shots'),models:[g('k1'),g('k2')],env:{GEMINI_API_KEY:'k'},fetcher,out:path.join(dir,'golden','autokey.json'),rawDir:path.join(dir,'raw')};
+  const r=await buildKey(opts);assert.equal(r.images,1);assert.equal(calls,2);await buildKey(opts);assert.equal(calls,2,'second build is free');
+  const key=JSON.parse(await readFile(opts.out,'utf8'));assert.deepEqual(key.images[0].tags,['everyday','footwear']);assert.equal(key.images[0].items[0].colour,'white');
+  const golden=await loadGolden({dirs:[path.join(dir,'golden')],only:'autokey'});assert.equal(golden.looks.length,1);assert.ok(golden.keyAgreement);
+ }finally{await rm(dir,{recursive:true,force:true});}
+});
+
+test('scale analysis simulates cascades and picks a model per monthly volume band',async()=>{
+ const labDir=await tmp();
+ try{
+  const golden=await loadGolden({only:'looks'});
+  const models=[{...mock('cheap',0.6),price:{input:0.1,output:0.4}},{...mock('mid',0.8),price:{input:0.75,output:4.5}},{...mock('best',0.97),price:{input:2,output:12}}];
+  const s=await runEval({models,tasks:['look'],golden,labDir,maxUsd:5});
+  assert.ok(s.scale&&s.scale.bands.length===3);assert.ok(s.scale.options.some(o=>o.kind==='single'));
+  const early=s.scale.bands[0],scale=s.scale.bands[2];assert.ok(early.pick.score>=scale.pick.score-1e-9,'early band buys at least as much quality');assert.ok(scale.pick.monthlyUsd/100000<=early.pick.monthlyUsd/1000+1e-9);
+  assert.ok(s.scale.byExtraction.some(e=>e.label==='Spotting every item'));
+  const casc=s.scale.options.filter(o=>o.kind==='cascade');for(const c of casc){assert.ok(c.escalation>=0&&c.escalation<=1);assert.ok(s.scale.frontier.includes(c.id));}
+  const f=frontierOf([{id:'a',score:0.5,costPer1k:1},{id:'b',score:0.4,costPer1k:2},{id:'c',score:0.9,costPer1k:5}]);assert.deepEqual(f.map(x=>x.id),['a','c']);
+  const r=buildReport(s);assert.match(r.markdown,/first 1,000 users/);assert.match(r.markdown,/Image understanding/);
+ }finally{await rm(labDir,{recursive:true,force:true});}
+});
+
+test('privacy check flags answers that name a person; key check scores the key against a judge',async()=>{
+ const fetcher=async(url,o)=>{const b=JSON.parse(o.body);const text=b.contents[0].parts[0].text;
+  if(text.includes('personal names')||text.includes('real person'))return respond(200,{candidates:[{finishReason:'STOP',content:{parts:[{text:JSON.stringify({results:[{id:'0',names_person:true},{id:'1',names_person:false}]})}]}}],usageMetadata:{promptTokenCount:400,candidatesTokenCount:40}});
+  return respond(200,{candidates:[{finishReason:'STOP',content:{parts:[{text:JSON.stringify({items:[{label:'x',present:true,wrong_fields:['colour']}]})}]}}],usageMetadata:{promptTokenCount:1500,candidatesTokenCount:60}});};
+ const checker={...MODELS.find(m=>m.id==='gemini-3-flash')};const env={GEMINI_API_KEY:'k'};
+ const rec=(m,name)=>({task:'look',ok:true,modelId:m,tags:['celebrity'],output:{caption_text:'',known_item:{guess:name},items:[]}});
+ const p=await checkPrivacy({records:[rec('a','Famous Person airport look'),rec('b','airport look'),{...rec('b','x'),tags:['everyday']}],checker,env,fetcher});
+ assert.equal(p.answers,2);assert.equal(p.byModel.a.rate,1);assert.equal(p.byModel.b.rate,0);
+ const golden=await loadGolden({only:'looks'});const k=await checkKey({golden:{looks:golden.looks.slice(0,2)},judge:checker,n:2,env,fetcher});
+ assert.ok(k.fieldAccuracy<1&&k.fieldAccuracy>0);assert.equal(k.itemAccuracy,1);
 });

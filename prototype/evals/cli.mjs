@@ -7,6 +7,9 @@
 //   report    <runId|latest> [--out dir]       writes report.md, linkedin.txt and PNG charts
 //   publish   <runId|latest>                    copies the summary into evals/results and dist/evals for the dashboard
 //   --via openrouter                  run the OpenAI and Claude models through one OpenRouter balance (Gemini stays native)
+//   autolabel --dir <images> [--max-usd 5]      AI answer key from two key-maker models (no hand labelling)
+//   validate  <runId|latest> [--sample 25]       judge spot-check of the key + privacy check on celebrity answers
+//   --set autokey                     use only golden files whose name starts with this
 //   prelabel  --dir <images> [--models gemini-3.1-pro,claude-opus-5.5] [--max-usd 2]   drafts labels for review
 import {readFile,writeFile,readdir,mkdir,copyFile} from 'node:fs/promises';
 import path from 'node:path';
@@ -16,6 +19,8 @@ import {loadGolden,prepareImage,PROTOTYPE_DIR,EVALS_DIR} from './golden.mjs';
 import {runEval,estimate,LAB_DIR} from './runner.mjs';
 import {writeReport,pct,usd,findings,frontierChart} from './report.mjs';
 import {TASKS,SYSTEM} from './tasks.mjs';
+import {buildKey,KEY_MAKERS,KEY_DIR,walkImages} from './autokey.mjs';
+import {checkKey,checkPrivacy,saveValidation,readRecords} from './validate.mjs';
 
 try{process.loadEnvFile(path.join(PROTOTYPE_DIR,'.env'));}catch(e){if(e.code!=='ENOENT')throw e;}
 const [cmd,...rest]=process.argv.slice(2);const args={_:[]};
@@ -41,17 +46,17 @@ async function preflight(){
  log(bad?`\n${bad} model id(s) need attention before a run.`:'\nAll model ids resolved.');process.exitCode=bad?1:0;
 }
 function plan(){
- return {models:route(selectModels(args.models||'all'),args.via),tasks:String(args.tasks||'look,query').split(','),limit:num(args.limit,undefined),repeat:num(args.repeat,1)};
+ return {models:route(selectModels(args.models||'all'),args.via).filter(m=>{if(args.set==='autokey'&&KEY_MAKERS.includes(m.id)){console.log(`(${m.label} built the answer key, so it is left out of the test)`);return false;}return true;}),tasks:String(args.tasks||'look,query').split(','),limit:num(args.limit,undefined),repeat:num(args.repeat,1)};
 }
 async function showEstimate(){
- const p=plan();const golden=await loadGolden({includeDrafts:!!args['include-drafts']});const e=estimate({...p,golden});
+ const p=plan();const golden=await loadGolden({includeDrafts:!!args['include-drafts'],only:args.set});const e=estimate({...p,golden});
  log(`${p.models.length} models × ${golden.looks.length} images / ${golden.queries.length} queries${p.limit?` (limit ${p.limit})`:''} × ${p.repeat} repeat → ${e.calls} calls`);
  for(const [id,v] of Object.entries(e.perModel).sort((a,b)=>b[1]-a[1]))log(`  ${pad(id,24)} ≈ ${usd(v)}`);
  if(e.unpriced.length)log(`  no list price (cost read from provider): ${e.unpriced.join(', ')}`);
  log(`Estimated total ≈ ${usd(e.usd)} (cached calls are free).`);for(const w of golden.warnings)log('! '+w);return e;
 }
 async function run(){
- const p=plan();const golden=await loadGolden({includeDrafts:!!args['include-drafts']});const e=await showEstimate();
+ const p=plan();const golden=await loadGolden({includeDrafts:!!args['include-drafts'],only:args.set});const e=await showEstimate();
  const maxUsd=num(args['max-usd'],5);if(e.usd>maxUsd){log(`\nAbove the $${maxUsd} cap. Re-run with --max-usd ${Math.ceil(e.usd*1.2)} if that is intended.`);process.exitCode=1;return;}
  if(!args.yes&&e.usd>1&&process.stdin.isTTY){process.stdout.write(`\nSpend up to ${usd(Math.min(maxUsd,e.usd*1.5))}? [y/N] `);const answer=await new Promise(r=>process.stdin.once('data',d=>r(String(d).trim().toLowerCase())));process.stdin.pause();if(answer!=='y'){log('Cancelled.');return;}}
  const controller=new AbortController();process.on('SIGINT',()=>{log('\nStopping after in-flight calls…');controller.abort();});
@@ -91,6 +96,25 @@ async function prelabel(){
  log(`\nDrafts in ${out}. Review them: delete wrong items, fix fields, remove anything you are unsure of (unscored), then set "status":"verified".`);
 }
 
-const commands={list,preflight,estimate:showEstimate,run,report,publish,prelabel};
+async function autolabel(){
+ if(!args.dir)throw Error('Pass --dir with the folder of screenshots (subfolders become tags, e.g. celebrity/womens-ethnic).');
+ const dir=path.resolve(args.dir);const models=route(selectModels(args.models||KEY_MAKERS.join(',')),args.via);const files=await walkImages(dir);
+ const per=models.reduce((s,m)=>s+(costOf(m,TASKS.look.estimate)||0),0);const maxUsd=num(args['max-usd'],5);
+ log(`${files.length} images × ${models.length} key makers (${models.map(m=>m.label).join(' + ')}) ≈ ${usd(per*files.length)}; cap ${usd(maxUsd)}. Cached answers are free.`);
+ const r=await buildKey({dir,models,maxUsd,maxDim:num(args['max-dim'],1024),onProgress:p=>process.stdout.write(`\r${p.i}/${p.total} ${p.skipped?'skipped (a key maker failed or the cap was hit)':`${p.items} items, ${pct(p.agreement,0)} fields agreed`} · spent ${usd(p.spent)}        `)});
+ log(`\n\nAnswer key: ${r.images} images (${r.skipped} skipped) → ${path.relative(PROTOTYPE_DIR,r.out)}\nKey makers agreed on ${pct(r.agreement.items,0)} of items and ${pct(r.agreement.fields,0)} of fields; disagreements are left unscored.\nNext: npm run lab -- run --set autokey --models pilot --via openrouter --tasks look --max-usd 6`);
+}
+async function validate(){
+ const s=await readSummary(args._[0]);const golden=await loadGolden({only:args.set||'autokey'});const out={};
+ const judge=route(selectModels(args.judge||'gpt-5.6-terra'),args.via)[0];const checker=route(selectModels(args.checker||'gemini-3-flash'),args.via)[0];
+ log(`Key check: ${judge.label} reviews ${num(args.sample,25)} images against the answer key (≈ ${usd((costOf(judge,TASKS.look.estimate)||0)*num(args.sample,25))}).`);
+ out.keyCheck=await checkKey({golden,judge,n:num(args.sample,25)});
+ log(`  items really in the image: ${pct(out.keyCheck.itemAccuracy)} · fields correct: ${pct(out.keyCheck.fieldAccuracy)} · spent ${usd(out.keyCheck.spentUsd)}`);
+ const records=await readRecords(s.runId);log(`Privacy check: ${checker.label} reads celebrity-image answers for personal names (text only).`);
+ out.privacy=await checkPrivacy({records,checker});
+ for(const [id,v] of Object.entries(out.privacy.byModel))log(`  ${pad(id,24)} named a person in ${pct(v.rate,1)} of ${v.checked} celebrity answers`);
+ await saveValidation(s.runId,out);log(`\nSaved into run ${s.runId}. Rebuild the report: npm run lab -- report ${s.runId}`);
+}
+const commands={list,preflight,estimate:showEstimate,run,report,publish,prelabel,autolabel,validate};
 if(!commands[cmd]){log(`Usage: node evals/cli.mjs <${Object.keys(commands).join('|')}> [--flags]\nSee the header of evals/cli.mjs or evals/README.md.`);process.exitCode=cmd?1:0;}
 else commands[cmd]().catch(e=>{console.error('\n'+(e.message||e));process.exitCode=1;});

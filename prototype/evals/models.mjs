@@ -51,8 +51,8 @@ export function selectModels(spec='all',models=MODELS){
  for(const p of parts){
   if(p==='all'||p==='pareto'){for(const x of models)if(x.enabled)picked.set(x.id,x);continue;}
   if(p==='everything'){for(const x of models)picked.set(x.id,x);continue;}
-  // The $10 pilot: every enabled model up to mid-high, plus Gemini 3.1 Pro as the one expensive ceiling check.
-  if(p==='pilot'){for(const x of models)if(x.enabled&&(['very-cheap','cheap','mid','mid-high'].includes(x.tier)||x.id==='gemini-3.1-pro'))picked.set(x.id,x);continue;}
+  // The $10 pilot: the 11 enabled models up to mid-high. Gemini 3.1 Pro and Claude Sonnet 5.5 build the answer key instead.
+  if(p==='pilot'){for(const x of models)if(x.enabled&&['very-cheap','cheap','mid','mid-high'].includes(x.tier))picked.set(x.id,x);continue;}
   const tier=models.filter(x=>x.tier===p&&(x.enabled||parts.includes(x.id)));
   if(tier.length){for(const x of tier)picked.set(x.id,x);continue;}
   const one=models.find(x=>x.id===p);if(!one)throw Error(`Unknown model or tier "${p}". Run: node evals/cli.mjs list`);picked.set(one.id,one);
