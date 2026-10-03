@@ -6,7 +6,7 @@ import path from 'node:path';
 import {canonicalCategory,categoryCredit,colourCredit,canonicalEnum} from '../evals/taxonomy.mjs';
 import {scoreLook,scoreQuery,iou,aggregate} from '../evals/scoring.mjs';
 import {callModel,EvalError,parseJson} from '../evals/providers.mjs';
-import {MODELS,selectModels,costOf} from '../evals/models.mjs';
+import {MODELS,selectModels,costOf,route} from '../evals/models.mjs';
 import {loadGolden} from '../evals/golden.mjs';
 import {runEval,estimate} from '../evals/runner.mjs';
 import {buildReport,writeReport,frontier} from '../evals/report.mjs';
@@ -81,6 +81,10 @@ test('model selection understands tiers, ids and opt-in models',()=>{
  const pareto=selectModels('pareto');assert.equal(pareto.length,16);assert.deepEqual(pareto,selectModels('all'));
  for(const id of ['gemini-2.5-flash-lite','gpt-5.5','claude-fable-5.1','ollama-qwen3-vl-2b'])assert.ok(!pareto.some(m=>m.id===id),id+' is opt-in');
  assert.equal(selectModels('everything').length,MODELS.length);
+ const pilot=selectModels('pilot');assert.equal(pilot.length,12);assert.ok(pilot.some(m=>m.id==='gemini-3.1-pro')&&!pilot.some(m=>m.id==='claude-opus-5.5'));
+ const routed=route(pilot,'openrouter');assert.ok(routed.filter(m=>m.routedFrom).every(m=>m.provider==='openrouter'&&m.model.includes('/')));
+ assert.ok(routed.filter(m=>m.id.startsWith('gemini')).every(m=>m.provider==='gemini'),'Gemini stays on its own key');
+ assert.equal(routed.find(m=>m.id==='gpt-5.4-mini').options.reasoning,'low');assert.deepEqual(route(pilot,undefined),pilot);
 });
 
 test('runner scores mock models end to end, respects the budget cap and writes artefacts',async()=>{

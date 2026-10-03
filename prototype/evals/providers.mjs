@@ -72,7 +72,7 @@ async function anthropic(a){
 }
 async function openrouter(a){
  const k=key(a.env,'openrouter');const content=[{type:'text',text:a.prompt}];if(a.image)content.push({type:'image_url',image_url:{url:dataUrl(a.image)}});
- const base={model:a.model.model,temperature:0,max_tokens:8000,usage:{include:true},messages:[{role:'system',content:a.system},{role:'user',content}]};
+ const base={model:a.model.model,temperature:0,max_tokens:8000,usage:{include:true},...(a.model.options?.reasoning?{reasoning:{effort:a.model.options.reasoning}}:{}),messages:[{role:'system',content:a.system},{role:'user',content}]};
  const url='https://openrouter.ai/api/v1/chat/completions',h={Authorization:'Bearer '+k,'X-Title':'The Better Wardrobe model lab'};const notes=[];
  let d;try{d=await post(a.fetcher,url,h,{...base,response_format:{type:'json_schema',json_schema:{name:a.schemaName,strict:true,schema:a.schema}}},a);}
  catch(e){if(!(e instanceof EvalError&&e.status===400))throw e;notes.push('json_schema not supported by the routed provider; used json_object with the schema in the prompt');

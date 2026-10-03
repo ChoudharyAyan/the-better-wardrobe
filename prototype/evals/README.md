@@ -3,7 +3,35 @@
 Tests every candidate vision model on the same labelled screenshots and Indian shopping queries, then writes a
 publishable report. Everything runs on your machine; results you choose to publish show in the Developer tab.
 
-## The study set (16 models)
+## The $10 pilot (start here)
+
+12 models on ~80 images and ~60 queries. Typical spend ~$5.75, worst case ~$10, and `--max-usd` makes the cap hard.
+
+| Paid from | Models | Typical | Worst case |
+|---|---|---|---|
+| Your Gemini key | Gemini 3.1 Flash-Lite · 3 Flash · 3.5 Flash · 3.6 Flash · 3.1 Pro (ceiling check) | ~$3.65 | ~$6.35 |
+| One OpenRouter top-up | GPT-5 nano · GPT-5.4 nano · GPT-5.4 mini · GPT-5.6 Luna · Claude Haiku 4.5 · Qwen3-VL 30B · Qwen3-VL 235B | ~$2.10 | ~$3.60 |
+
+Held back for later: GPT-5.6 Terra, Claude Sonnet 5.5, GPT-5.6 Sol, Claude Opus 5.5. Gemini 3.1 Pro stands in
+as the ceiling: if it beats the best mid-range model by only a few points, the other flagships will not change
+your decision. If the gap is large, Terra + Sonnet on 40 images costs about $1.40 more.
+
+1. Keys: keep `GEMINI_API_KEY`; add `OPENROUTER_API_KEY` with a $5 top-up (OpenRouter adds a small fee on
+   purchases). OpenAI and Anthropic accounts are not needed for the pilot.
+2. `npm run lab -- preflight --models pilot --via openrouter` (free). Fix any flagged ids in `evals/models.mjs`
+   (Gemini ids live in `model`, OpenRouter ids in `openrouter`).
+3. Golden set: ~70 real screenshots in `.local-data/evals/golden/images/` (the 12 bundled samples make ~80) and
+   ~20 real queries next to them (the 42 bundled make ~60). Draft labels almost for free with a model that is
+   not in the test, then correct them by hand:
+   `npm run lab -- prelabel --dir .local-data/evals/golden/images --models gemini-2.5-flash-lite --max-usd 0.5`
+4. `npm run lab -- run --models pilot --via openrouter --limit 3 --max-usd 0.5` (smoke test, ~$0.10–0.40).
+5. `npm run lab -- run --models pilot --via openrouter --max-usd 9.5`
+6. `npm run lab -- report latest`
+
+With ~80 images, differences under about 5 points are noise: good for ruling tiers in or out, not for
+splitting near-ties. Call it a pilot when you publish.
+
+## The full study set (16 models)
 
 `--models pareto` (same as `all`) runs these. They are the Pareto-friendly 80% of the candidates: three
 models are opt-in because something cheaper or newer covers the same ground.

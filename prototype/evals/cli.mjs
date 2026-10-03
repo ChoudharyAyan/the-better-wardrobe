@@ -6,10 +6,11 @@
 //   run       [--models ..] [--tasks ..] [--limit N] [--repeat N] [--max-usd 5] [--max-dim 1024] [--no-cache] [--yes]
 //   report    <runId|latest> [--out dir]       writes report.md, linkedin.txt and PNG charts
 //   publish   <runId|latest>                    copies the summary into evals/results and dist/evals for the dashboard
+//   --via openrouter                  run the OpenAI and Claude models through one OpenRouter balance (Gemini stays native)
 //   prelabel  --dir <images> [--models gemini-3.1-pro,claude-opus-5.5] [--max-usd 2]   drafts labels for review
 import {readFile,writeFile,readdir,mkdir,copyFile} from 'node:fs/promises';
 import path from 'node:path';
-import {MODELS,TIERS,PROVIDER_KEYS,selectModels,costOf} from './models.mjs';
+import {MODELS,TIERS,PROVIDER_KEYS,selectModels,costOf,route} from './models.mjs';
 import {listModels,callModel} from './providers.mjs';
 import {loadGolden,prepareImage,PROTOTYPE_DIR,EVALS_DIR} from './golden.mjs';
 import {runEval,estimate,LAB_DIR} from './runner.mjs';
@@ -32,7 +33,7 @@ async function list(){
  log('\nSelect with --models using tiers (cheap,mid), ids, or "all".');
 }
 async function preflight(){
- const models=selectModels(args.models||'all');const byProvider=Object.groupBy(models,m=>m.provider);let bad=0;
+ const models=route(selectModels(args.models||'all'),args.via);const byProvider=Object.groupBy(models,m=>m.provider);let bad=0;
  for(const [provider,ms] of Object.entries(byProvider)){
   let ids;try{ids=await listModels(provider,process.env);}catch(e){log(`✗ ${provider}: ${e.message}`);bad+=ms.length;continue;}
   for(const m of ms){if(ids.includes(m.model)){log(`✓ ${provider} ${m.model}`);continue;}bad++;const near=ids.filter(id=>id.startsWith(m.model)||m.model.startsWith(id.replace(/-preview.*$/,''))||id.includes(m.model.replace(/^.*\//,''))).slice(0,4);log(`✗ ${provider} ${m.model} not found${near.length?` — did you mean: ${near.join(', ')}? (edit evals/models.mjs)`:''}`);}
@@ -40,7 +41,7 @@ async function preflight(){
  log(bad?`\n${bad} model id(s) need attention before a run.`:'\nAll model ids resolved.');process.exitCode=bad?1:0;
 }
 function plan(){
- return {models:selectModels(args.models||'all'),tasks:String(args.tasks||'look,query').split(','),limit:num(args.limit,undefined),repeat:num(args.repeat,1)};
+ return {models:route(selectModels(args.models||'all'),args.via),tasks:String(args.tasks||'look,query').split(','),limit:num(args.limit,undefined),repeat:num(args.repeat,1)};
 }
 async function showEstimate(){
  const p=plan();const golden=await loadGolden({includeDrafts:!!args['include-drafts']});const e=estimate({...p,golden});
