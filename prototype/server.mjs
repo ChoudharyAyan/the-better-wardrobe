@@ -6,6 +6,8 @@ import path from 'node:path';
 import {createDiscovery,ApiError} from './lib/discovery.mjs';
 import {createQaStore} from './lib/qa.mjs';
 import {createConnectorStore,STORES} from './lib/connectors.mjs';
+import {readFeed} from './lib/mall-feed.mjs';
+import mallSnapshot from './dist/assets/mall-updates.json' with {type:'json'};
 try{process.loadEnvFile(fileURLToPath(new URL('./.env',import.meta.url)));}catch(e){if(e.code!=='ENOENT')throw e;}
 const root=fileURLToPath(new URL('./dist/',import.meta.url));
 const mime={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.svg':'image/svg+xml','.jpg':'image/jpeg','.png':'image/png','.webp':'image/webp','.woff2':'font/woff2','.ttf':'font/ttf'};
@@ -15,6 +17,10 @@ return async(req,res)=>{
  const send=(status,data)=>{res.writeHead(status,{'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});res.end(JSON.stringify(data));};
  try{const pathname=decodeURIComponent(new URL(req.url,'http://localhost').pathname);
  if(pathname.startsWith('/api/')){
+ if(req.method==='GET'&&pathname==='/api/mall/updates'){
+  const feed=await readFeed();
+  return send(200,feed.generatedAt?feed:mallSnapshot);
+ }
  // Store connectors: local development only (ORDER_CONNECTORS=true, never on Vercel, localhost only).
  if(pathname.startsWith('/api/connectors/')){
   const host=String(req.headers.host||'').replace(/^\[|\](?=:|$)/g,'').split(':')[0];

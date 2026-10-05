@@ -1,0 +1,49 @@
+name: Refresh mall storefronts
+
+on:
+  schedule:
+    - cron: '17 2,8,14,20 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: mall-storefront-refresh
+  cancel-in-progress: false
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+          cache-dependency-path: prototype/package-lock.json
+      - name: Install dependencies
+        run: npm ci
+        working-directory: prototype
+      - name: Refresh due storefronts
+        run: npm run mall:refresh
+        working-directory: prototype
+        env:
+          MALL_REFRESH_HOURS: ${{ vars.MALL_REFRESH_HOURS || '24' }}
+      - name: Check generated feed and app
+        run: npm run check && npm test
+        working-directory: prototype
+      - name: Propose reviewed feed update
+        uses: peter-evans/create-pull-request@v8
+        with:
+          branch: automation/mall-storefront-feed
+          delete-branch: true
+          add-paths: prototype/dist/assets/mall-updates.json
+          commit-message: 'Refresh verified mall designs and offers'
+          title: 'Refresh mall designs and offers'
+          body: |
+            Automated snapshot of public retailer pages. Product links, images, and discounts
+            are read from official storefronts; unavailable/blocked brands are marked honestly.
+            Review the source URLs and merge to publish the refreshed feed.
