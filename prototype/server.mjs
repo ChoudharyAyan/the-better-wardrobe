@@ -7,16 +7,31 @@ import {createDiscovery,ApiError} from './lib/discovery.mjs';
 import {createQaStore} from './lib/qa.mjs';
 import {createConnectorStore,STORES} from './lib/connectors.mjs';
 import {readFeed} from './lib/mall-feed.mjs';
+import {createCommunity} from './lib/community.mjs';
 import mallSnapshot from './dist/assets/mall-updates.json' with {type:'json'};
 try{process.loadEnvFile(fileURLToPath(new URL('./.env',import.meta.url)));}catch(e){if(e.code!=='ENOENT')throw e;}
 const root=fileURLToPath(new URL('./dist/',import.meta.url));
 const mime={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.svg':'image/svg+xml','.jpg':'image/jpeg','.png':'image/png','.webp':'image/webp','.woff2':'font/woff2','.ttf':'font/ttf'};
 // The bare (req,res) listener is what Vercel's Node runtime invokes; createServer wraps it for local runs.
-export function createHandler(discovery=createDiscovery(),qaStore=createQaStore(),photos=createPhotos(),connectors=createConnectorStore()){
+export function createHandler(discovery=createDiscovery(),qaStore=createQaStore(),photos=createPhotos(),connectors=createConnectorStore(),community=createCommunity()){
 return async(req,res)=>{
  const send=(status,data)=>{res.writeHead(status,{'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});res.end(JSON.stringify(data));};
  try{const pathname=decodeURIComponent(new URL(req.url,'http://localhost').pathname);
  if(pathname.startsWith('/api/')){
+ if(pathname.startsWith('/api/community')){
+  if(req.headers['sec-fetch-site']==='cross-site')return send(403,{error:'Open the app to use Community.'});
+  const origin=String(req.headers.origin||'');
+  if(origin){let parsed;try{parsed=new URL(origin);}catch{return send(403,{error:'Invalid origin.'});}if(parsed.host!==req.headers.host)return send(403,{error:'Open the app to use Community.'});}
+  let body={};
+  if(req.method==='POST'){
+   if(!req.headers['content-type']?.startsWith('application/json'))return send(415,{error:'JSON required'});
+   let bytes=0,chunks=[];for await(const chunk of req){bytes+=chunk.length;if(bytes>1_500_000)return send(413,{error:'Request too large'});chunks.push(chunk);}
+   try{body=JSON.parse(Buffer.concat(chunks).toString());}catch{return send(400,{error:'Invalid JSON'});}
+   if(!body||typeof body!=='object'||Array.isArray(body))return send(400,{error:'Invalid request'});
+  }
+  const result=await community.handle(req,pathname,body);
+  res.writeHead(200,{'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff',...result.headers});return res.end(JSON.stringify(result.data));
+ }
  if(req.method==='GET'&&pathname==='/api/mall/updates'){
   const feed=await readFeed();
   return send(200,feed.generatedAt?feed:mallSnapshot);
@@ -83,7 +98,7 @@ return async(req,res)=>{
  if(!['GET','HEAD'].includes(req.method))return send(405,{error:'Method not allowed'});
  const target=path.resolve(root,'.'+(pathname==='/'?'/index.html':pathname));if(!target.startsWith(root)||pathname.split('/').some(p=>p.startsWith('.')))return send(403,{error:'Forbidden'});
  const content=await readFile(target);res.writeHead(200,{'Content-Type':mime[path.extname(target)]||'application/octet-stream','Cache-Control':'no-cache','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer'});res.end(req.method==='HEAD'?undefined:content);
- }catch(e){send(e.status|| (e.code==='ENOENT'?404:500),{error:e instanceof ApiError?e.message:'Unable to complete this request.'});}
+ }catch(e){send(e.status|| (e.code==='ENOENT'?404:500),{error:e instanceof ApiError||e.status?e.message:'Unable to complete this request.'});}
 };}
-export function createServer(discovery,qaStore,photos,connectors){return http.createServer(createHandler(discovery,qaStore,photos,connectors));}
+export function createServer(discovery,qaStore,photos,connectors,community){return http.createServer(createHandler(discovery,qaStore,photos,connectors,community));}
 if(process.argv[1]&&import.meta.url===pathToFileURL(path.resolve(process.argv[1])).href){const port=Number(process.env.PORT||5173),host=process.env.HOST||'0.0.0.0';createServer().listen(port,host,()=>console.log(`The Better Wardrobe: http://127.0.0.1:${port} · network enabled`));}
