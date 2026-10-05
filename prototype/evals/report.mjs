@@ -21,6 +21,10 @@ export function findings(summary){
  const look=rowsFor(summary,'look'),query=rowsFor(summary,'query'),out=[];
  const head=look.length?look:query;if(!head.length)return out;const task=look.length?'screenshot':'keyword';
  const best=head[0];out.push(`Best ${task} accuracy: ${best.label} at ${pct(best.score)}${ci(best)} (${usd(best.costPer1k)} per 1,000 calls).`);
+ // A top score is no use if the model cannot ship: say so next to it, and name the best one that can.
+ const ok=r=>r.okRate>=0.98&&!(r.privacyRate>0.02),why=r=>r.privacyRate>0.02?`named the person in ${pct(r.privacyRate,1)} of celebrity images`:`failed ${pct(1-r.okRate,0)} of calls`;
+ const blocked=head.filter(r=>r.score>=best.score-0.03&&!ok(r)),pick=head.find(ok);
+ if(blocked.length)out.push(`Not eligible for production: ${blocked.map(r=>`${r.label} (${why(r)})`).join(', ')}.${pick?` Best eligible model: ${pick.label} at ${pct(pick.score)}${ci(pick)} (${usd(pick.costPer1k)} per 1,000 calls).`:''}`);
  const good=[...head].filter(r=>typeof r.costPer1k==='number'&&r.score>=best.score-0.03).sort((a,b)=>a.costPer1k-b.costPer1k)[0];
  if(good&&good.modelId!==best.modelId)out.push(`Good-enough pick: ${good.label} lands within 3 points of the best (${pct(good.score)}) at ${usd(good.costPer1k)} per 1,000 calls, ${best.costPer1k&&good.costPer1k?Math.round(best.costPer1k/good.costPer1k)+'× cheaper':'far cheaper'}.`);
  let inv=null;for(const a of head)for(const b of head)if(a.costPer1k&&b.costPer1k&&a.costPer1k>=3*b.costPer1k&&a.score<b.score&&(!inv||a.costPer1k/b.costPer1k>inv.ratio))inv={a,b,ratio:a.costPer1k/b.costPer1k};
@@ -159,7 +163,7 @@ We freeze the interfaces, not the vendors: the taxonomy, the prompt, the schema 
 What we learned:
 ${f.slice(0,4).map(x=>'→ '+x).join('\n')}
 
-Method: ${summary.dataset.looks} hand-labelled images and ${summary.dataset.queries} Indian shopping queries (Hinglish, rupee ranges, festive occasions), same prompt and schema for every model, failures scored as zero.
+Method: ${summary.dataset.looks} images${summary.answerKey?' scored against an answer key that two models from different companies agreed on and a third spot-checked':' labelled by hand'}${summary.dataset.queries?` and ${summary.dataset.queries} Indian shopping queries (Hinglish, rupee ranges, festive occasions)`:''}, same prompt and schema for every model, failures scored as zero.
 
 Our takeaway: freeze the taxonomy and the interfaces, keep the model swappable, and let your own data pick it.
 

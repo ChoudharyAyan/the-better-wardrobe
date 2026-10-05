@@ -9,7 +9,7 @@ import {callModel,EvalError,parseJson,openrouterBalance} from '../evals/provider
 import {MODELS,selectModels,costOf,route} from '../evals/models.mjs';
 import {loadGolden} from '../evals/golden.mjs';
 import {runEval,estimate} from '../evals/runner.mjs';
-import {buildReport,writeReport,frontier} from '../evals/report.mjs';
+import {buildReport,writeReport,frontier,findings} from '../evals/report.mjs';
 import {createEvalLab} from '../evals/lab.mjs';
 import {lookSchema,querySchema} from '../evals/tasks.mjs';
 import {createServer} from '../server.mjs';
@@ -204,13 +204,14 @@ test('scale analysis simulates cascades and picks a model per monthly volume ban
 });
 
 test('privacy check flags answers that name a person; key check scores the key against a judge',async()=>{
- const fetcher=async(url,o)=>{const b=JSON.parse(o.body);const text=b.contents[0].parts[0].text;
+ const sent=[];const fetcher=async(url,o)=>{const b=JSON.parse(o.body);const text=b.contents[0].parts[0].text;sent.push(text);
   if(text.includes('personal names')||text.includes('real person'))return respond(200,{candidates:[{finishReason:'STOP',content:{parts:[{text:JSON.stringify({results:[{id:'0',names_person:true},{id:'1',names_person:false}]})}]}}],usageMetadata:{promptTokenCount:400,candidatesTokenCount:40}});
   return respond(200,{candidates:[{finishReason:'STOP',content:{parts:[{text:JSON.stringify({items:[{label:'x',present:true,wrong_fields:['colour']}]})}]}}],usageMetadata:{promptTokenCount:1500,candidatesTokenCount:60}});};
  const checker={...MODELS.find(m=>m.id==='gemini-3-flash')};const env={GEMINI_API_KEY:'k'};
- const rec=(m,name)=>({task:'look',ok:true,modelId:m,tags:['celebrity'],output:{caption_text:'',known_item:{guess:name},items:[]}});
+ const rec=(m,name)=>({task:'look',ok:true,modelId:m,tags:['celebrity'],output:{caption_text:'PHOTOAGENCY watermark',known_item:{guess:name},items:[]}});
  const p=await checkPrivacy({records:[rec('a','Famous Person airport look'),rec('b','airport look'),{...rec('b','x'),tags:['everyday']}],checker,env,fetcher});
  assert.equal(p.answers,2);assert.equal(p.byModel.a.rate,1);assert.equal(p.byModel.b.rate,0);
+ assert.equal(sent.some(x=>x.includes('PHOTOAGENCY')),false,'printed caption text is not sent to the checker');
  const golden=await loadGolden({only:'looks'});const k=await checkKey({golden:{looks:golden.looks.slice(0,2)},judge:checker,n:2,env,fetcher});
  assert.ok(k.fieldAccuracy<1&&k.fieldAccuracy>0);assert.equal(k.itemAccuracy,1);
 });
@@ -232,4 +233,19 @@ test('items match across vendors whose boxes use different conventions', () => {
  const pred={items:[{label:'chunky silver bangles',category:'jewellery',box:[0,0,10,10]},{label:'coiled silver choker',category:'jewellery',box:[900,900,1000,1000]}]};
  assert.equal(scoreLook(pred,{items:gold}).parts.spots,1);
  const pairs=matchItems(gold,pred.items).map(m=>[m.gi,m.pi]).sort();assert.deepEqual(pairs,[[0,1],[1,0]]);
+});
+
+test('privacy answers the checker could not read are left out, not counted as clean',async()=>{
+ const fetcher=async()=>respond(200,{candidates:[{finishReason:'STOP',content:{parts:[{text:JSON.stringify({results:[{id:'0',names_person:true}]})}]}}],usageMetadata:{promptTokenCount:10,candidatesTokenCount:5}});
+ const checker={...MODELS.find(m=>m.id==='gemini-3-flash')};
+ const rec=m=>({task:'look',ok:true,modelId:m,tags:['celebrity'],output:{known_item:{guess:'x'},items:[]}});
+ const p=await checkPrivacy({records:[rec('a'),rec('a')],checker,env:{GEMINI_API_KEY:'k'},fetcher});
+ assert.deepEqual(p.byModel.a,{checked:1,named:1,unchecked:1,rate:1});assert.equal(p.failed,1);
+});
+
+test('findings say when the top scorer is not eligible and name the best model that is', () => {
+ const row=(modelId,score,extra={})=>({task:'look',modelId,label:modelId,score,costPer1k:1,okRate:1,privacyRate:0,errors:{},fields:{},recall:null,...extra});
+ const f=findings({rows:[row('top',0.95,{privacyRate:0.065}),row('flaky',0.94,{okRate:0.96}),row('safe',0.9)]});
+ const line=f.find(x=>x.startsWith('Not eligible'));
+ assert.match(line,/top \(named the person in 6\.5% of celebrity images\)/);assert.match(line,/flaky \(failed 4% of calls\)/);assert.match(line,/Best eligible model: safe at 90\.0%/);
 });
