@@ -53,13 +53,14 @@ export async function buildKey({dir,models,env=process.env,fetcher=fetch,maxUsd=
  await mkdir(rawDir,{recursive:true});await mkdir(path.dirname(out),{recursive:true});
  let spent=0;const images=[];
  for(const [i,f] of files.entries()){
-  const id=idFor(f.rel);const outputs=[];
-  for(const m of models){
-   const raw=path.join(rawDir,`${id}.${m.id}.${maxDim}.json`);let res=null;
-   try{res=JSON.parse(await readFile(raw,'utf8'));}catch{}
-   if(!res){if(spent>=maxUsd)break;const img=await prepareImage(f.file,maxDim);try{res=await callModel({model:m,system:SYSTEM,prompt:TASKS.look.prompt(),image:img,schema:TASKS.look.schema,schemaName:'look',env,fetcher,maxTokens:4000});spent+=costOf(m,res.usage)||0;await writeFile(raw,JSON.stringify(res));}catch(e){res={error:e.message};}}
-   outputs.push(res);
-  }
+  const id=idFor(f.rel);
+  // Both key makers label the image at the same time; cached answers are reused for free.
+  const outputs=(await Promise.all(models.map(async m=>{
+   const raw=path.join(rawDir,`${id}.${m.id}.${maxDim}.json`);
+   try{return JSON.parse(await readFile(raw,'utf8'));}catch{}
+   if(spent>=maxUsd)return null;
+   try{const img=await prepareImage(f.file,maxDim);const res=await callModel({model:m,system:SYSTEM,prompt:TASKS.look.prompt(),image:img,schema:TASKS.look.schema,schemaName:'look',env,fetcher,maxTokens:4000});spent+=costOf(m,res.usage)||0;await writeFile(raw,JSON.stringify(res));return res;}catch(e){return {error:e.message};}
+  }))).filter(Boolean);
   if(outputs.length<2||outputs.some(o=>!o?.json)){onProgress({i:i+1,total:files.length,id,skipped:true,spent});continue;}
   const k=mergeKeys(outputs[0].json,outputs[1].json);
   images.push({id,file:path.relative(path.dirname(out),f.file),status:'verified',labeledBy:'ai-consensus:'+models.map(m=>m.id).join('+'),tags:tagsFor(f.rel),exhaustive:false,scene:k.scene,distinctive:k.distinctive,agreement:k.agreement,items:k.items});
