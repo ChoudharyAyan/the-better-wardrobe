@@ -27,10 +27,13 @@ export function fieldCredit(field,gold,pred,predItem={}){
  return canonicalEnum(field,gold)===canonicalEnum(field,pred)?1:0;
 }
 
-// Greedy one-to-one matching: same category (or a sibling in the same group) is required; overlap breaks ties.
+// Greedy one-to-one matching: same category (or a sibling in the same group) is required; label wording breaks ties.
+// Boxes never decide a match: models ignore the requested box format (Gemini answers [y,x,y,x], Claude in pixels),
+// so overlap would score vendors' box conventions rather than vision. It is still reported as iou.
+const labelSim=(a,b)=>{const A=searchWords(a),B=new Set(searchWords(b));if(!A.length||!B.size)return 0;const hit=A.filter(w=>B.has(w)).length;return hit/new Set([...A,...B]).size;};
 export function matchItems(goldItems,predItems){
  const pairs=[];
- goldItems.forEach((g,gi)=>predItems.forEach((p,pi)=>{const credit=categoryCredit(g.category,p.category);if(!credit)return;const overlap=iou(g.box,p.box);if(overlap!==null&&overlap<0.05)return;pairs.push({gi,pi,weight:credit*2+(overlap??0.25),overlap});}));
+ goldItems.forEach((g,gi)=>predItems.forEach((p,pi)=>{const credit=categoryCredit(g.category,p.category);if(!credit)return;const overlap=iou(g.box,p.box);pairs.push({gi,pi,weight:credit*2+labelSim(g.label,p.label),overlap});}));
  pairs.sort((a,b)=>b.weight-a.weight);const usedG=new Set(),usedP=new Set(),out=[];
  for(const p of pairs){if(usedG.has(p.gi)||usedP.has(p.pi))continue;usedG.add(p.gi);usedP.add(p.pi);out.push(p);}
  return out;

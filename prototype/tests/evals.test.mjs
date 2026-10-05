@@ -4,7 +4,7 @@ import {mkdtemp,readFile,readdir,rm} from 'node:fs/promises';
 import {tmpdir} from 'node:os';
 import path from 'node:path';
 import {canonicalCategory,categoryCredit,colourCredit,canonicalEnum} from '../evals/taxonomy.mjs';
-import {scoreLook,scoreQuery,iou,aggregate} from '../evals/scoring.mjs';
+import {scoreLook,scoreQuery,iou,aggregate,matchItems} from '../evals/scoring.mjs';
 import {callModel,EvalError,parseJson,openrouterBalance} from '../evals/providers.mjs';
 import {MODELS,selectModels,costOf,route} from '../evals/models.mjs';
 import {loadGolden} from '../evals/golden.mjs';
@@ -220,4 +220,16 @@ test('OpenRouter balance is read from the key endpoint and output is capped per 
  assert.deepEqual(b,{limit:10,usage:1.25,remaining:8.75});
  let body;await callModel({system:'s',prompt:'p',image:null,schema:querySchema,schemaName:'query',model:{provider:'openrouter',model:'google/gemini-3-flash',options:{reasoning:'low'}},env:{OPENROUTER_API_KEY:'k'},fetcher:async(u,o)=>{body=JSON.parse(o.body);return respond(200,{choices:[{finish_reason:'stop',message:{content:'{}'}}],usage:{prompt_tokens:1,completion_tokens:1,cost:0}});}});
  assert.equal(body.max_tokens,3000);assert.deepEqual(body.reasoning,{effort:'low'});
+});
+
+test('items match across vendors whose boxes use different conventions', () => {
+ // From a real calibration: Gemini answered [y,x,y,x] on 0-1000, Claude in pixels, so no box overlapped.
+ const gemini={items:[{label:'white sheer crop top',category:'crop top',box:[238,308,588,662]},{label:'white ruched skirt',category:'skirt',box:[603,335,1000,811]},{label:'silver bangles',category:'jewellery',box:[376,238,496,368]}]};
+ const claude={items:[{label:'white sheer sleeveless crop top',category:'crop top',box:[165,140,335,365]},{label:'cream draped wrap maxi skirt',category:'skirt',box:[165,370,400,616]},{label:'silver stacked oxidised bangles',category:'jewellery',box:[115,228,185,305]}]};
+ assert.equal(mergeKeys(gemini,claude).items.length,3);
+ // Among same-category items, the label decides which pairs up.
+ const gold=[{label:'silver choker necklace',category:'jewellery'},{label:'silver cuff bangles',category:'jewellery'}];
+ const pred={items:[{label:'chunky silver bangles',category:'jewellery',box:[0,0,10,10]},{label:'coiled silver choker',category:'jewellery',box:[900,900,1000,1000]}]};
+ assert.equal(scoreLook(pred,{items:gold}).parts.spots,1);
+ const pairs=matchItems(gold,pred.items).map(m=>[m.gi,m.pi]).sort();assert.deepEqual(pairs,[[0,1],[1,0]]);
 });

@@ -24,7 +24,7 @@ export const MODELS=[
  m('gpt-5.4-nano','GPT-5.4 nano','openai','gpt-5.4-nano','cheap',0.20,1.25,{options:{reasoning:'low'},openrouter:'openai/gpt-5.4-nano'}),
  m('gemini-3.1-flash-lite','Gemini 3.1 Flash-Lite','gemini','gemini-3.1-flash-lite','cheap',0.25,1.50,{options:{thinkingLevel:'low'},openrouter:'google/gemini-3.1-flash-lite'}),
 
- m('gemini-3-flash','Gemini 3 Flash','gemini','gemini-3-flash','mid',0.50,3.00,{options:{thinkingLevel:'low'},openrouter:'google/gemini-3-flash'}),
+ m('gemini-3-flash','Gemini 3 Flash','gemini','gemini-3-flash','mid',0.50,3.00,{options:{thinkingLevel:'low'},openrouter:'google/gemini-3-flash-preview'}),
  m('gpt-5.4-mini','GPT-5.4 mini','openai','gpt-5.4-mini','mid',0.75,4.50,{options:{reasoning:'low'},openrouter:'openai/gpt-5.4-mini'}),
  m('claude-haiku-4.5','Claude Haiku 4.5','anthropic','claude-haiku-4-5-20251001','mid',1.00,5.00,{openrouter:'anthropic/claude-haiku-4.5'}),
  m('gpt-5.6-luna','GPT-5.6 Luna','openai','gpt-5.6-luna','mid',1.00,6.00,{options:{reasoning:'low'},openrouter:'openai/gpt-5.6-luna'}),
@@ -32,7 +32,7 @@ export const MODELS=[
  m('gemini-3.5-flash','Gemini 3.5 Flash','gemini','gemini-3.5-flash','mid-high',1.50,9.00,{options:{thinkingLevel:'low'},note:'Current production model in .env.example.',openrouter:'google/gemini-3.5-flash'}),
  m('gemini-3.6-flash','Gemini 3.6 Flash','gemini','gemini-3.6-flash','mid-high',1.50,7.50,{options:{thinkingLevel:'low'},openrouter:'google/gemini-3.6-flash'}),
 
- m('gemini-3.1-pro','Gemini 3.1 Pro','gemini','gemini-3.1-pro','expensive',2.00,12.00,{options:{thinkingLevel:'low'},openrouter:'google/gemini-3.1-pro'}),
+ m('gemini-3.1-pro','Gemini 3.1 Pro','gemini','gemini-3.1-pro','expensive',2.00,12.00,{options:{thinkingLevel:'low'},openrouter:'google/gemini-3.1-pro-preview'}),
  m('gpt-5.6-terra','GPT-5.6 Terra','openai','gpt-5.6-terra','expensive',2.50,15.00,{options:{reasoning:'low'},openrouter:'openai/gpt-5.6-terra'}),
  m('claude-sonnet-5.5','Claude Sonnet 5.5','anthropic','claude-sonnet-5-5','expensive',3.00,15.00,{verified:false,openrouter:'anthropic/claude-sonnet-5.5'}),
 
