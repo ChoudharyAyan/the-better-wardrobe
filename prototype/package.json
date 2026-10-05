@@ -5,10 +5,13 @@
   "scripts": {
     "start": "node server.mjs",
     "local": "./scripts/start-local.sh",
-    "check": "node --check extension/connectors.js && node --check extension/sw.js && node --check extension/popup.js && node --check extension/observer.js && node --check lib/connectors.mjs && node --check dist/importers.js && node --check dist/order-import.js && node --check dist/persona.js && node --check dist/discover-brands.js && node --check dist/brand-icon-map.js && node --check dist/discover-mall.js && node --check dist/discover-hub.js && node --check lib/photos.mjs && node --check dist/app.js && node --check dist/discovery.js && node --check dist/developer.js && node --check lib/discovery.mjs && node --check lib/qa.mjs && node --check server.mjs && node --check api/index.mjs",
+    "mall:refresh": "node scripts/refresh-mall.mjs",
+    "check": "node --check extension/connectors.js && node --check extension/sw.js && node --check extension/popup.js && node --check extension/observer.js && node --check lib/connectors.mjs && node --check lib/mall-feed.mjs && node --check scripts/refresh-mall.mjs && node --check dist/importers.js && node --check dist/order-import.js && node --check dist/persona.js && node --check dist/discover-brands.js && node --check dist/brand-icon-map.js && node --check dist/discover-mall.js && node --check dist/discover-hub.js && node --check lib/photos.mjs && node --check dist/app.js && node --check dist/discovery.js && node --check dist/developer.js && node --check lib/discovery.mjs && node --check lib/qa.mjs && node --check server.mjs && node --check api/index.mjs",
     "test": "node --test tests/*.test.mjs"
   },
   "dependencies": {
+    "cheerio": "^1.2.0",
+    "robots-parser": "^3.0.1",
     "sharp": "^0.35.4"
   }
 }
