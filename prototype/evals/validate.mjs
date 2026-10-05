@@ -14,7 +14,7 @@ const privacySchema=obj({results:{type:'array',items:obj({id:str,names_person:{t
 const pick=(list,n,seed='tbw')=>[...list].sort((a,b)=>createHash('md5').update(seed+a.id).digest('hex').localeCompare(createHash('md5').update(seed+b.id).digest('hex'))).slice(0,n);
 
 // 1. Is the AI answer key right? A judge from a third company looks at the image and the key's items.
-export async function checkKey({golden,judge,n=25,env=process.env,fetcher=fetch,maxDim=1024}){
+export async function checkKey({golden,judge,n=20,env=process.env,fetcher=fetch,maxDim=768}){
  let fields=0,wrong=0,items=0,absent=0,spent=0;const notes=[];
  for(const g of pick(golden.looks.filter(x=>x.items.length),n)){
   const key=g.items.map(({box,categoryUnscored,search_terms,...rest})=>rest);

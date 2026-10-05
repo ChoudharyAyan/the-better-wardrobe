@@ -72,7 +72,9 @@ async function anthropic(a){
 }
 async function openrouter(a){
  const k=key(a.env,'openrouter');const content=[{type:'text',text:a.prompt}];if(a.image)content.push({type:'image_url',image_url:{url:dataUrl(a.image)}});
- const base={model:a.model.model,temperature:0,max_tokens:8000,usage:{include:true},...(a.model.options?.reasoning?{reasoning:{effort:a.model.options.reasoning}}:{}),messages:[{role:'system',content:a.system},{role:'user',content}]};
+ // Output is capped: a JSON answer with up to 6 items fits well under 3,000 tokens even with low-effort reasoning,
+ // and the cap bounds the worst-case cost of any single call.
+ const base={model:a.model.model,temperature:0,max_tokens:a.maxTokens||a.model.options?.maxTokens||3000,usage:{include:true},...(a.model.options?.reasoning?{reasoning:{effort:a.model.options.reasoning}}:{}),messages:[{role:'system',content:a.system},{role:'user',content}]};
  const url='https://openrouter.ai/api/v1/chat/completions',h={Authorization:'Bearer '+k,'X-Title':'The Better Wardrobe model lab'};const notes=[];
  let d;try{d=await post(a.fetcher,url,h,{...base,response_format:{type:'json_schema',json_schema:{name:a.schemaName,strict:true,schema:a.schema}}},a);}
  catch(e){if(!(e instanceof EvalError&&e.status===400))throw e;notes.push('json_schema not supported by the routed provider; used json_object with the schema in the prompt');
@@ -117,4 +119,10 @@ export async function listModels(provider,env,fetcher=fetch){
  if(provider==='openrouter')return ((await get(fetcher,'https://openrouter.ai/api/v1/models',{})).data||[]).map(x=>x.id);
  if(provider==='ollama')return ((await get(fetcher,(env.OLLAMA_BASE_URL||'http://127.0.0.1:11434').replace(/\/$/,'')+'/api/tags',{})).models||[]).map(x=>x.name);
  return [];
+}
+
+// Remaining OpenRouter credit on this key, checked before any paid step so a run never starts without the money for it.
+export async function openrouterBalance(env,fetcher=fetch){
+ const k=key(env,'openrouter');const d=await get(fetcher,'https://openrouter.ai/api/v1/key',{Authorization:'Bearer '+k});const x=d.data||{};
+ const remaining=typeof x.limit_remaining==='number'?x.limit_remaining:null;return {limit:x.limit??null,usage:x.usage??null,remaining};
 }

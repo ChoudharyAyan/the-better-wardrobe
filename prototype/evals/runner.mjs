@@ -22,7 +22,7 @@ export function estimate({models,tasks,golden,limit,repeat=1}){
 
 function limiter(n){let active=0;const queue=[];const next=()=>{if(active>=n||!queue.length)return;active++;const {fn,resolve,reject}=queue.shift();fn().then(resolve,reject).finally(()=>{active--;next();});};return fn=>new Promise((resolve,reject)=>{queue.push({fn,resolve,reject});next();});}
 
-export async function runEval({models,tasks=['look','query'],golden,limit,repeat=1,maxUsd=5,concurrency=3,maxDim=1024,env=process.env,fetcher=fetch,labDir=LAB_DIR,useCache=true,onProgress=()=>{},signal,runId=newRunId(),now=Date.now,allowUnpriced=true}){
+export async function runEval({models,tasks=['look','query'],golden,limit,repeat=1,maxUsd=5,concurrency=3,maxDim=768,env=process.env,fetcher=fetch,labDir=LAB_DIR,useCache=true,onProgress=()=>{},signal,runId=newRunId(),now=Date.now,allowUnpriced=true}){
  tasks=tasks.filter(t=>TASKS[t]);if(!tasks.length)throw new EvalError('bad_request','No valid tasks');
  const est=estimate({models,tasks,golden,limit,repeat});
  if(est.usd>maxUsd)throw new EvalError('budget',`Estimated cost $${est.usd.toFixed(2)} is above the $${maxUsd} cap. Raise --max-usd, lower --limit, or pick cheaper tiers.`);

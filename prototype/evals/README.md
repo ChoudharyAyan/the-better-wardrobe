@@ -5,6 +5,8 @@ publishable report. Everything runs on your machine; results you choose to publi
 
 ## The $10 pilot (start here)
 
+Everything now runs on one OpenRouter balance with `--via openrouter` (Gemini included). Check credit any time with `npm run lab -- balance`; every paid step lowers its cap to the credit actually left.
+
 12 models on ~80 images and ~60 queries. Typical spend ~$5.75, worst case ~$10, and `--max-usd` makes the cap hard.
 
 | Paid from | Models | Typical | Worst case |

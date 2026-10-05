@@ -17,22 +17,22 @@ export const MODELS=[
  m('ollama-qwen3-vl-2b','Qwen3-VL 2B (local)','ollama','qwen3-vl:2b','local',0,0,{openWeights:true,enabled:false,note:'Needs a local Ollama; enable with --models.'}),
 
  m('gpt-5-nano','GPT-5 nano','openai','gpt-5-nano','very-cheap',0.05,0.40,{options:{reasoning:'low'},openrouter:'openai/gpt-5-nano'}),
- m('gemini-2.5-flash-lite','Gemini 2.5 Flash-Lite (legacy)','gemini','gemini-2.5-flash-lite','very-cheap',0.10,0.40,{enabled:false,note:'Opt-in: legacy, being retired; 3.1 Flash-Lite replaces it.'}),
+ m('gemini-2.5-flash-lite','Gemini 2.5 Flash-Lite (legacy)','gemini','gemini-2.5-flash-lite','very-cheap',0.10,0.40,{enabled:false,note:'Opt-in: legacy, being retired; 3.1 Flash-Lite replaces it.',openrouter:'google/gemini-2.5-flash-lite'}),
  m('qwen3-vl-30b','Qwen3-VL 30B-A3B','openrouter','qwen/qwen3-vl-30b-a3b-instruct','very-cheap',0.13,0.52,{openWeights:true}),
  m('qwen3-vl-235b','Qwen3-VL 235B-A22B','openrouter','qwen/qwen3-vl-235b-a22b-instruct','very-cheap',0.20,0.88,{openWeights:true}),
 
  m('gpt-5.4-nano','GPT-5.4 nano','openai','gpt-5.4-nano','cheap',0.20,1.25,{options:{reasoning:'low'},openrouter:'openai/gpt-5.4-nano'}),
- m('gemini-3.1-flash-lite','Gemini 3.1 Flash-Lite','gemini','gemini-3.1-flash-lite','cheap',0.25,1.50,{options:{thinkingLevel:'low'}}),
+ m('gemini-3.1-flash-lite','Gemini 3.1 Flash-Lite','gemini','gemini-3.1-flash-lite','cheap',0.25,1.50,{options:{thinkingLevel:'low'},openrouter:'google/gemini-3.1-flash-lite'}),
 
- m('gemini-3-flash','Gemini 3 Flash','gemini','gemini-3-flash','mid',0.50,3.00,{options:{thinkingLevel:'low'}}),
+ m('gemini-3-flash','Gemini 3 Flash','gemini','gemini-3-flash','mid',0.50,3.00,{options:{thinkingLevel:'low'},openrouter:'google/gemini-3-flash'}),
  m('gpt-5.4-mini','GPT-5.4 mini','openai','gpt-5.4-mini','mid',0.75,4.50,{options:{reasoning:'low'},openrouter:'openai/gpt-5.4-mini'}),
  m('claude-haiku-4.5','Claude Haiku 4.5','anthropic','claude-haiku-4-5-20251001','mid',1.00,5.00,{openrouter:'anthropic/claude-haiku-4.5'}),
  m('gpt-5.6-luna','GPT-5.6 Luna','openai','gpt-5.6-luna','mid',1.00,6.00,{options:{reasoning:'low'},openrouter:'openai/gpt-5.6-luna'}),
 
- m('gemini-3.5-flash','Gemini 3.5 Flash','gemini','gemini-3.5-flash','mid-high',1.50,9.00,{options:{thinkingLevel:'low'},note:'Current production model in .env.example.'}),
- m('gemini-3.6-flash','Gemini 3.6 Flash','gemini','gemini-3.6-flash','mid-high',1.50,7.50,{options:{thinkingLevel:'low'}}),
+ m('gemini-3.5-flash','Gemini 3.5 Flash','gemini','gemini-3.5-flash','mid-high',1.50,9.00,{options:{thinkingLevel:'low'},note:'Current production model in .env.example.',openrouter:'google/gemini-3.5-flash'}),
+ m('gemini-3.6-flash','Gemini 3.6 Flash','gemini','gemini-3.6-flash','mid-high',1.50,7.50,{options:{thinkingLevel:'low'},openrouter:'google/gemini-3.6-flash'}),
 
- m('gemini-3.1-pro','Gemini 3.1 Pro','gemini','gemini-3.1-pro','expensive',2.00,12.00,{options:{thinkingLevel:'low'}}),
+ m('gemini-3.1-pro','Gemini 3.1 Pro','gemini','gemini-3.1-pro','expensive',2.00,12.00,{options:{thinkingLevel:'low'},openrouter:'google/gemini-3.1-pro'}),
  m('gpt-5.6-terra','GPT-5.6 Terra','openai','gpt-5.6-terra','expensive',2.50,15.00,{options:{reasoning:'low'},openrouter:'openai/gpt-5.6-terra'}),
  m('claude-sonnet-5.5','Claude Sonnet 5.5','anthropic','claude-sonnet-5-5','expensive',3.00,15.00,{verified:false,openrouter:'anthropic/claude-sonnet-5.5'}),
 
@@ -61,7 +61,7 @@ export function selectModels(spec='all',models=MODELS){
 }
 // Adapters report usage.output as every billed output token, reasoning included; usage.reasoning is the
 // informational subset. A provider-reported cost (OpenRouter) wins over the list-price estimate.
-// --via openrouter: run the OpenAI and Anthropic models through OpenRouter so one prepaid balance covers them.
-// Gemini stays on its own key. Cost then comes from OpenRouter's reported per-call cost.
-export function route(models,via){if(via!=='openrouter')return models;return models.map(m=>m.openrouter&&['openai','anthropic'].includes(m.provider)?{...m,provider:'openrouter',model:m.openrouter,routedFrom:m.provider}:m);}
+// --via openrouter: every model with an OpenRouter id runs on the one OpenRouter balance (Gemini included).
+// Gemini's thinking level becomes OpenRouter's reasoning effort, so routed models keep the same setting.
+export function route(models,via){if(via!=='openrouter')return models;return models.map(m=>m.openrouter&&m.provider!=='openrouter'?{...m,provider:'openrouter',model:m.openrouter,routedFrom:m.provider,options:{...m.options,...(m.options?.thinkingLevel&&!m.options.reasoning?{reasoning:m.options.thinkingLevel}:{})}}:m);}
 export const costOf=(model,usage)=>{if(typeof usage?.costUsd==='number')return usage.costUsd;if(!model.price)return null;return ((usage?.input||0)*model.price.input+(usage?.output||0)*model.price.output)/1e6;};

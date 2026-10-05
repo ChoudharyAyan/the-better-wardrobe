@@ -1,6 +1,6 @@
 import {CATEGORIES,DEPARTMENTS,COLOURS,PATTERNS,SLEEVES,FITS,LENGTHS,NECKLINES,FABRICS,OCCASIONS,SCENES,LANGUAGES,TAXONOMY_VERSION} from './taxonomy.mjs';
 // Bump when any prompt or schema below changes: cached responses are keyed on it, and reports print it.
-export const PROMPT_VERSION='look-v2+query-v1';
+export const PROMPT_VERSION='look-v3+query-v1';
 
 const obj=properties=>({type:'object',properties,required:Object.keys(properties),additionalProperties:false});
 const str={type:'string'};const en=values=>({type:'string',enum:values});
@@ -34,7 +34,7 @@ export const lookSchema=obj({
  known_item:obj({is_specific:{type:'boolean'},guess:str})
 });
 
-export const lookPrompt=`Find every distinct garment, footwear and fashion accessory a shopper could buy in this image (at most 8, largest and most prominent first). Ignore app UI, buttons, text overlays and items that are not fashion.
+export const lookPrompt=`Find every distinct garment, footwear and fashion accessory a shopper could buy in this image (at most 6, largest and most prominent first). Ignore app UI, buttons, text overlays and items that are not fashion.
 For each item return:
 - label: a short shopper-style name, for example "cream linen camp-collar shirt".
 - category: the closest value from the allowed list.
@@ -67,7 +67,7 @@ export const queryPrompt=q=>`A shopper in India typed this into a fashion search
 Convert it into search filters. Use "" for any filter the shopper did not ask for, and do not infer a department unless they said it or the garment is clearly gendered (saree, lehenga). Prices are in rupees: "under 2k" means max_price_inr 2000, "1-2k" means 1000 to 2000; use null when no price is given. keywords: the remaining descriptive words in English (translate Hindi or Hinglish words). language: the language the query is written in.`;
 
 export const TASKS={
- look:{id:'look',label:'Screenshot → items + attributes',needsImage:true,schema:lookSchema,schemaName:'look',prompt:()=>lookPrompt,estimate:{input:2600,output:700}},
+ look:{id:'look',label:'Screenshot → items + attributes',needsImage:true,schema:lookSchema,schemaName:'look',prompt:()=>lookPrompt,estimate:{input:2000,output:600}},
  query:{id:'query',label:'Keyword query → filters',needsImage:false,schema:querySchema,schemaName:'query',prompt:g=>queryPrompt(g.query),estimate:{input:900,output:150}}
 };
 export const meta=()=>({taxonomyVersion:TAXONOMY_VERSION,promptVersion:PROMPT_VERSION});

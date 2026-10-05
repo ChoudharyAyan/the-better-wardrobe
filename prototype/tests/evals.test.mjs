@@ -5,7 +5,7 @@ import {tmpdir} from 'node:os';
 import path from 'node:path';
 import {canonicalCategory,categoryCredit,colourCredit,canonicalEnum} from '../evals/taxonomy.mjs';
 import {scoreLook,scoreQuery,iou,aggregate} from '../evals/scoring.mjs';
-import {callModel,EvalError,parseJson} from '../evals/providers.mjs';
+import {callModel,EvalError,parseJson,openrouterBalance} from '../evals/providers.mjs';
 import {MODELS,selectModels,costOf,route} from '../evals/models.mjs';
 import {loadGolden} from '../evals/golden.mjs';
 import {runEval,estimate} from '../evals/runner.mjs';
@@ -88,7 +88,8 @@ test('model selection understands tiers, ids and opt-in models',()=>{
  assert.equal(selectModels('everything').length,MODELS.length);
  const pilot=selectModels('pilot');assert.equal(pilot.length,11);assert.ok(!pilot.some(m=>['gemini-3.1-pro','claude-sonnet-5.5','claude-opus-5.5'].includes(m.id)),'key makers and flagships stay out of the pilot');
  const routed=route(pilot,'openrouter');assert.ok(routed.filter(m=>m.routedFrom).every(m=>m.provider==='openrouter'&&m.model.includes('/')));
- assert.ok(routed.filter(m=>m.id.startsWith('gemini')).every(m=>m.provider==='gemini'),'Gemini stays on its own key');
+ assert.ok(routed.filter(m=>m.id.startsWith('gemini')).every(m=>m.provider==='openrouter'&&m.model.startsWith('google/')&&m.options.reasoning==='low'),'Gemini runs on the same OpenRouter balance with low reasoning');
+ assert.ok(routed.every(m=>m.provider==='openrouter'),'one balance pays for the whole pilot');
  assert.equal(routed.find(m=>m.id==='gpt-5.4-mini').options.reasoning,'low');assert.deepEqual(route(pilot,undefined),pilot);
 });
 
@@ -212,4 +213,11 @@ test('privacy check flags answers that name a person; key check scores the key a
  assert.equal(p.answers,2);assert.equal(p.byModel.a.rate,1);assert.equal(p.byModel.b.rate,0);
  const golden=await loadGolden({only:'looks'});const k=await checkKey({golden:{looks:golden.looks.slice(0,2)},judge:checker,n:2,env,fetcher});
  assert.ok(k.fieldAccuracy<1&&k.fieldAccuracy>0);assert.equal(k.itemAccuracy,1);
+});
+
+test('OpenRouter balance is read from the key endpoint and output is capped per call',async()=>{
+ const b=await openrouterBalance({OPENROUTER_API_KEY:'k'},async url=>{assert.match(url,/api\/v1\/key$/);return {ok:true,status:200,json:async()=>({data:{limit:10,usage:1.25,limit_remaining:8.75}})};});
+ assert.deepEqual(b,{limit:10,usage:1.25,remaining:8.75});
+ let body;await callModel({system:'s',prompt:'p',image:null,schema:querySchema,schemaName:'query',model:{provider:'openrouter',model:'google/gemini-3-flash',options:{reasoning:'low'}},env:{OPENROUTER_API_KEY:'k'},fetcher:async(u,o)=>{body=JSON.parse(o.body);return respond(200,{choices:[{finish_reason:'stop',message:{content:'{}'}}],usage:{prompt_tokens:1,completion_tokens:1,cost:0}});}});
+ assert.equal(body.max_tokens,3000);assert.deepEqual(body.reasoning,{effort:'low'});
 });

@@ -47,17 +47,17 @@ export async function walkImages(dir,base=dir){const out=[];for(const e of await
 export const tagsFor=rel=>path.dirname(rel).split(path.sep).filter(s=>s&&s!=='.').map(s=>s.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')).filter(Boolean);
 export const idFor=rel=>rel.replace(/\.[a-z]+$/i,'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 
-export async function buildKey({dir,models,env=process.env,fetcher=fetch,maxUsd=5,maxDim=1024,out=path.join(KEY_DIR,'autokey.json'),rawDir=path.join(KEY_DIR,'keymakers'),onProgress=()=>{}}){
+export async function buildKey({dir,models,env=process.env,fetcher=fetch,maxUsd=5,maxDim=768,limit,out=path.join(KEY_DIR,'autokey.json'),rawDir=path.join(KEY_DIR,'keymakers'),onProgress=()=>{}}){
  if(models.length!==2)throw Error('The answer key needs exactly two key-maker models.');
- const files=await walkImages(dir);if(!files.length)throw Error('No images found under '+dir);
+ let files=await walkImages(dir);if(!files.length)throw Error('No images found under '+dir);if(limit>0)files=files.slice(0,limit);
  await mkdir(rawDir,{recursive:true});await mkdir(path.dirname(out),{recursive:true});
  let spent=0;const images=[];
  for(const [i,f] of files.entries()){
   const id=idFor(f.rel);const outputs=[];
   for(const m of models){
-   const raw=path.join(rawDir,`${id}.${m.id}.json`);let res=null;
+   const raw=path.join(rawDir,`${id}.${m.id}.${maxDim}.json`);let res=null;
    try{res=JSON.parse(await readFile(raw,'utf8'));}catch{}
-   if(!res){if(spent>=maxUsd)break;const img=await prepareImage(f.file,maxDim);try{res=await callModel({model:m,system:SYSTEM,prompt:TASKS.look.prompt(),image:img,schema:TASKS.look.schema,schemaName:'look',env,fetcher});spent+=costOf(m,res.usage)||0;await writeFile(raw,JSON.stringify(res));}catch(e){res={error:e.message};}}
+   if(!res){if(spent>=maxUsd)break;const img=await prepareImage(f.file,maxDim);try{res=await callModel({model:m,system:SYSTEM,prompt:TASKS.look.prompt(),image:img,schema:TASKS.look.schema,schemaName:'look',env,fetcher,maxTokens:4000});spent+=costOf(m,res.usage)||0;await writeFile(raw,JSON.stringify(res));}catch(e){res={error:e.message};}}
    outputs.push(res);
   }
   if(outputs.length<2||outputs.some(o=>!o?.json)){onProgress({i:i+1,total:files.length,id,skipped:true,spent});continue;}
