@@ -77,3 +77,17 @@ test('the account id never reaches the page: a preview id embeds the HttpOnly gu
  const accounts=createAccounts({env:{}});const id=await accounts.preview('a'.repeat(48));
  assert.equal(JSON.stringify(await accounts.me(id)).includes('a'.repeat(48)),false);
 });
+
+test('look precision: a look keeps titles with its must-have word, and shoes never answer a jacket',async()=>{
+ const {titleRejection,attributes}=await import('../lib/discovery.mjs');
+ const jacket=attributes({category:'Jacket',subtype:'satin bomber jacket',colour:'white'});
+ assert.equal(titleRejection({title:"Nike Air Force 1 '07 Men's Shoes"},jacket),'Wrong garment type');
+ assert.equal(titleRejection({title:'White satin scorpion bomber jacket'},jacket),'');
+ assert.equal(titleRejection({title:'White leather sneakers'},attributes({category:'Shoes',subtype:'sneakers'})),'');
+ const cardigan=LOOKS.find(l=>l.id==='virat-airport-cardigan');
+ assert.ok(cardigan.must.test('Selected Homme Knit Cardigan')&&!cardigan.must.test('Monte Carlo Men Black V Neck Pullover'));
+ const results=['Black knit cardigan','Black button cardigan','Cardigan men black','Black pullover','Black sweater'].map((title,i)=>({title,link:'https://www.myntra.com/p'+i,thumbnail:'https://img.example/'+i+'.jpg',source:'Myntra'}));
+ const d=createDiscovery({env:{SERPAPI_API_KEY:'k'},fetcher:async()=>({ok:true,status:200,json:async()=>({shopping_results:results})}),pageFetcher:async()=>'',imageFetcher:async()=>{throw Error('offline');}});
+ const r=await d.search({attributes:{...cardigan.attributes,department:'menswear'},query:cardigan.query,market:'in',look:cardigan.id});
+ assert.ok(r.results.length>=3);assert.ok(r.results.every(p=>/cardigan/i.test(p.title)),'pullovers and sweaters are dropped for the cardigan look');
+});
