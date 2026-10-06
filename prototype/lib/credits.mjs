@@ -35,7 +35,9 @@ function postgresStore(connection){
  const db=async()=>{if(!pool){const {Pool}=await import('pg');pool=new Pool({connectionString:connection,max:3,connectionTimeoutMillis:4000,ssl:connection.includes('localhost')?false:{rejectUnauthorized:true}});}ready??=pool.query('CREATE TABLE IF NOT EXISTS tbw_discover_usage (key text PRIMARY KEY, used integer NOT NULL DEFAULT 0, updated_at timestamptz NOT NULL DEFAULT now())');await ready;return pool;};
  return {
   // One atomic statement: the row is created or incremented only while the total stays within the limit.
-  async add(key,amount,limit){const r=await (await db()).query('INSERT INTO tbw_discover_usage (key,used) SELECT $1,$2 WHERE $2<=$3 ON CONFLICT (key) DO UPDATE SET used=tbw_discover_usage.used+EXCLUDED.used, updated_at=now() WHERE tbw_discover_usage.used+EXCLUDED.used<=$3 RETURNING used',[key,amount,limit]);return r.rows[0]?.used??null;},
+  // Casts are required: in INSERT … SELECT, Postgres cannot infer $2 from the target column and rejects it
+  // ("inconsistent types deduced for parameter $2").
+  async add(key,amount,limit){const r=await (await db()).query('INSERT INTO tbw_discover_usage (key,used) SELECT $1::text,$2::integer WHERE $2::integer<=$3::integer ON CONFLICT (key) DO UPDATE SET used=tbw_discover_usage.used+EXCLUDED.used, updated_at=now() WHERE tbw_discover_usage.used+EXCLUDED.used<=$3::integer RETURNING used',[key,amount,limit]);return r.rows[0]?.used??null;},
   async sub(key,amount){await (await db()).query('UPDATE tbw_discover_usage SET used=GREATEST(0,used-$2), updated_at=now() WHERE key=$1',[key,amount]);},
   async get(key){const r=await (await db()).query('SELECT used FROM tbw_discover_usage WHERE key=$1',[key]);return r.rows[0]?.used||0;}
  };
