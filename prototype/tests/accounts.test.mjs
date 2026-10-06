@@ -72,3 +72,8 @@ test('typed celebrity looks are understood, and a profile department applies onl
  assert.match(prompt,/Never put the person's or character's name in query/);
  assert.equal((await d.interpret({text:'black cardigan for women',department:'menswear'})).attributes.department,'','the words beat the profile');
 });
+
+test('the account id never reaches the page: a preview id embeds the HttpOnly guest cookie',async()=>{
+ const accounts=createAccounts({env:{}});const id=await accounts.preview('a'.repeat(48));
+ assert.equal(JSON.stringify(await accounts.me(id)).includes('a'.repeat(48)),false);
+});

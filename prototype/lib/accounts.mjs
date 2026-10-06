@@ -58,7 +58,7 @@ export function createAccounts({env=process.env,store,fetcher=fetch,now=Date.now
  // Session cookie: account id + expiry, signed. Nothing else about the person lives in the cookie.
  const session=id=>{const body=b64(id)+'.'+(now()+SESSION_DAYS*864e5);return body+'.'+sign(body);};
  const readSession=value=>{const [id,exp,mac]=String(value||'').split('.');if(!id||!exp||!mac)return null;const body=id+'.'+exp;if(!equal(mac,sign(body))||Number(exp)<now())return null;try{return Buffer.from(id,'base64url').toString();}catch{return null;}};
- const publicAccount=a=>a&&{id:a.id,kind:a.kind,name:a.name,email:a.email,picture:a.picture};
+ const publicAccount=a=>a&&{kind:a.kind,name:a.name,email:a.email,picture:a.picture};
  return {
   google,session,readSession,
   async get(id){return id?store.get(id):null;},
