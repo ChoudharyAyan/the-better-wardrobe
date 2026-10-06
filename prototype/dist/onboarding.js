@@ -49,7 +49,7 @@
       <label class="ob-field"><span>Age</span><input name="age" type="number" inputmode="numeric" min="13" max="100" value="${esc(d.age)}" placeholder="e.g. 24" required></label>
       <fieldset class="ob-field"><legend>Gender</legend><div class="ob-chips" role="radiogroup">${GENDERS.map(([v,l])=>chip('gender',v,l,d.gender===v)).join('')}</div></fieldset>
       <fieldset class="ob-field"><legend>What do you want to explore? <small>Pick one or more</small></legend><div class="ob-explore">${EXPLORE.map(([v,l,sub])=>`<button type="button" class="ob-option ${d.explore.includes(v)?'on':''}" role="checkbox" aria-checked="${d.explore.includes(v)}" data-ob="explore" data-value="${v}"><b>${l}</b><small>${sub}</small></button>`).join('')}</div>
-      ${d.explore.includes('custom')?`<textarea name="custom" maxlength="200" rows="2" placeholder="e.g. Plan outfits for my sister’s wedding">${esc(d.custom)}</textarea>`:''}</fieldset>
+      <textarea name="custom" maxlength="200" rows="2" placeholder="e.g. Plan outfits for my sister’s wedding" ${d.explore.includes('custom')?'':'hidden'}>${esc(d.custom)}</textarea></fieldset>
       ${ui.error?`<p class="ob-error" role="alert">${esc(ui.error)}</p>`:''}<button type="submit" class="ob-primary">Continue <span aria-hidden="true">→</span></button></form>`;
   }
   function vibe(){
@@ -60,13 +60,18 @@
       <p class="ob-note">We use this to highlight stores for you in the mall and to tune Discover.</p>${ui.error?`<p class="ob-error" role="alert">${esc(ui.error)}</p>`:''}
       <div class="ob-row"><button type="button" class="ob-free" data-ob="back">← Back</button><button type="button" class="ob-free" data-ob="finish" data-skip="1" ${ui.busy?'disabled':''}>Skip</button><button type="button" class="ob-primary" data-ob="finish" ${ui.busy?'disabled':''}>${ui.busy?'Saving…':'Finish'}</button></div></div>`;
   }
+  // Only a new step animates in and scrolls to the top. Re-painting the same step (an error, "Saving…") keeps the
+  // place and doesn't replay the entrance, which made the whole screen blink (design QA, 6 Oct).
+  let lastStep=null;
   function paint(){
-    let host=document.getElementById('tbw-onboarding');
+    let host=document.getElementById('tbw-onboarding');const fresh=ui.step!==lastStep;lastStep=ui.step;
     if(!ui.step){host?.remove();document.body.classList.remove('ob-open');return;}
     if(!host){host=document.createElement('div');host.id='tbw-onboarding';host.className='ob-overlay';host.setAttribute('role','dialog');host.setAttribute('aria-modal','true');host.setAttribute('aria-label','Welcome');document.body.append(host);}
     document.body.classList.add('ob-open');
+    const keep=host.scrollTop;
+    if(fresh)host.dataset.enter='';else delete host.dataset.enter;
     host.innerHTML=ui.step==='welcome'?welcome():ui.step==='about'?about():vibe();
-    host.scrollTop=0;
+    host.scrollTop=fresh?0:keep;
   }
 
   // ---- actions --------------------------------------------------------------------------------
@@ -97,16 +102,18 @@
   }
   async function signOut(){try{await fetch('/api/auth/logout',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});}catch{}me={...me,signedIn:false,account:null,profile:null,onboarded:false};setFree(false);publish();open('welcome');}
 
+  // Flip the selected state on a group of chips without touching anything else on screen.
+  function mark(group,isOn){document.querySelectorAll(`#tbw-onboarding [data-ob="${group}"]`).forEach(b=>{const on=isOn(b.dataset.value);b.classList.toggle('on',on);b.setAttribute('aria-checked',String(on));});}
   document.addEventListener('click',event=>{
     const el=event.target.closest?.('[data-ob]');if(!el)return;const action=el.dataset.ob,value=el.dataset.value;
     if(ui.step==='about')readAbout();
     const toggle=(list,v)=>list.includes(v)?list.filter(x=>x!==v):[...list,v];
     if(action==='free'){setFree(true);close(location.hash.slice(1)&&!/^(welcome|onboarding)$/.test(location.hash.slice(1))?location.hash.slice(1):'discover');}
     else if(action==='preview')preview();
-    else if(action==='gender'){ui.draft.gender=value;paint();}
-    else if(action==='explore'){ui.draft.explore=toggle(ui.draft.explore,value);paint();}
-    else if(action==='vibe'){ui.draft.vibe=ui.draft.vibe===value?'':value;paint();}
-    else if(action==='interest'){ui.draft.interests=toggle(ui.draft.interests,value);paint();}
+    else if(action==='gender'){ui.draft.gender=value;mark('gender',v=>v===value);}
+    else if(action==='explore'){ui.draft.explore=toggle(ui.draft.explore,value);mark('explore',v=>ui.draft.explore.includes(v));const box=document.querySelector('#ob-about textarea[name="custom"]');if(box){box.hidden=!ui.draft.explore.includes('custom');if(!box.hidden&&value==='custom')box.focus({preventScroll:true});}}
+    else if(action==='vibe'){ui.draft.vibe=ui.draft.vibe===value?'':value;mark('vibe',v=>v===ui.draft.vibe);}
+    else if(action==='interest'){ui.draft.interests=toggle(ui.draft.interests,value);mark('interest',v=>ui.draft.interests.includes(v));}
     else if(action==='back'){ui.step='about';ui.error='';paint();}
     else if(action==='finish')finish(Boolean(el.dataset.skip));
     else if(action==='edit')open(me.signedIn?'about':'welcome');

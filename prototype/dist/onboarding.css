@@ -1,7 +1,8 @@
 /* Welcome and onboarding (design QA #15). Montserrat only, the app's cream and rose palette. */
 .ob-open{overflow:hidden}
 .ob-overlay{--ob-ink:#281b22;--ob-rose:#8e1b4d;--ob-line:#e7d8ce;--ob-muted:#74646c;position:fixed;inset:0;z-index:100;overflow-y:auto;background:#fbf5ec;color:var(--ob-ink);font-family:'Montserrat','Montserrat Fallback',sans-serif;padding:calc(24px + env(safe-area-inset-top)) 16px calc(32px + env(safe-area-inset-bottom));display:flex;justify-content:center;align-items:flex-start}
-.ob-card{width:100%;max-width:460px;display:flex;flex-direction:column;gap:14px;animation:ob-in .35s ease-out}
+.ob-card{width:100%;max-width:460px;display:flex;flex-direction:column;gap:14px}
+.ob-overlay[data-enter] .ob-card{animation:ob-in .35s ease-out}
 .ob-welcome{min-height:calc(100vh - 80px);justify-content:center;text-align:center;align-items:center}
 .ob-mark{display:grid;place-items:center;width:64px;height:64px;border-radius:20px;background:#f6e3ea;color:var(--ob-rose);font-size:30px}
 .ob-kicker{font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--ob-rose)}
@@ -40,5 +41,7 @@
 .ob-who strong{display:block;font-size:16px}.ob-who small{color:var(--ob-muted);font-size:12px}
 .ob-tags{display:flex;flex-wrap:wrap;gap:6px}.ob-tags span{background:#fbf5ec;border:1px solid var(--ob-line);border-radius:999px;padding:5px 10px;font-size:12px;font-weight:700}
 @keyframes ob-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
-@media(prefers-reduced-motion:reduce){.ob-card{animation:none}}
+@media(prefers-reduced-motion:reduce){.ob-overlay[data-enter] .ob-card{animation:none}}
+.ob-chip,.ob-option{-webkit-tap-highlight-color:transparent;transition:background-color .15s,border-color .15s,color .15s}
+.ob-field textarea[hidden]{display:none}
 @media(max-width:360px){.ob-explore{grid-template-columns:1fr}}
