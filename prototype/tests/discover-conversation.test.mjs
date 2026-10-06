@@ -133,3 +133,10 @@ test('a mascot keeps the person company while a search loads, and Profile can sh
  assert.match(h.latest(),/class="dc-mascot" aria-label="(Bao the panda|Momo the pug|Miso the cat|Kitsu the fox) is searching with you"/);
  assert.equal(typeof h.context.window.DiscoverConversation.creditsCard,'function');
 });
+
+test('design QA #20: an empty Discover greets with a mascot instead of the star, and a tap swaps the friend',async()=>{
+ const h=harness({});const html=h.context.window.DiscoverConversation.render();
+ assert.doesNotMatch(html,/dc-spark|✳/);
+ const who=html.match(/aria-label="(\w+) the \w+ says hi/)[1];
+ h.click('mascot');assert.notEqual(h.latest().match(/aria-label="(\w+) the \w+ says hi/)[1],who,'tapping meets a different friend');
+});
