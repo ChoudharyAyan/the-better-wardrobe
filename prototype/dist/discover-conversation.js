@@ -10,7 +10,17 @@
   };
   const FALLBACK_MODELS=[{id:'gemini-3-flash',label:'Max',note:'Most accurate',credits:15},{id:'gpt-5-nano',label:'Lite',note:'More searches',credits:8}];
   const LOADING_LINES=['Reading your vibe…','Searching Myntra, AJIO and Amazon…','Checking Flipkart and Nykaa Fashion…','Comparing cuts, colours and details…','Finding the right fashion for you…'];
-  const examples=['Find a relaxed brown blazer under ₹4,000','Show me a similar outfit from this screenshot','Where can I find a dress like the one at Cannes?'];
+  // Trending looks from real people and characters (design QA #14): three at a time, shuffled, leaning to the
+  // person's own department when their profile says so. Each one searches from a researched spec on the server.
+  let looks=[],shown=[];
+  const account = () => globalThis.window?.TBWAccount||null;
+  const signedIn = () => Boolean(account()?.signedIn);
+  function shuffleLooks(){
+    const want=account()?.profile?.gender==='male'?'menswear':account()?.profile?.gender==='female'?'womenswear':'';
+    const pool=[...looks].sort(()=>Math.random()-.5).filter(l=>!shown.some(s=>s.id===l.id)||looks.length<=3);
+    const mine=want?pool.filter(l=>l.department===want):[],rest=pool.filter(l=>!mine.includes(l));
+    shown=(want?[...mine.slice(0,2),...rest.slice(0,1),...mine.slice(2),...rest.slice(1)]:pool).slice(0,3);
+  }
   const escape = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
   const known = value => /^(unknown|n\/?a|none|not visible|unclear)$/i.test(String(value??'').trim())?'':String(value??'');
   const root = () => document.getElementById('discover-conversation');
@@ -34,7 +44,10 @@
   // ---- server calls ---------------------------------------------------------------------------
   let walletRequested=false,chatsRequested=false;
   async function loadWallet(){if(walletRequested||!hasFetch())return;walletRequested=true;try{const r=await window.fetch('/api/discover/credits');if(r.ok){state.wallet=await r.json();paint();}}catch{}}
-  async function loadChats(){if(chatsRequested||!hasFetch())return;chatsRequested=true;try{const r=await window.fetch('/api/discover/chats');if(r.ok){state.chats=(await r.json()).chats||[];paint();}}catch{}}
+  let looksRequested=false;
+  async function loadLooks(){if(looksRequested||!hasFetch())return;looksRequested=true;try{const r=await window.fetch('/api/discover/looks');if(r.ok){looks=(await r.json()).looks||[];shuffleLooks();paint();}}catch{}}
+  // Saved chats are for people with a profile; guests who explore freely don't get them.
+  async function loadChats(){if(chatsRequested||!hasFetch()||!signedIn())return;chatsRequested=true;try{const r=await window.fetch('/api/discover/chats');if(r.ok){state.chats=(await r.json()).chats||[];paint();}}catch{}}
   async function request(action,body,signal){
     const response=await fetch(`/api/discover/${action}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({...body,model:currentModel().id,...(action==='search'&&state.turn?{turn:state.turn}:{})}),signal});
     let data;try{data=await response.json();}catch{throw new Error('The search service did not respond. Please retry.');}
@@ -53,7 +66,7 @@
     return {messages,current:state.current,results,stage:state.stage==='results'?'results':'start'};
   }
   async function saveChat(){
-    if(!hasFetch()||!state.messages.length)return;
+    if(!hasFetch()||!state.messages.length||!signedIn())return;
     state.chatId??=uuid();
     state.chatTitle||=(state.messages.find(m=>m.role==='user'&&m.text)?.text||'Screenshot search').slice(0,40);
     try{
@@ -93,10 +106,10 @@
   function stopLoading(){state.busy=false;state.progress='';state.showMallHint=false;if(typeof clearInterval==='function')clearInterval(rotation);if(typeof clearTimeout==='function')clearTimeout(hintTimer);}
   const metaFor = data => data.credits?(data.credits.cost?`${currentModel().label} · ${data.credits.cost} credits · ${data.credits.remaining} left`:`${currentModel().label} · free, nothing to search yet`):'';
 
-  async function ask(text,image,target='',previous=null){
+  async function ask(text,image,target='',previous=null,look=''){
     state.controller=new AbortController();startLoading(LOADING_LINES[0]);
     try{
-      const data=await request('interpret',{text,image,target,previous},state.controller.signal);
+      const data=await request('interpret',look?{text,look}:{text,image,target,previous},state.controller.signal);
       if(data.question||!data.attributes){stopLoading();state.stage='clarify';state.followup={text,image,previous};state.messages.push({role:'assistant',meta:metaFor(data),text:data.question||'What kind of item should I look for?'});paint();saveChat();return;}
       state.current={attributes:data.attributes,query:data.query,budget:data.budget,uncertainty:data.uncertainty};state.followup=null;
       state.messages.push({role:'assistant',meta:metaFor(data),text:`Looking for ${describe(data.attributes)||'that piece'}${data.budget?` under ₹${Number(data.budget).toLocaleString('en-IN')}`:''}. ${departmentLine(data.attributes)}`});
@@ -213,10 +226,16 @@
   // Saved chats as tabs that stay pinned above the conversation, so earlier searches are one tap away.
   const ago = iso => {const m=Math.round((Date.now()-Date.parse(iso))/60000);return !Number.isFinite(m)?'':m<1?'just now':m<60?`${m} min ago`:m<1440?`${Math.round(m/60)} h ago`:`${Math.round(m/1440)} d ago`;};
   const renderChats = () => {
+    if(!signedIn())return `<nav class="dc-chats" aria-label="Your chats"><span class="dc-chats-label">Your chats</span><div class="dc-chat-row"><span class="dc-chat-empty">Set up a profile to save and revisit chats</span><button type="button" class="dc-chat new" data-ob="sign-in"><b>Get started →</b></button></div></nav>`;
     const list=state.chats,unsaved=state.messages.length&&!list.some(c=>c.id===state.chatId);
     const tab=(label,sub,active,attrs)=>`<${attrs?'button type="button"':'span'} class="dc-chat ${active?'active':''}" ${attrs||''} ${active?'aria-current="true"':''}><b>${escape(label.slice(0,26))}</b><small>${escape(sub)}</small></${attrs?'button':'span'}>`;
     const tabs=[unsaved?tab(state.chatTitle||state.messages.find(m=>m.role==='user'&&m.text)?.text||'Screenshot search','Now',true,''):'',...list.map(c=>tab(c.title,c.id===state.chatId?'Open now':ago(c.updatedAt),c.id===state.chatId,`data-conversation="open-chat" data-id="${escape(c.id)}"`))].join('');
     return `<nav class="dc-chats" aria-label="Your chats"><span class="dc-chats-label">Your chats <em>${list.length}/3</em></span><div class="dc-chat-row">${tabs||'<span class="dc-chat-empty">Your searches are saved here</span>'}<button type="button" class="dc-chat new" data-conversation="new-chat" ${state.busy?'disabled':''}><b>＋ New chat</b></button></div></nav>`;
+  };
+  const renderLooks = () => {
+    const idea=account()?.profile?.custom;
+    if(!shown.length&&!idea)return '';
+    return `<div class="dc-looks"><div class="dc-looks-head"><span class="dc-kicker">Trending looks</span>${looks.length>3?`<button type="button" class="dc-shuffle" data-conversation="shuffle">Shuffle ↻</button>`:''}</div><div class="dc-examples">${idea?`<button type="button" class="dc-idea" data-conversation="idea"><small>Your idea</small>${escape(idea)} <span aria-hidden="true">↗</span></button>`:''}${shown.map((x,i)=>`<button type="button" data-conversation="look" data-index="${i}"><small>${escape(x.who)}</small>${escape(x.label)} <span aria-hidden="true">↗</span></button>`).join('')}</div></div>`;
   };
   const renderChatLimit = () => !state.chatLimit?'':`<div class="dc-chat-limit" role="dialog" aria-label="Chat limit"><strong>You can keep 3 chats in the beta.</strong><p>${state.chatLimit.retrySave?'Delete one to save this chat.':'Delete one to start a new chat.'}</p><ul>${state.chatLimit.chats.map(c=>`<li><span>${escape(c.title)}</span><button type="button" data-conversation="delete-chat" data-id="${escape(c.id)}">Delete</button></li>`).join('')}</ul><button type="button" class="dc-edit" data-conversation="limit-cancel">Keep all</button></div>`;
   const renderModelMenu = () => {
@@ -227,7 +246,7 @@
   function content(){
     const voice=voiceReady()?`<button type="button" class="dc-mic ${state.listening?'on':''}" data-conversation="voice" aria-pressed="${state.listening}" aria-label="${state.listening?'Stop listening':'Speak your search'}" ${state.busy?'disabled':''}>${state.listening?'■':'🎙'}</button>`:'';
     const empty=!state.messages.length;
-    return `<section id="discover-conversation" class="dc-shell"><div class="dc-intro"><div><span class="dc-kicker">Discover / search</span><h1>Tell me what you’re looking for.</h1><p>Describe a piece, add a screenshot, or use both. We’ll narrow it down together.</p></div></div>${renderChats()}${renderChatLimit()}<div class="dc-panel"><div class="dc-thread" aria-live="polite">${empty?`<div class="dc-welcome"><span class="dc-spark" aria-hidden="true">✳</span><h2>What caught your eye?</h2><p>A photo, a specific piece, even half a thought. Start anywhere.</p></div><div class="dc-examples">${examples.map((x,i)=>`<button type="button" data-conversation="example" data-index="${i}">${escape(x)} <span aria-hidden="true">↗</span></button>`).join('')}</div>`:state.messages.map(renderMessage).join('')}${renderChoices()}${renderResults()}${renderLoading()}</div><form id="dc-compose" class="dc-composer"><input id="dc-image-input" type="file" accept="image/jpeg,image/png,image/webp" hidden><div class="dc-attachment">${state.pending?`<div class="dc-pending"><img src="${escape(state.pending)}" alt="Screenshot ready to send"><span>Screenshot attached</span><button type="button" data-conversation="remove-image" aria-label="Remove screenshot">×</button></div>`:''}</div><div class="dc-compose-row"><button type="button" class="dc-attach" data-conversation="attach" aria-label="Attach a screenshot" title="Attach screenshot">＋</button><label class="dc-text-wrap"><span class="sr-only">Describe what you are looking for</span><textarea id="dc-text" rows="2" maxlength="500" placeholder="${state.listening?'Listening… speak now':'Describe it, ask a question, or add a screenshot…'}" ${state.busy?'disabled':''}>${escape(state.draft)}</textarea></label>${voice}</div><div class="dc-compose-bar">${renderModelMenu()}${renderWallet()}<button type="submit" class="dc-send" ${state.busy||(state.wallet&&state.wallet.remaining<currentModel().credits)?'disabled':''}>Search <span aria-hidden="true">→</span></button></div><p class="dc-compose-help">${escape(currentModel().note)} · JPG, PNG or WebP · Your image is sent for analysis only when you press search.</p></form></div><div class="dc-below"><span>01 / Search by conversation</span><span>Keep exploring the mall and community below ↓</span></div></section>`;
+    return `<section id="discover-conversation" class="dc-shell"><div class="dc-intro"><div><span class="dc-kicker">Discover / search</span><h1>Tell me what you’re looking for.</h1><p>Describe a piece, add a screenshot, or use both. We’ll narrow it down together.</p></div></div>${renderChats()}${renderChatLimit()}<div class="dc-panel"><div class="dc-thread" aria-live="polite">${empty?`<div class="dc-welcome"><span class="dc-spark" aria-hidden="true">✳</span><h2>What caught your eye?</h2><p>A photo, a specific piece, even half a thought. Start anywhere.</p></div>${renderLooks()}`:state.messages.map(renderMessage).join('')}${renderChoices()}${renderResults()}${renderLoading()}</div><form id="dc-compose" class="dc-composer"><input id="dc-image-input" type="file" accept="image/jpeg,image/png,image/webp" hidden><div class="dc-attachment">${state.pending?`<div class="dc-pending"><img src="${escape(state.pending)}" alt="Screenshot ready to send"><span>Screenshot attached</span><button type="button" data-conversation="remove-image" aria-label="Remove screenshot">×</button></div>`:''}</div><div class="dc-compose-row"><button type="button" class="dc-attach" data-conversation="attach" aria-label="Attach a screenshot" title="Attach screenshot">＋</button><label class="dc-text-wrap"><span class="sr-only">Describe what you are looking for</span><textarea id="dc-text" rows="2" maxlength="500" placeholder="${state.listening?'Listening… speak now':'Describe it, ask a question, or add a screenshot…'}" ${state.busy?'disabled':''}>${escape(state.draft)}</textarea></label>${voice}</div><div class="dc-compose-bar">${renderModelMenu()}${renderWallet()}<button type="submit" class="dc-send" ${state.busy||(state.wallet&&state.wallet.remaining<currentModel().credits)?'disabled':''}>Search <span aria-hidden="true">→</span></button></div><p class="dc-compose-help">${escape(currentModel().note)} · JPG, PNG or WebP · Your image is sent for analysis only when you press search.</p></form></div><div class="dc-below"><span>01 / Search by conversation</span><span>Keep exploring the mall and community below ↓</span></div></section>`;
   }
   function paint(focus=false){const target=root();if(!target)return;target.outerHTML=content();const thread=document.querySelector?.('.dc-thread');if(thread&&state.stage!=='results')thread.scrollTop=thread.scrollHeight;if(focus)document.getElementById('dc-text')?.focus();}
 
@@ -243,7 +262,9 @@
     const button=event.target.closest('[data-conversation]');if(!button)return;const action=button.dataset.conversation;
     if(action==='attach')document.getElementById('dc-image-input')?.click();
     else if(action==='remove-image'){state.pending=null;paint(true);}
-    else if(action==='example'){state.draft=examples[Number(button.dataset.index)]||'';paint(true);}
+    else if(action==='look'){const look=shown[Number(button.dataset.index)];if(!look||state.busy)return;state.messages.push({role:'user',text:look.label});state.source={text:look.label,image:null};state.stage='working';state.choices=[];state.followup=null;ask(look.label,null,'',null,look.id);}
+    else if(action==='shuffle'){shuffleLooks();paint();}
+    else if(action==='idea'){state.draft=account()?.profile?.custom||'';paint(true);}
     else if(action==='cancel'){state.controller?.abort();stopLoading();state.stage=state.results?'results':'start';paint();}
     else if(action==='choice'){const item=state.choices[Number(button.dataset.index)];if(!item||!state.source?.image)return;state.choices=[];try{const full=state.source.image,crop=await cropImage(full,pad(item.crop));state.source.image=crop;await ask(state.source.text||'',full,item.label);}catch{state.messages.push({role:'assistant',text:'That crop could not be read. Please attach the image again.'});state.stage='start';paint();}}
     else if(action==='model-menu'){state.menuOpen=!state.menuOpen;paint();}
@@ -263,5 +284,7 @@
   document.addEventListener('input',event=>{if(event.target.id==='dc-text')state.draft=event.target.value;});
   document.addEventListener('keydown',event=>{if(event.key==='Escape'&&state.menuOpen){state.menuOpen=false;paint();}if(event.target.id==='dc-text'&&event.key==='Enter'&&(event.ctrlKey||event.metaKey)){event.preventDefault();send();}});
   document.addEventListener('submit',event=>{if(event.target.id==='dc-compose'){event.preventDefault();send();}else if(event.target.id==='dc-refine'){event.preventDefault();refine(event.target);}});
-  window.DiscoverConversation={render:()=>{loadWallet();loadChats();return content();}};
+  // Signing in or out changes whose chats these are.
+  if(typeof window.addEventListener==='function')window.addEventListener('account-change',()=>{chatsRequested=false;if(!signedIn()){state.chats=[];}else loadChats();shuffleLooks();});
+  window.DiscoverConversation={render:()=>{loadWallet();loadChats();loadLooks();return content();}};
 })();

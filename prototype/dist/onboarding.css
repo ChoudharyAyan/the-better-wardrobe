@@ -1,0 +1,44 @@
+/* Welcome and onboarding (design QA #15). Montserrat only, the app's cream and rose palette. */
+.ob-open{overflow:hidden}
+.ob-overlay{--ob-ink:#281b22;--ob-rose:#8e1b4d;--ob-line:#e7d8ce;--ob-muted:#74646c;position:fixed;inset:0;z-index:100;overflow-y:auto;background:#fbf5ec;color:var(--ob-ink);font-family:'Montserrat','Montserrat Fallback',sans-serif;padding:calc(24px + env(safe-area-inset-top)) 16px calc(32px + env(safe-area-inset-bottom));display:flex;justify-content:center;align-items:flex-start}
+.ob-card{width:100%;max-width:460px;display:flex;flex-direction:column;gap:14px;animation:ob-in .35s ease-out}
+.ob-welcome{min-height:calc(100vh - 80px);justify-content:center;text-align:center;align-items:center}
+.ob-mark{display:grid;place-items:center;width:64px;height:64px;border-radius:20px;background:#f6e3ea;color:var(--ob-rose);font-size:30px}
+.ob-kicker{font-size:11px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:var(--ob-rose)}
+.ob-card h1{margin:0;font-size:34px;line-height:1.1;font-weight:800;letter-spacing:-.02em}
+.ob-card h2{margin:0;font-size:24px;line-height:1.2;font-weight:800}
+.ob-card h3{margin:6px 0 0;font-size:15px;font-weight:800}
+.ob-card p{margin:0;color:var(--ob-muted);font-size:15px;line-height:1.5}
+.ob-actions{display:flex;flex-direction:column;gap:10px;width:100%;margin-top:10px}
+.ob-primary,.ob-google{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;min-height:52px;border:0;border-radius:999px;background:var(--ob-rose,#8e1b4d);color:#fff;font:800 15px 'Montserrat','Montserrat Fallback',sans-serif;text-decoration:none;cursor:pointer}
+.ob-google{background:#fff;color:var(--ob-ink);border:1.5px solid var(--ob-line)}
+.ob-g{display:grid;place-items:center;width:24px;height:24px;border-radius:50%;background:conic-gradient(#ea4335 0 25%,#fbbc05 0 50%,#34a853 0 75%,#4285f4 0);color:#fff;font-weight:900;font-size:13px}
+.ob-primary:disabled{opacity:.6}
+.ob-free{border:1.5px solid var(--ob-line,#e7d8ce);background:#fff;border-radius:999px;padding:12px 18px;font:700 14px 'Montserrat','Montserrat Fallback',sans-serif;color:var(--ob-ink,#281b22);cursor:pointer}
+.ob-welcome .ob-free{margin-top:6px;border:0;background:none;text-decoration:underline;text-underline-offset:4px}
+.ob-note{display:block;color:var(--ob-muted,#74646c);font-size:12px;line-height:1.45}
+.ob-error{color:#a3242b!important;font-weight:700;font-size:13px!important}
+.ob-steps{display:flex;gap:6px}.ob-steps i{flex:1;height:4px;border-radius:4px;background:var(--ob-line)}.ob-steps i.on{background:var(--ob-rose)}
+.ob-field{display:flex;flex-direction:column;gap:8px;border:0;margin:0;padding:0;min-width:0}
+.ob-field>span,.ob-field legend{font-size:13px;font-weight:800;padding:0}
+.ob-field legend small{font-weight:600;color:var(--ob-muted)}
+.ob-field input,.ob-field textarea{width:100%;box-sizing:border-box;border:1.5px solid var(--ob-line);border-radius:14px;padding:13px 14px;background:#fff;font:600 16px 'Montserrat','Montserrat Fallback',sans-serif;color:var(--ob-ink)}
+.ob-field textarea{margin-top:8px;resize:vertical}
+.ob-field input:focus,.ob-field textarea:focus{outline:2px solid var(--ob-rose);outline-offset:1px}
+.ob-chips,.ob-scale{display:flex;flex-wrap:wrap;gap:8px}
+.ob-chip{border:1.5px solid var(--ob-line,#e7d8ce);background:#fff;border-radius:999px;padding:10px 14px;font:700 13px 'Montserrat','Montserrat Fallback',sans-serif;color:var(--ob-ink,#281b22);cursor:pointer}
+.ob-chip.on{background:var(--ob-ink,#281b22);border-color:var(--ob-ink,#281b22);color:#fff}
+.ob-explore{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.ob-option{display:flex;flex-direction:column;gap:4px;text-align:left;border:1.5px solid var(--ob-line);background:#fff;border-radius:16px;padding:14px;font-family:inherit;color:var(--ob-ink);cursor:pointer}
+.ob-option b{font-size:15px;font-weight:800}.ob-option small{font-size:12px;color:var(--ob-muted);line-height:1.35}
+.ob-option.on{border-color:var(--ob-rose);background:#fbeef3;box-shadow:inset 0 0 0 1px var(--ob-rose)}
+.ob-row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.ob-row .ob-primary{flex:1;width:auto;min-width:120px}
+.ob-profile{--ob-ink:#281b22;--ob-rose:#8e1b4d;--ob-line:#e7d8ce;--ob-muted:#74646c;display:flex;flex-direction:column;gap:14px;background:#fff;border:1px solid var(--ob-line);border-radius:22px;padding:18px;margin:0 0 20px;font-family:'Montserrat','Montserrat Fallback',sans-serif;color:var(--ob-ink)}
+.ob-profile h2{margin:4px 0;font-size:20px;font-weight:800}.ob-profile p{margin:0;color:var(--ob-muted);font-size:14px}
+.ob-who{display:flex;gap:12px;align-items:center}.ob-who img,.ob-avatar{width:48px;height:48px;border-radius:50%;object-fit:cover}
+.ob-avatar{display:grid;place-items:center;background:#f6e3ea;color:var(--ob-rose);font-weight:800;font-size:20px}
+.ob-who strong{display:block;font-size:16px}.ob-who small{color:var(--ob-muted);font-size:12px}
+.ob-tags{display:flex;flex-wrap:wrap;gap:6px}.ob-tags span{background:#fbf5ec;border:1px solid var(--ob-line);border-radius:999px;padding:5px 10px;font-size:12px;font-weight:700}
+@keyframes ob-in{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.ob-card{animation:none}}
+@media(max-width:360px){.ob-explore{grid-template-columns:1fr}}
