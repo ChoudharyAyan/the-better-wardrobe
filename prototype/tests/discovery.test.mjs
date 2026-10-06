@@ -179,3 +179,19 @@ test('department keeps a menswear search out of womenswear listings',()=>{
  assert.equal(searchIntent(unknown).query.includes("men's"),false);
  assert.equal(titleRejection({title:'Unisex pink blazer'},attributes({category:'Blazer',department:'unisex'})),'');
 });
+
+test('interpret asks instead of inventing a garment, and keeps budgets across follow-ups',async()=>{
+ const reply=(data)=>({ok:true,json:async()=>({candidates:[{finishReason:'STOP',content:{parts:[{text:JSON.stringify({category:'',colour:'',fit:'',pattern:'',details:'',subtype:'',features:'',department:'unknown',query:'',budget:null,uncertainty:'',question:'',...data})}]}}]})});
+ let next;const d=createDiscovery({env:{GEMINI_API_KEY:'test'},fetcher:async()=>reply(next)});
+ next={category:'sweatshirts',subtype:'pullover',colour:'beige',query:'beige sweatshirt'};
+ const vague=await d.interpret({text:'something nice'});
+ assert.equal(vague.attributes,null,'no garment was named, so none is invented');assert.ok(vague.question);
+ next={category:'shirt',subtype:'linen shirt',colour:'black',budget:2000};
+ const first=await d.interpret({text:'black linen shirt for a beach wedding, under 2000'});assert.equal(first.attributes.category,'shirt');assert.equal(first.budget,2000);
+ next={category:'shirt',subtype:'linen shirt',colour:'navy',budget:null};
+ const cheaper=await d.interpret({text:'same but in navy and cheaper',previous:first});
+ assert.equal(cheaper.attributes.category,'shirt','follow-up may rely on the earlier garment');assert.equal(cheaper.budget,1500);
+ const same=await d.interpret({text:'same in navy',previous:first});assert.equal(same.budget,2000,'budget carries over when not mentioned');
+ next={category:'kurta sets',subtype:'kurta set',colour:'red'};
+ assert.equal((await d.interpret({text:'red kurta for diwali'})).attributes.category,'kurta sets');
+});
