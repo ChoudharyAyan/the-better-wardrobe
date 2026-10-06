@@ -45,3 +45,4 @@
 .ob-chip,.ob-option{-webkit-tap-highlight-color:transparent;transition:background-color .15s,border-color .15s,color .15s}
 .ob-field textarea[hidden]{display:none}
 @media(max-width:360px){.ob-explore{grid-template-columns:1fr}}
+.ob-soon{font-style:normal;font-size:9px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;background:#f6e3ea;color:#8e1b4d;border-radius:999px;padding:2px 6px;vertical-align:middle}

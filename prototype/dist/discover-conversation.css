@@ -163,3 +163,17 @@
 .dc-ready-stack img+img{margin-left:-18px}
 .dc-ready-pill .dc-ready-go{width:100%;padding:12px;font-size:14px}
 .dc-ready-pill .dc-ready-close{padding:0 2px;font-size:22px}
+
+/* Loading mascot (owner, 6 Oct): panda, pug, cat or fox, a different one each search. */
+.dc-mascot{margin:0;display:flex;flex-direction:column;align-items:center;gap:4px}
+.dc-mascot svg{width:84px;height:84px;animation:dc-bob 1.6s ease-in-out infinite;transform-origin:50% 90%}
+.dc-mascot .dc-eyes{animation:dc-blink 4s infinite;transform-origin:50% 50%;transform-box:fill-box}
+.dc-mascot-shadow{width:46px;height:7px;border-radius:50%;background:rgba(40,27,34,.14);animation:dc-shadow 1.6s ease-in-out infinite}
+.dc-mascot figcaption{font:800 11px 'Montserrat','Montserrat Fallback',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--dc-rose)}
+@keyframes dc-bob{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-8px) rotate(3deg)}}
+@keyframes dc-blink{0%,92%,100%{transform:scaleY(1)}95%{transform:scaleY(.1)}}
+@keyframes dc-shadow{0%,100%{transform:scaleX(1);opacity:.9}50%{transform:scaleX(.7);opacity:.5}}
+@media(prefers-reduced-motion:reduce){.dc-mascot svg,.dc-mascot .dc-eyes,.dc-mascot-shadow{animation:none}}
+.dc-credits-card{display:flex;flex-direction:column;gap:4px;background:#fff;border:1px solid var(--dc-line,#e7d8ce);border-radius:22px;padding:18px;margin:0 0 20px;font-family:'Montserrat','Montserrat Fallback',sans-serif;color:#281b22}
+.dc-credits-card .dc-kicker{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#8e1b4d}
+.dc-credits-card strong{font-size:20px;font-weight:800}.dc-credits-card small{font-size:13px;color:#74646c}

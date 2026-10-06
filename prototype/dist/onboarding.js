@@ -48,7 +48,7 @@
       <label class="ob-field"><span>Your name</span><input name="name" maxlength="60" autocomplete="name" value="${esc(d.name)}" placeholder="What should we call you?" required></label>
       <label class="ob-field"><span>Age</span><input name="age" type="number" inputmode="numeric" min="13" max="100" value="${esc(d.age)}" placeholder="e.g. 24" required></label>
       <fieldset class="ob-field"><legend>Gender</legend><div class="ob-chips" role="radiogroup">${GENDERS.map(([v,l])=>chip('gender',v,l,d.gender===v)).join('')}</div></fieldset>
-      <fieldset class="ob-field"><legend>What do you want to explore? <small>Pick one or more</small></legend><div class="ob-explore">${EXPLORE.map(([v,l,sub])=>`<button type="button" class="ob-option ${d.explore.includes(v)?'on':''}" role="checkbox" aria-checked="${d.explore.includes(v)}" data-ob="explore" data-value="${v}"><b>${l}</b><small>${sub}</small></button>`).join('')}</div>
+      <fieldset class="ob-field"><legend>What do you want to explore? <small>Pick one or more</small></legend><div class="ob-explore">${EXPLORE.map(([v,l,sub])=>`<button type="button" class="ob-option ${d.explore.includes(v)?'on':''}" role="checkbox" aria-checked="${d.explore.includes(v)}" data-ob="explore" data-value="${v}"><b>${l}${['style','wardrobe'].includes(v)?' <em class="ob-soon">Soon</em>':''}</b><small>${sub}</small></button>`).join('')}</div>
       <textarea name="custom" maxlength="200" rows="2" placeholder="e.g. Plan outfits for my sister’s wedding" ${d.explore.includes('custom')?'':'hidden'}>${esc(d.custom)}</textarea></fieldset>
       ${ui.error?`<p class="ob-error" role="alert">${esc(ui.error)}</p>`:''}<button type="submit" class="ob-primary">Continue <span aria-hidden="true">→</span></button></form>`;
   }

@@ -126,3 +126,10 @@ test('QA v5: loading never names stores, a look note is said out loud, and no br
  assert.match(h.latest(),/signature piece is a dark leather coat with a big shearling collar, not a suit\. Looking for/);
  const search=h.calls.find(c=>c.action==='search');assert.equal(search.body.look,'blade-runner-k-coat');
 });
+
+test('a mascot keeps the person company while a search loads, and Profile can show the credits card',async()=>{
+ const h=harness({interpret:()=>new Promise(()=>{})});
+ h.listeners.input({target:{id:'dc-text',value:'white shirt'}});h.listeners.submit({target:{id:'dc-compose'},preventDefault(){}});await h.settle();
+ assert.match(h.latest(),/class="dc-mascot" aria-label="(Bao the panda|Momo the pug|Miso the cat|Kitsu the fox) is searching with you"/);
+ assert.equal(typeof h.context.window.DiscoverConversation.creditsCard,'function');
+});
