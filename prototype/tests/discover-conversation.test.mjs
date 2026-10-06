@@ -17,46 +17,74 @@ test('Discover opens as a prompt-first conversation, not an image-only upload',(
  assert.doesNotMatch(html,/natural-language discovery are next/i);
 });
 
-test('a text prompt is interpreted and reviewed before any shopping search',async()=>{
+// A tiny DOM-less harness: the script only needs document listeners and a node to paint into.
+function harness(replies){
  const listeners={},calls=[];let latest='';
  const page={set outerHTML(value){latest=value;}};
- const context={window:{},document:{addEventListener:(event,fn)=>{listeners[event]=fn;},getElementById:id=>id==='discover-conversation'?page:null},AbortController,fetch:async(url,options)=>{calls.push({url,body:JSON.parse(options.body)});return {ok:true,json:async()=>({attributes:{category:'Blazer',colour:'brown',fit:'relaxed',pattern:'',details:'',subtype:'',features:'',department:'womenswear'},query:'relaxed brown blazer',budget:4000,uncertainty:'Fabric unclear',question:''})};}};
+ const context={window:{},document:{addEventListener:(event,fn)=>{listeners[event]=fn;},getElementById:id=>id==='discover-conversation'?page:null},AbortController,
+  FormData:class{constructor(form){this.v=form.values;}get(k){return this.v[k];}},
+  fetch:async(url,options)=>{const action=url.split('/').pop();const body=JSON.parse(options.body);calls.push({action,body});const reply=typeof replies[action]==='function'?replies[action](body):replies[action];return {ok:reply?.status?reply.status<400:true,status:reply?.status||200,json:async()=>reply};}};
  vm.runInNewContext(script,context);
- listeners.input({target:{id:'dc-text',value:'Find a relaxed brown blazer under ₹4,000'}});
- listeners.submit({target:{id:'dc-compose'},preventDefault(){}});
- await new Promise(resolve=>setImmediate(resolve));
- assert.equal(calls.length,1);
- assert.equal(calls[0].url,'/api/discover/interpret');
- assert.equal(calls[0].body.text,'Find a relaxed brown blazer under ₹4,000');
- assert.match(latest,/Is this the right piece/);
- assert.match(latest,/Search phrase/);
- assert.match(latest,/Find matches/);
- assert.doesNotMatch(latest,/Search results/);
+ const settle=()=>new Promise(r=>setImmediate(r));
+ const click=(action,data={})=>listeners.click({target:{closest:sel=>sel==='[data-conversation]'?{dataset:{conversation:action,...data}}:null}});
+ return {context,listeners,calls,latest:()=>latest,settle,click,ask:async text=>{listeners.input({target:{id:'dc-text',value:text}});listeners.submit({target:{id:'dc-compose'},preventDefault(){}});for(let i=0;i<4;i++)await settle();}};
+}
+const shirt={category:'shirt',colour:'black',fit:'relaxed',pattern:'',details:'linen',subtype:'',features:'',department:'menswear'};
+const found={results:[{title:'Black linen shirt',url:'https://www.snitch.com/p',merchant:'Snitch',priceText:'₹1,499',image:'https://img.example/p.jpg'}],warnings:[],
+ storeSearches:[{store:'Myntra',url:'https://www.myntra.com/black-linen-shirt'},{store:'AJIO',url:'https://www.ajio.com/search/?text=black%20linen%20shirt'}],
+ trace:{queries:['black linen shirt men','black linen shirt men · Google Shopping India','black relaxed linen shirt (site:myntra.com OR site:snitch.com)'],retrieved:24,titleRejected:5,domesticRejected:3,visuallyAssessed:6,elapsedMs:4200,providerFailures:[]}};
+
+test('asking goes straight to results: one interpret, one search, no confirmation step',async()=>{
+ const h=harness({interpret:{attributes:shirt,query:'black linen shirt',budget:2000,uncertainty:'',question:'',credits:{remaining:105,cost:15},turn:'n.1.o.sig'},search:found});
+ h.context.window.DiscoverConversation.render();
+ await h.ask('Find a black linen shirt under ₹2,000');
+ assert.deepEqual(h.calls.map(c=>c.action),['interpret','search']);
+ assert.equal(h.calls[1].body.turn,'n.1.o.sig');
+ const html=h.latest();
+ assert.doesNotMatch(html,/Is this the right piece/);
+ assert.match(html,/Max · 15 credits · 105 left/);
+ assert.match(html,/Searched for/);assert.match(html,/under ₹2,000/);
+ assert.match(html,/Pieces that match/);assert.match(html,/Black linen shirt/);
+ assert.match(html,/Search it on/);assert.match(html,/https:\/\/www\.myntra\.com\/black-linen-shirt/);
+ assert.match(html,/How I searched · 3 searches · 4\.2s/);
+ assert.equal((html.match(/<code>black linen shirt men<\/code>/g)||[]).length,1,'a phrase sent to two routes is listed once');
+ assert.match(html,/24 found · 8 off-topic or outside India removed · 6 compared against your piece · <b>1 shown<\/b>/);
 });
 
-test('the search bar carries a model choice, sends it with every request, and shows how results were retrieved',async()=>{
- const listeners={},calls=[];let latest='';
- const page={set outerHTML(value){latest=value;}};
- const replies={interpret:{attributes:{category:'shirt',colour:'black',fit:'relaxed',pattern:'',details:'linen',subtype:'',features:'',department:'menswear'},query:'black linen shirt',budget:2000,uncertainty:'',question:'',credits:{remaining:112,cost:8},turn:'n.1.o.sig'},
-  search:{results:[{title:'Black linen shirt',url:'https://www.snitch.com/p',merchant:'Snitch',priceText:'₹1,499'}],warnings:[],trace:{queries:['black linen shirt men','black linen shirt men · Google Shopping India','black relaxed linen shirt (site:myntra.com OR site:snitch.com)'],retrieved:24,titleRejected:5,domesticRejected:3,visuallyAssessed:6,elapsedMs:4200,providerFailures:[]}}};
- const context={window:{},document:{addEventListener:(event,fn)=>{listeners[event]=fn;},getElementById:id=>id==='discover-conversation'?page:null},AbortController,FormData:class{constructor(){this.v={category:'shirt',colour:'black',fit:'relaxed',details:'linen',query:'black linen shirt',budget:'2000'};}get(k){return this.v[k];}},
-  fetch:async(url,options)=>{const action=url.split('/').pop();calls.push({action,body:JSON.parse(options.body)});return {ok:true,status:200,json:async()=>replies[action]};}};
- vm.runInNewContext(script,context);
- let html=context.window.DiscoverConversation.render();
- assert.match(html,/id="dc-model"/);assert.match(html,/Gemini 3 Flash · 15 credits/);assert.match(html,/GPT-5 nano · 8 credits/);
- listeners.change({target:{id:'dc-model',value:'gpt-5-nano'}});
- listeners.input({target:{id:'dc-text',value:'black linen shirt under 2000'}});
- listeners.submit({target:{id:'dc-compose'},preventDefault(){}});
- await new Promise(r=>setImmediate(r));
- assert.equal(calls[0].action,'interpret');assert.equal(calls[0].body.model,'gpt-5-nano');
- assert.match(latest,/GPT-5 nano · 8 credits · 112 left/);
- listeners.submit({target:{id:'dc-review'},preventDefault(){}});
- await new Promise(r=>setImmediate(r));
- assert.equal(calls[1].action,'search');assert.equal(calls[1].body.turn,'n.1.o.sig','the search ticket from the answer is sent back');assert.equal(calls[1].body.model,'gpt-5-nano');
- assert.match(latest,/How I searched · 3 searches · 4\.2s/);
- assert.equal((latest.match(/<code>black linen shirt men<\/code>/g)||[]).length,1,'a phrase sent to two routes is listed once');
- assert.match(latest,/<small>Google Shopping India<\/small>/);
- assert.match(latest,/black relaxed linen shirt \(site:myntra\.com OR site:snitch\.com\)/);
- assert.match(latest,/24 found · 8 off-topic or outside India removed · 6 compared against your piece · <b>1 shown<\/b>/);
- assert.match(latest,/under ₹2,000/);
+test('the in-app model dropdown offers Max and Lite and the choice travels with the request',async()=>{
+ const h=harness({interpret:{attributes:shirt,query:'black linen shirt',budget:null,uncertainty:'',question:'',credits:{remaining:112,cost:8},turn:'t'},search:found});
+ let html=h.context.window.DiscoverConversation.render();
+ assert.match(html,/Max · 15 credits/);assert.doesNotMatch(html,/<select/,'no native select sheet on phones');
+ h.click('model-menu');await h.settle();html=h.latest();
+ assert.match(html,/role="listbox"/);assert.match(html,/<b>Max<\/b><small>Most accurate/);assert.match(html,/<b>Lite<\/b><small>More searches/);
+ h.click('pick-model',{id:'gpt-5-nano'});await h.settle();
+ assert.match(h.latest(),/Lite · 8 credits/);assert.doesNotMatch(h.latest(),/role="listbox"/);
+ await h.ask('black linen shirt');
+ assert.equal(h.calls[0].body.model,'gpt-5-nano');assert.equal(h.calls[1].body.model,'gpt-5-nano');
+ assert.match(h.latest(),/Lite · 8 credits · 112 left/);
+});
+
+test('editing what was understood re-runs the search for free with the same ticket',async()=>{
+ const h=harness({interpret:{attributes:shirt,query:'black linen shirt',budget:null,uncertainty:'',question:'',credits:{remaining:105,cost:15},turn:'ticket'},search:found});
+ h.context.window.DiscoverConversation.render();await h.ask('black linen shirt');
+ h.click('edit');await h.settle();assert.match(h.latest(),/Update results/);
+ h.listeners.submit({target:{id:'dc-refine',values:{category:'shirt',colour:'navy',fit:'slim',details:'linen',budget:'1500'}},preventDefault(){}});
+ for(let i=0;i<4;i++)await h.settle();
+ assert.deepEqual(h.calls.map(c=>c.action),['interpret','search','search'],'no second interpret, so no second charge');
+ assert.equal(h.calls[2].body.turn,'ticket');assert.equal(h.calls[2].body.attributes.colour,'navy');assert.equal(h.calls[2].body.budget,1500);
+});
+
+test('an off-topic question asks back without charging and runs no search',async()=>{
+ const h=harness({interpret:{attributes:null,question:'What type of garment are you looking for?',credits:{remaining:120,cost:0}}});
+ h.context.window.DiscoverConversation.render();await h.ask("Let's solve a differential equation");
+ assert.deepEqual(h.calls.map(c=>c.action),['interpret']);
+ assert.match(h.latest(),/What type of garment are you looking for\?/);assert.match(h.latest(),/free, nothing to search yet/);
+});
+
+test('size variants of one product collapse into a single match',async()=>{
+ const v=n=>({title:`Jack & Jones Men Mid-Rise Cargos (${n}) by Myntra`,url:'https://www.google.com/shopping/product/'+n,merchant:'Myntra',priceText:'₹2,205'});
+ const h=harness({interpret:{attributes:{...shirt,category:'cargo pants'},query:'olive cargo pants',budget:null,uncertainty:'',question:'',credits:{remaining:105,cost:15},turn:'t'},search:{...found,results:[v(36),v(34),v(32),{title:'Snitch Olive Cargo Pants',url:'https://www.snitch.com/c',merchant:'Snitch',priceText:'₹1,399'}]}});
+ h.context.window.DiscoverConversation.render();await h.ask('olive cargo pants');
+ const html=h.latest();
+ assert.equal((html.match(/class="dc-result"/g)||[]).length,2);assert.match(html,/Found 2 matches/);
 });

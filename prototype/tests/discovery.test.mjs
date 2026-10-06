@@ -30,7 +30,7 @@ test('metadata falls back to OpenGraph tags when JSON-LD is missing or incomplet
  assert.equal(productMetadata(schemaMissingPrice).price,1299);
 });
 test('missing credentials are explicit and no provider calls occur',async()=>{
- const d=createDiscovery({env:{},fetcher:()=>assert.fail('No network without keys')});assert.deepEqual(d.status(),{vision:false,visionProvider:'gemini',models:[{id:'gemini-3-flash',label:'Gemini 3 Flash',note:'Most accurate',credits:15},{id:'gpt-5-nano',label:'GPT-5 nano',note:'More searches',credits:8}],defaultModel:'gemini-3-flash',shopping:false,lens:false,model:'gemini-3-flash-preview',developerDashboard:false,dataMode:'live'});await assert.rejects(d.analyze({image,category:'Shirt'}),/Gemini/);await assert.rejects(d.search({attributes:attr}),/SerpApi/);
+ const d=createDiscovery({env:{},fetcher:()=>assert.fail('No network without keys')});assert.deepEqual(d.status(),{vision:false,visionProvider:'gemini',models:[{id:'gemini-3-flash',label:'Max',note:'Most accurate',credits:15},{id:'gpt-5-nano',label:'Lite',note:'More searches',credits:8}],defaultModel:'gemini-3-flash',shopping:false,lens:false,model:'gemini-3-flash-preview',developerDashboard:false,dataMode:'live'});await assert.rejects(d.analyze({image,category:'Shirt'}),/Gemini/);await assert.rejects(d.search({attributes:attr}),/SerpApi/);
 });
 test('conversation interpretation accepts text, screenshot, or both without inventing product facts',async()=>{
  const calls=[];const answer={...attr,category:'Blazer',colour:'brown',subtype:'blazer',features:'single button',department:'womenswear',query:'relaxed brown blazer',budget:4000,uncertainty:'Fabric is unclear',question:''};
@@ -147,8 +147,21 @@ test('slow fast-path providers get a longer Lens rescue and return visual leads'
  const out=await d.search({attributes:attr,image,market:'in'});
  assert.equal(lensCalls,2);assert.equal(out.trace.lensRescue,true);assert.equal(out.trace.usedRelatedFallback,true);assert.ok(out.results.length);assert.ok(out.results.every(p=>p.match==='Similar shape'));
 });
-test('India provider outage returns domestic retailer searches instead of US products',async()=>{
- const d=createDiscovery({env:{SERPAPI_API_KEY:'test'},pageFetcher:async()=>'',fetcher:async()=>{throw Error('timeout')}});const out=await d.search({attributes:attr,market:'in'});assert.equal(out.trace.retailerShortcuts,true);assert.equal(out.results.length,3);assert.ok(out.results.every(p=>p.market==='in'&&['www.myntra.com','www.amazon.in','www.flipkart.com'].includes(new URL(p.url).hostname)));
+test('India provider outage shows store searches separately, never as fake product cards',async()=>{
+ const d=createDiscovery({env:{SERPAPI_API_KEY:'test'},pageFetcher:async()=>'',fetcher:async()=>{throw Error('timeout')}});const out=await d.search({attributes:attr,market:'in'});
+ assert.equal(out.results.length,0,'no product came back, so none is shown');
+ assert.deepEqual(out.storeSearches.map(s=>s.store),['Myntra','AJIO','Amazon','Flipkart','Nykaa Fashion']);
+ assert.ok(out.storeSearches.every(s=>new URL(s.url).protocol==='https:'));
+});
+test('store search links use each store’s real search URL format',async()=>{
+ const {storeSearches}=await import('../lib/discovery.mjs');
+ assert.deepEqual(storeSearches('Brown suede jacket').map(s=>s.url),['https://www.myntra.com/brown-suede-jacket','https://www.ajio.com/search/?text=Brown%20suede%20jacket','https://www.amazon.in/s?k=Brown+suede+jacket','https://www.flipkart.com/search?q=Brown%20suede%20jacket','https://www.nykaafashion.com/catalogsearch/result/?q=Brown%20suede%20jacket']);
+ assert.deepEqual(storeSearches('  '),[]);
+});
+test('India shopping searches do not pin location=India and get a realistic time budget',async()=>{
+ const seen=[];const d=createDiscovery({env:{SERPAPI_API_KEY:'k',DISCOVERY_DATA_MODE:'live'},pageFetcher:async()=>'',fetcher:async url=>{seen.push(new URL(url).searchParams);return response({shopping_results:[],images_results:[]});}});
+ await d.search({attributes:attr,market:'in'});
+ const india=seen.filter(p=>p.get('gl')==='in');assert.ok(india.length>=2);assert.ok(india.every(p=>!p.has('location')),'gl=in alone was faster and more Indian in live checks');
 });
 
 test('auto mode records a result and replay mode uses it without provider calls',async()=>{
@@ -224,4 +237,16 @@ test('shopping queries never carry "unknown" fields or a budget phrase',async()=
  assert.ok(urls.length>0);
  for(const q of urls){assert.doesNotMatch(q,/unknown/i,q);assert.doesNotMatch(q,/under|2,000/i,q);}
  assert.ok(urls.some(q=>q.startsWith('black linen shirt')));
+});
+
+test('Google Shopping India listings with a rupee price survive the domestic filter',async()=>{
+ const {indianShoppingListing}=await import('../lib/discovery.mjs');
+ const listing=(o)=>({url:'https://www.google.com/shopping/product/123',source:'shopping',market:'in',priceText:'₹1,795',...o});
+ assert.equal(indianShoppingListing(listing()),true);
+ assert.equal(indianShoppingListing(listing({priceText:'$45'})),false,'a dollar listing is not an Indian offer');
+ assert.equal(indianShoppingListing(listing({source:'global'})),false);
+ assert.equal(indianShoppingListing(listing({url:'https://evil.example/shopping/product/1'})),false);
+ const d=createDiscovery({env:{SERPAPI_API_KEY:'k',DISCOVERY_DATA_MODE:'live'},pageFetcher:async()=>'',fetcher:async url=>{const e=new URL(url).searchParams.get('engine');return response(e==='google_shopping'?{shopping_results:[{title:'WROGN Men Brown Suede Jacket',product_link:'https://www.google.com/shopping/product/9',source:'Myntra',price:'₹2,099',extracted_price:2099,thumbnail:'https://encrypted-tbn0.gstatic.com/x.jpg'}]}:{images_results:[]});}});
+ const out=await d.search({attributes:{category:'jacket',colour:'brown',fit:'',pattern:'',details:'suede'},query:'brown suede jacket',market:'in'});
+ assert.equal(out.results[0].merchant,'Myntra');assert.equal(out.results[0].priceText,'₹2,099');
 });

@@ -5,6 +5,7 @@ import {fileURLToPath,pathToFileURL} from 'node:url';
 import path from 'node:path';
 import {createDiscovery,ApiError,modelKey} from './lib/discovery.mjs';
 import {createCredits} from './lib/credits.mjs';
+import {createChats} from './lib/chats.mjs';
 import {randomBytes} from 'node:crypto';
 import {createQaStore} from './lib/qa.mjs';
 import {createConnectorStore,STORES} from './lib/connectors.mjs';
@@ -15,7 +16,7 @@ try{process.loadEnvFile(fileURLToPath(new URL('./.env',import.meta.url)));}catch
 const root=fileURLToPath(new URL('./dist/',import.meta.url));
 const mime={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.svg':'image/svg+xml','.jpg':'image/jpeg','.png':'image/png','.webp':'image/webp','.woff2':'font/woff2','.ttf':'font/ttf'};
 // The bare (req,res) listener is what Vercel's Node runtime invokes; createServer wraps it for local runs.
-export function createHandler(discovery=createDiscovery(),qaStore=createQaStore(),photos=createPhotos(),connectors=createConnectorStore(),community=createCommunity(),credits=createCredits()){
+export function createHandler(discovery=createDiscovery(),qaStore=createQaStore(),photos=createPhotos(),connectors=createConnectorStore(),community=createCommunity(),credits=createCredits(),chats=createChats()){
 return async(req,res)=>{
  const send=(status,data)=>{res.writeHead(status,{'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});res.end(JSON.stringify(data));};
  try{const pathname=decodeURIComponent(new URL(req.url,'http://localhost').pathname);
@@ -75,6 +76,22 @@ return async(req,res)=>{
  // One anonymous guest identity for Community XP and Discover credits.
  const guest=()=>{const token=String(req.headers.cookie||'').match(/(?:^|;\s*)tbw_community=([a-f0-9]{48})(?:;|$)/)?.[1];if(token)return token;const fresh=randomBytes(24).toString('hex');res.setHeader('Set-Cookie',`tbw_community=${fresh}; Path=/; HttpOnly; SameSite=Lax; Max-Age=31536000${req.socket?.encrypted||req.headers['x-forwarded-proto']==='https'?'; Secure':''}`);return fresh;};
  const ip=()=>String(req.headers['x-forwarded-for']||'').split(',')[0].trim()||req.socket?.remoteAddress||'unknown';
+ // Saved Discover chats (three per guest in the beta).
+ const chatPath=pathname.match(/^\/api\/discover\/chats(?:\/([a-f0-9-]{36}))?$/);
+ if(chatPath){
+  if(req.headers['sec-fetch-site']==='cross-site')return send(403,{error:'Forbidden'});
+  const id=chatPath[1],who=guest();
+  if(req.method==='GET'&&!id)return send(200,{chats:await chats.list(who)});
+  if(req.method==='GET')return send(200,await chats.get(who,id));
+  if(req.method==='DELETE'&&id){await chats.remove(who,id);return send(200,{chats:await chats.list(who)});}
+  if(req.method==='PUT'&&id){
+   if(!req.headers['content-type']?.startsWith('application/json'))return send(415,{error:'JSON required'});
+   let size=0,parts=[];for await(const part of req){size+=part.length;if(size>450_000)return send(413,{error:'This chat is too large to save.'});parts.push(part);}
+   let body;try{body=JSON.parse(Buffer.concat(parts).toString());}catch{return send(400,{error:'Invalid JSON'});}
+   try{return send(200,await chats.save(who,id,body));}catch(e){if(e.status===409)return send(409,{error:e.message,chats:e.chats});throw e;}
+  }
+  return send(405,{error:'Method not allowed'});
+ }
  if(req.method==='GET'&&pathname==='/api/discover/credits'){const {models,defaultModel}=discovery.status();return send(200,{...await credits.summary(guest()),models,defaultModel});}
  if(req.method==='GET'&&pathname==='/api/discover/status')return send(200,discovery.status());
  if(req.method==='GET'&&pathname==='/api/developer/observability'){const host=String(req.headers.host||'').replace(/^\[|\](?=:|$)/g,'').split(':')[0];const dashboard=discovery.observability?.();if(!dashboard?.enabled||!['localhost','127.0.0.1','::1'].includes(host))return send(404,{error:'Not found'});return send(200,dashboard);}
@@ -103,7 +120,10 @@ return async(req,res)=>{
  if(['detect','orders','analyze','interpret'].includes(action))await credits.budgetOk?.();
  if(['interpret','analyze'].includes(action))charge=await credits.charge(who);
  if(action==='search'&&discovery.status?.().shopping&&!await credits.useTurn(body.turn,who.guest))return send(403,{error:'Ask a new question to search again.'});
- const runAction=async progress=>{try{const result=await discovery[action](body,progress,cancelled.signal);return charge?{...result,credits:{remaining:charge.remaining,cost:charge.cost},turn:charge.turn}:result;}catch(e){if(charge)await credits.refund(who).catch(()=>{});throw e;}};
+ const runAction=async progress=>{try{const result=await discovery[action](body,progress,cancelled.signal);
+  // Nothing fashion was understood ("let's solve a differential equation"): the question is free and unlocks no search.
+  if(charge&&action==='interpret'&&!result.attributes){await credits.refund(who);return {...result,credits:{remaining:charge.remaining+charge.cost,cost:0}};}
+  return charge?{...result,credits:{remaining:charge.remaining,cost:charge.cost},turn:charge.turn}:result;}catch(e){if(charge)await credits.refund(who).catch(()=>{});throw e;}};
  if(req.headers.accept==='application/x-ndjson'){
  res.writeHead(200,{'Content-Type':'application/x-ndjson','Cache-Control':'no-store','X-Accel-Buffering':'no'});
  const emit=event=>{if(!res.destroyed)res.write(JSON.stringify(event)+'\n');};
@@ -115,5 +135,5 @@ return async(req,res)=>{
  const content=await readFile(target);res.writeHead(200,{'Content-Type':mime[path.extname(target)]||'application/octet-stream','Cache-Control':'no-cache','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer'});res.end(req.method==='HEAD'?undefined:content);
  }catch(e){const status=e.status||(e.code==='ENOENT'?404:500);if(status>=500&&!e.status)console.error('Unhandled',req.method,String(req.url||'').split('?')[0],e?.code||'',String(e?.message||e).replace(/postgres(ql)?:\/\/\S+/gi,'<db-url>').slice(0,300));send(status,{error:e instanceof ApiError||e.status?e.message:'Unable to complete this request.'});}
 };}
-export function createServer(discovery,qaStore,photos,connectors,community,credits){return http.createServer(createHandler(discovery,qaStore,photos,connectors,community,credits));}
+export function createServer(discovery,qaStore,photos,connectors,community,credits,chats){return http.createServer(createHandler(discovery,qaStore,photos,connectors,community,credits,chats));}
 if(process.argv[1]&&import.meta.url===pathToFileURL(path.resolve(process.argv[1])).href){const port=Number(process.env.PORT||5173),host=process.env.HOST||'0.0.0.0';createServer().listen(port,host,()=>console.log(`The Better Wardrobe: http://127.0.0.1:${port} · network enabled`));}
