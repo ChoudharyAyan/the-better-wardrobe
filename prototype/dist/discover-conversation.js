@@ -55,7 +55,7 @@
 
   // ---- server calls ---------------------------------------------------------------------------
   let walletRequested=false,chatsRequested=false;
-  async function loadWallet(){if(walletRequested||!hasFetch())return;walletRequested=true;try{const r=await window.fetch('/api/discover/credits');if(r.ok){state.wallet=await r.json();paint();}}catch{}}
+  async function loadWallet(){if(walletRequested||!hasFetch())return;walletRequested=true;try{const r=await window.fetch('/api/discover/credits');if(r.ok){state.wallet=await r.json();paint();if(globalThis.location?.hash==='#profile')window.dispatchEvent?.(new Event('account-change'));}}catch{}}
   let looksRequested=false;
   async function loadLooks(){if(looksRequested||!hasFetch())return;looksRequested=true;try{const r=await window.fetch('/api/discover/looks');if(r.ok){looks=(await r.json()).looks||[];shuffleLooks();paint();}}catch{}}
   // Saved chats are for people with a profile; guests who explore freely don't get them.
@@ -110,7 +110,7 @@
   // ---- search flow ----------------------------------------------------------------------------
   let rotation=null,hintTimer=null;
   function startLoading(label){
-    state.busy=true;state.progress=label;state.loadingSince=Date.now();state.showMallHint=false;paint();
+    if(!state.busy)pickMascot();state.busy=true;state.progress=label;state.loadingSince=Date.now();state.showMallHint=false;paint();
     let i=0;if(typeof setInterval==='function'){clearInterval(rotation);rotation=setInterval(()=>{const lines=loadingLines();i=Math.min(i+1,lines.length-1);const line=document.getElementById?.('dc-loading-line');if(line)line.textContent=lines[i];},2200);}
     // Long searches: invite people to browse the mall and tell them when results land.
     if(typeof setTimeout==='function'){clearTimeout(hintTimer);hintTimer=setTimeout(()=>{if(state.busy){state.showMallHint=true;paint();}},4000);}
@@ -210,7 +210,20 @@
   // ---- rendering ------------------------------------------------------------------------------
   const renderMessage = message => `<article class="dc-message ${message.role==='user'?'dc-user':'dc-assistant'}"><span class="dc-speaker">${message.role==='user'?'You':'The Better Wardrobe'}</span><div class="dc-bubble">${message.image?`<img src="${escape(message.image)}" alt="Uploaded fashion reference" class="dc-message-image">`:''}${message.text?`<p>${escape(message.text)}</p>`:''}${message.meta?`<small class="dc-meta">${escape(message.meta)}</small>`:''}</div></article>`;
   const renderChoices = () => state.stage!=='choose'?'':`<div class="dc-choice-panel"><p>Which piece should I look for?</p><div class="dc-choice-list">${state.choices.map((item,index)=>`<button type="button" data-conversation="choice" data-index="${index}">${escape(item.label)} <span aria-hidden="true">↗</span></button>`).join('')}</div></div>`;
-  const renderLoading = () => !state.busy?'':`<div class="dc-loading" role="status" aria-live="polite"><div class="dc-loading-orbit" aria-hidden="true"><i></i><i></i><i></i></div><p id="dc-loading-line">${escape(state.progress||loadingLines()[0])}</p>${state.showMallHint?`<div class="dc-mall-hint"><span>This one takes a moment. We’ll let you know when it’s ready.</span><button type="button" data-conversation="explore-mall">Explore the mall meanwhile ↓</button></div>`:''}<button type="button" class="dc-cancel" data-conversation="cancel">Cancel</button></div>`;
+  // Loading mascot (owner, 6 Oct 2026): a different friendly face each search: panda, pug, cat or fox.
+  // Inline SVG, no image requests; it bobs and blinks, and stays still for reduced motion.
+  const eyes=(lx,rx,y,r=4.2)=>`<g class="dc-eyes"><circle cx="${lx}" cy="${y}" r="${r}" fill="#281b22"/><circle cx="${rx}" cy="${y}" r="${r}" fill="#281b22"/><circle cx="${lx+1.4}" cy="${y-1.6}" r="1.3" fill="#fff"/><circle cx="${rx+1.4}" cy="${y-1.6}" r="1.3" fill="#fff"/></g>`;
+  const cheeks=(lx,rx,y)=>`<ellipse cx="${lx}" cy="${y}" rx="5" ry="3" fill="#f3a9bf" opacity=".7"/><ellipse cx="${rx}" cy="${y}" rx="5" ry="3" fill="#f3a9bf" opacity=".7"/>`;
+  const MASCOTS={
+    panda:{name:'Bao the panda',svg:`<circle cx="24" cy="22" r="11" fill="#281b22"/><circle cx="76" cy="22" r="11" fill="#281b22"/><circle cx="50" cy="54" r="36" fill="#fff" stroke="#281b22" stroke-width="2.5"/><ellipse cx="36" cy="50" rx="9" ry="11" fill="#281b22" transform="rotate(-20 36 50)"/><ellipse cx="64" cy="50" rx="9" ry="11" fill="#281b22" transform="rotate(20 64 50)"/>${eyes(37,63,50,3.6).replace(/#281b22/g,'#fff').replace(/r="1.3" fill="#fff"/g,'r="1.3" fill="#281b22"')}<ellipse cx="50" cy="64" rx="5" ry="3.6" fill="#281b22"/><path d="M45 70q5 5 10 0" fill="none" stroke="#281b22" stroke-width="2.2" stroke-linecap="round"/>${cheeks(28,72,66)}`},
+    pug:{name:'Momo the pug',svg:`<path d="M18 30q-6 22 8 26l6-24z" fill="#5a3b2e"/><path d="M82 30q6 22-8 26l-6-24z" fill="#5a3b2e"/><circle cx="50" cy="54" r="35" fill="#e7c49a" stroke="#5a3b2e" stroke-width="2.5"/><ellipse cx="50" cy="66" rx="20" ry="15" fill="#4a3128"/><path d="M38 34q12-6 24 0" fill="none" stroke="#b98a5e" stroke-width="2.4" stroke-linecap="round"/>${eyes(36,64,49,5)}<ellipse cx="50" cy="61" rx="6" ry="4" fill="#1d1210"/><path d="M44 70q6 5 12 0" fill="none" stroke="#e7c49a" stroke-width="2.2" stroke-linecap="round"/>${cheeks(25,75,62)}`},
+    cat:{name:'Miso the cat',svg:`<path d="M20 40 24 10l22 18z" fill="#f2b880" stroke="#8a5a3c" stroke-width="2.5" stroke-linejoin="round"/><path d="M80 40 76 10 54 28z" fill="#f2b880" stroke="#8a5a3c" stroke-width="2.5" stroke-linejoin="round"/><path d="M27 18l4 12 8-6z" fill="#f7c9d4"/><path d="M73 18l-4 12-8-6z" fill="#f7c9d4"/><circle cx="50" cy="55" r="34" fill="#f2b880" stroke="#8a5a3c" stroke-width="2.5"/><path d="M42 26l4 10M50 24v11M58 26l-4 10" stroke="#d98c52" stroke-width="2.4" stroke-linecap="round"/>${eyes(37,63,52,4.6)}<path d="M47 63h6l-3 3.5z" fill="#e0708f"/><path d="M50 66.5q-4 5-8 2M50 66.5q4 5 8 2" fill="none" stroke="#8a5a3c" stroke-width="2" stroke-linecap="round"/><path d="M20 60h12M21 66l11-2M80 60H68M79 66l-11-2" stroke="#8a5a3c" stroke-width="1.6" stroke-linecap="round"/>${cheeks(29,71,64)}`},
+    fox:{name:'Kitsu the fox',svg:`<path d="M18 44 20 10l26 22z" fill="#e8743b" stroke="#8a3d1a" stroke-width="2.5" stroke-linejoin="round"/><path d="M82 44 80 10 54 32z" fill="#e8743b" stroke="#8a3d1a" stroke-width="2.5" stroke-linejoin="round"/><path d="M50 90 16 50q2-24 34-24t34 24z" fill="#e8743b" stroke="#8a3d1a" stroke-width="2.5" stroke-linejoin="round"/><path d="M50 90 26 60q12 4 24 0 12 4 24 0z" fill="#fff4ea"/>${eyes(37,63,52,4.4)}<ellipse cx="50" cy="76" rx="5" ry="3.6" fill="#281b22"/>${cheeks(30,70,64)}`}
+  };
+  let mascot='panda';
+  const pickMascot = () => {const keys=Object.keys(MASCOTS).filter(k=>k!==mascot);mascot=keys[Math.floor(Math.random()*keys.length)];};
+  const renderMascot = () => `<figure class="dc-mascot" aria-label="${escape(MASCOTS[mascot].name)} is searching with you"><svg viewBox="0 0 100 100" aria-hidden="true">${MASCOTS[mascot].svg}</svg><span class="dc-mascot-shadow" aria-hidden="true"></span><figcaption>${escape(MASCOTS[mascot].name)} is on it</figcaption></figure>`;
+  const renderLoading = () => !state.busy?'':`<div class="dc-loading" role="status" aria-live="polite">${renderMascot()}<p id="dc-loading-line">${escape(state.progress||loadingLines()[0])}</p>${state.showMallHint?`<div class="dc-mall-hint"><span>This one takes a moment. We’ll let you know when it’s ready.</span><button type="button" data-conversation="explore-mall">Explore the mall meanwhile ↓</button></div>`:''}<button type="button" class="dc-cancel" data-conversation="cancel">Cancel</button></div>`;
   const field = (label,name,value,placeholder='') => `<label><span>${label}</span><input name="${name}" value="${escape(known(value))}" placeholder="${escape(placeholder)}"></label>`;
   const renderUnderstood = () => {
     const c=state.current;if(!c?.attributes)return '';const a=c.attributes;
@@ -298,5 +311,6 @@
   document.addEventListener('submit',event=>{if(event.target.id==='dc-compose'){event.preventDefault();send();}else if(event.target.id==='dc-refine'){event.preventDefault();refine(event.target);}});
   // Signing in or out changes whose chats these are.
   if(typeof window.addEventListener==='function')window.addEventListener('account-change',()=>{chatsRequested=false;if(!signedIn()){state.chats=[];}else loadChats();shuffleLooks();});
-  window.DiscoverConversation={render:()=>{loadWallet();loadChats();loadLooks();return content();}};
+  const creditsCard = () => {loadWallet();if(!state.wallet)return '';const max=models().find(m=>m.label==='Max')||models()[0],lite=models().find(m=>m.label==='Lite');return `<section class="dc-credits-card"><span class="dc-kicker">Discover credits</span><strong>${state.wallet.remaining} credits left</strong><small>${searchesLeft(max)} ${max.label} searches${lite?` or ${searchesLeft(lite)} ${lite.label}`:''} · free questions don’t count</small></section>`;};
+  window.DiscoverConversation={render:()=>{loadWallet();loadChats();loadLooks();return content();},creditsCard};
 })();
