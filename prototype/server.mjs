@@ -83,7 +83,7 @@ return async(req,res)=>{
   const {id}=await qaStore.add(body);
   return send(200,{ok:true,id});
  }
- if(req.method!=='POST'||!['/api/discover/detect','/api/discover/orders','/api/discover/analyze','/api/discover/search'].includes(pathname))return send(404,{error:'Not found'});
+ if(req.method!=='POST'||!['/api/discover/detect','/api/discover/orders','/api/discover/analyze','/api/discover/interpret','/api/discover/search'].includes(pathname))return send(404,{error:'Not found'});
  if(req.headers['sec-fetch-site']==='cross-site')return send(403,{error:'Open Discover to make a search.'});
  if(!req.headers['content-type']?.startsWith('application/json'))return send(415,{error:'JSON required'});
  const action=pathname.split('/').pop();

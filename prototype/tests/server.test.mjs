@@ -14,6 +14,8 @@ test('HTTP boundary serves app, reports missing keys and keeps configuration pri
  const status=await(await fetch(base+'/api/discover/status')).json();assert.equal(status.shopping,false);
  assert.equal((await fetch(base+'/api/developer/observability')).status,404);
  const missing=await fetch(base+'/api/discover/search',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({attributes:{category:'Shirt',colour:'blue'}})});assert.equal(missing.status,503);assert.match((await missing.json()).error,/SerpApi/);
+ const interpret=await fetch(base+'/api/discover/interpret',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:'blue shirt'})});assert.equal(interpret.status,503);assert.match((await interpret.json()).error,/Gemini/);
+ assert.equal((await fetch(base+'/api/discover/interpret',{method:'POST',headers:{'Content-Type':'application/json','Sec-Fetch-Site':'cross-site'},body:'{}'})).status,403);
  assert.equal((await fetch(base+'/api/discover/search',{method:'POST',body:'bad'})).status,415);
  assert.equal((await fetch(base+'/api/discover/search',{method:'POST',headers:{'Content-Type':'application/json'},body:'bad'})).status,400);
  assert.equal((await fetch(base+'/api/discover/search',{method:'POST',headers:{'Content-Type':'application/json','Sec-Fetch-Site':'cross-site'},body:'{}'})).status,403);
