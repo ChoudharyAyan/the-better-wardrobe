@@ -41,3 +41,33 @@
 @media(max-width:700px){.dc-shell{margin:0 auto 30px;padding:3px 0 8px}.dc-intro{margin-bottom:17px}.dc-intro h1{font-size:33px;max-width:330px;margin:8px 0}.dc-intro p{font-size:12px;max-width:330px}.dc-reset{font-size:10px;padding:7px 9px}.dc-panel{height:clamp(390px,calc(100dvh - 320px),560px);min-height:390px;border-radius:16px}.dc-thread{padding:16px;gap:15px}.dc-welcome{margin:22px auto 4px}.dc-welcome h2{font-size:22px}.dc-welcome p{font-size:12px}.dc-examples{flex-direction:column;align-items:stretch;width:100%}.dc-examples button{min-height:43px;font-size:11px}.dc-message{width:min(92%,500px)}.dc-bubble{font-size:12px;padding:11px 13px}.dc-review,.dc-results,.dc-choice-panel{padding:15px}.dc-review-heading h3,.dc-results-head h3{font-size:20px}.dc-review-grid{gap:9px}.dc-review-grid input{font-size:12px}.dc-result-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.dc-result-image{height:118px}.dc-composer{padding:10px}.dc-compose-help{font-size:9px}.dc-below{font-size:9px}.dc-below span:last-child{text-align:right}}
 @media(max-width:380px){.dc-intro{flex-direction:column;gap:8px}.dc-review-grid{grid-template-columns:1fr}.dc-result-grid{grid-template-columns:1fr 1fr}}
 @media(prefers-reduced-motion:reduce){.dc-thinking-dot{animation:none}}
+/* Exa-style search bar: model chip, credits and search button sit inside the input box */
+.dc-shell .dc-compose-row{border-bottom-left-radius:0;border-bottom-right-radius:0;border-bottom:0}
+.dc-compose-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;border:1px solid var(--dc-line);border-top:1px dashed var(--dc-line);border-radius:0 0 18px 18px;background:#fff;padding:9px 10px 9px 12px}
+.dc-composer:focus-within .dc-compose-bar{border-color:var(--dc-rose)}
+.dc-model select{appearance:none;-webkit-appearance:none;border:1px solid var(--dc-line);background:#fbf5ec url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%238e1b4d' stroke-width='1.6' fill='none'/%3E%3C/svg%3E") no-repeat right 11px center;border-radius:999px;padding:8px 30px 8px 13px;font:700 12px 'Montserrat','Montserrat Fallback',sans-serif;color:var(--dc-ink);min-height:36px;cursor:pointer}
+.dc-model select:focus-visible{outline:2px solid var(--dc-rose);outline-offset:2px}
+.dc-wallet{font-size:12px;color:var(--dc-muted)}.dc-wallet b{color:var(--dc-ink)}.dc-wallet.empty b{color:#b3261e}
+.dc-shell .dc-send{margin-left:auto;width:auto;height:auto;min-height:38px;border-radius:999px;padding:9px 16px;background:var(--dc-rose);color:#fff;border:0;font:800 13px 'Montserrat','Montserrat Fallback',sans-serif;display:inline-flex;align-items:center;gap:8px}
+.dc-shell .dc-send:disabled{opacity:.45}
+.dc-meta{display:block;margin-top:6px;font-size:11px;color:var(--dc-muted)}
+/* Query retrieval panel */
+.dc-retrieval{margin:16px 0 4px;border:1px solid var(--dc-line);border-radius:14px;background:#fff;padding:4px 14px}
+.dc-retrieval summary{cursor:pointer;font-size:12px;font-weight:800;color:var(--dc-ink);padding:10px 0;list-style-position:inside}
+.dc-retrieval ol{list-style:none;margin:0 0 10px;padding:0;display:grid;gap:12px}
+.dc-retrieval li{display:flex;gap:11px;align-items:flex-start}
+.dc-step-n{flex:none;width:22px;height:22px;border-radius:50%;background:#f5e2ea;color:var(--dc-rose);display:grid;place-items:center;font-size:11px;font-weight:800}
+.dc-retrieval strong{display:block;font-size:12px;margin:2px 0 6px}
+.dc-retrieval p{margin:0;font-size:12px;line-height:1.5;color:var(--dc-muted)}.dc-retrieval p b{color:var(--dc-ink)}
+.dc-chips,.dc-queries{display:flex;flex-wrap:wrap;gap:6px}
+.dc-chips span{border-radius:999px;background:#fbf5ec;border:1px solid var(--dc-line);padding:4px 10px;font-size:11px;font-weight:600}
+.dc-queries code{font:600 11px ui-monospace,SFMono-Regular,Menlo,monospace;background:#281b22;color:#fbf5ec;border-radius:7px;padding:5px 8px;max-width:100%;overflow-wrap:anywhere}
+@media (max-width:560px){.dc-compose-bar{gap:8px}.dc-wallet{order:3;width:100%}.dc-shell .dc-send{margin-left:auto}}
+/* Phones: the conversation grows with its content and the page scrolls, instead of squeezing replies
+   into a fixed box above the search bar. */
+@media (max-width:700px){.dc-shell .dc-panel{height:auto;min-height:0;overflow:visible}.dc-shell .dc-thread{overflow:visible;flex:none;padding:18px 16px}.dc-compose-help{font-size:10px}}
+.dc-queries{flex-direction:column;align-items:flex-start}.dc-query{display:flex;flex-direction:column;gap:3px;max-width:100%}.dc-query small{font-size:10px;color:var(--dc-muted);padding-left:2px}
+/* Product photos fill a fixed 4:5 frame and never spill over the title (a % height inside a grid
+   track never resolved, so tall photos rendered at natural size on top of the copy). */
+.dc-shell .dc-result-image{height:auto;aspect-ratio:4/5;position:relative;overflow:hidden}
+.dc-shell .dc-result-image img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top center}

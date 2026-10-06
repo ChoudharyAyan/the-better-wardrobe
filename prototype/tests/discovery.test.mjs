@@ -30,7 +30,7 @@ test('metadata falls back to OpenGraph tags when JSON-LD is missing or incomplet
  assert.equal(productMetadata(schemaMissingPrice).price,1299);
 });
 test('missing credentials are explicit and no provider calls occur',async()=>{
- const d=createDiscovery({env:{},fetcher:()=>assert.fail('No network without keys')});assert.deepEqual(d.status(),{vision:false,visionProvider:'gemini',shopping:false,lens:false,model:'gemini-3.5-flash',developerDashboard:false,dataMode:'live'});await assert.rejects(d.analyze({image,category:'Shirt'}),/Gemini/);await assert.rejects(d.search({attributes:attr}),/SerpApi/);
+ const d=createDiscovery({env:{},fetcher:()=>assert.fail('No network without keys')});assert.deepEqual(d.status(),{vision:false,visionProvider:'gemini',models:[{id:'gemini-3-flash',label:'Gemini 3 Flash',note:'Most accurate',credits:15},{id:'gpt-5-nano',label:'GPT-5 nano',note:'More searches',credits:8}],defaultModel:'gemini-3-flash',shopping:false,lens:false,model:'gemini-3-flash-preview',developerDashboard:false,dataMode:'live'});await assert.rejects(d.analyze({image,category:'Shirt'}),/Gemini/);await assert.rejects(d.search({attributes:attr}),/SerpApi/);
 });
 test('conversation interpretation accepts text, screenshot, or both without inventing product facts',async()=>{
  const calls=[];const answer={...attr,category:'Blazer',colour:'brown',subtype:'blazer',features:'single button',department:'womenswear',query:'relaxed brown blazer',budget:4000,uncertainty:'Fabric is unclear',question:''};
@@ -192,6 +192,36 @@ test('interpret asks instead of inventing a garment, and keeps budgets across fo
  const cheaper=await d.interpret({text:'same but in navy and cheaper',previous:first});
  assert.equal(cheaper.attributes.category,'shirt','follow-up may rely on the earlier garment');assert.equal(cheaper.budget,1500);
  const same=await d.interpret({text:'same in navy',previous:first});assert.equal(same.budget,2000,'budget carries over when not mentioned');
+ next={category:'clothing',subtype:'kurta set',colour:'red'};
+ assert.equal((await d.interpret({text:'red kurta set for diwali'})).attributes.category,'kurta set','a non-answer category is replaced by the subtype');
  next={category:'kurta sets',subtype:'kurta set',colour:'red'};
  assert.equal((await d.interpret({text:'red kurta for diwali'})).attributes.category,'kurta sets');
+});
+
+test('OpenRouter runs both models with strict JSON, falls back to JSON mode, and reports an empty balance',async()=>{
+ const sent=[];let mode='ok';
+ const d=createDiscovery({env:{OPENROUTER_API_KEY:'or-test'},fetcher:async(url,opts)=>{
+  const body=JSON.parse(opts.body);sent.push({url:String(url),auth:opts.headers.Authorization,body});
+  if(mode==='broke')return {ok:false,status:402,json:async()=>({})};
+  if(mode==='strict-rejected'&&body.response_format.type==='json_schema')return {ok:false,status:400,json:async()=>({error:{message:'schema not supported'}})};
+  return {ok:true,status:200,json:async()=>({choices:[{finish_reason:'stop',message:{content:'```json\n'+JSON.stringify({category:'shirt',colour:'black',fit:'',pattern:'',details:'',subtype:'linen shirt',features:'',department:'menswear',query:'black linen shirt',budget:null,uncertainty:'',question:''})+'\n```'}}]})};
+ }});
+ assert.equal(d.status().visionProvider,'openrouter');assert.equal(d.status().vision,true);
+ await d.interpret({text:'black linen shirt'});
+ assert.equal(sent[0].url,'https://openrouter.ai/api/v1/chat/completions');assert.equal(sent[0].auth,'Bearer or-test');
+ assert.equal(sent[0].body.model,'google/gemini-3-flash-preview','Gemini 3 Flash is the default');assert.equal(sent[0].body.response_format.type,'json_schema');
+ assert.match(sent[0].body.messages[0].content,/never write a person's name/);
+ await d.interpret({text:'black linen shirt',model:'gpt-5-nano'});
+ assert.equal(sent[1].body.model,'openai/gpt-5-nano');assert.deepEqual(sent[1].body.reasoning,{effort:'low'});
+ await d.interpret({text:'black linen shirt',model:'claude-opus-everything'});assert.equal(sent[2].body.model,'google/gemini-3-flash-preview','unknown models fall back to the default');
+ mode='strict-rejected';const r=await d.interpret({text:'black linen shirt'});assert.equal(r.attributes.category,'shirt');assert.equal(sent.at(-1).body.response_format.type,'json_object');
+ mode='broke';await assert.rejects(d.interpret({text:'black linen shirt'}),/balance for this preview is used up/);
+});
+test('shopping queries never carry "unknown" fields or a budget phrase',async()=>{
+ const urls=[];
+ const d=createDiscovery({env:{SERPAPI_API_KEY:'k',DISCOVERY_DATA_MODE:'live'},fetcher:async url=>{urls.push(new URL(url).searchParams.get('q')||'');return {ok:true,status:200,json:async()=>({shopping_results:[],images_results:[]})};},pageFetcher:async()=>'',imageFetcher:async()=>{throw Error('no images');}});
+ await d.search({attributes:{category:'shirt',colour:'black',fit:'unknown',pattern:'unknown',details:'linen'},query:'black linen shirt under ₹2,000',budget:2000,market:'in'}).catch(()=>{});
+ assert.ok(urls.length>0);
+ for(const q of urls){assert.doesNotMatch(q,/unknown/i,q);assert.doesNotMatch(q,/under|2,000/i,q);}
+ assert.ok(urls.some(q=>q.startsWith('black linen shirt')));
 });
