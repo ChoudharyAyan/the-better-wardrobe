@@ -33,7 +33,7 @@ export const LOOKS=[
  {id:'ranveer-velvet-tracksuit',must:/velvet|velour/i,who:'Ranveer Singh · airport',label:'Ranveer Singh’s blue velvet tracksuit',department:'menswear',
   attributes:{category:'Tracksuit',subtype:'velvet tracksuit',colour:'blue',fit:'relaxed',pattern:'',details:'hooded top with matching pants',features:'velvet, hood'},
   query:'velvet tracksuit men',source:'The News: blue velvet tracksuit with a hoodie and white sunglasses'},
- {id:'drive-scorpion-jacket',must:/scorpion|bomber|jacket/i,who:'Ryan Gosling · Drive',label:'Ryan Gosling’s scorpion jacket from Drive',department:'menswear',
+ {id:'drive-scorpion-jacket',must:/scorpion|bomber/i,who:'Ryan Gosling · Drive',label:'Ryan Gosling’s scorpion jacket from Drive',department:'menswear',
   attributes:{category:'Jacket',subtype:'satin bomber jacket',colour:'white',fit:'regular',pattern:'',details:'gold scorpion embroidered on the back',features:'scorpion embroidery'},
   query:'white satin bomber jacket scorpion embroidery',source:'The film’s costume: off-white quilted satin jacket with a gold scorpion'},
  {id:'thomas-shelby-cap',must:/newsboy|flat cap|baker boy|gatsby/i,who:'Thomas Shelby · Peaky Blinders',label:'Thomas Shelby’s newsboy cap',department:'menswear',
