@@ -111,7 +111,7 @@
     try{
       const data=await request('interpret',look?{text,look}:{text,image,target,previous},state.controller.signal);
       if(data.question||!data.attributes){stopLoading();state.stage='clarify';state.followup={text,image,previous};state.messages.push({role:'assistant',meta:metaFor(data),text:data.question||'What kind of item should I look for?'});paint();saveChat();return;}
-      state.current={attributes:data.attributes,query:data.query,budget:data.budget,uncertainty:data.uncertainty};state.followup=null;
+      state.current={attributes:data.attributes,query:data.query,budget:data.budget,uncertainty:data.uncertainty,look:data.look?.id||''};state.followup=null;
       state.messages.push({role:'assistant',meta:metaFor(data),text:`Looking for ${describe(data.attributes)||'that piece'}${data.budget?` under ₹${Number(data.budget).toLocaleString('en-IN')}`:''}. ${departmentLine(data.attributes)}`});
       await runSearch();
     }catch(error){stopLoading();if(error.name!=='AbortError')state.messages.push({role:'assistant',text:error.message||'I could not read that. Please try again.'});state.stage=state.results?'results':'start';paint();}
@@ -120,8 +120,8 @@
     if(!state.current?.attributes)return;
     state.stage='loading';state.editing=false;state.controller??=new AbortController();if(!state.busy)startLoading(LOADING_LINES[1]);else paint();
     try{
-      const {attributes,query,budget}=state.current;
-      state.results=await request('search',{attributes,query,budget,market:'in',image:state.source?.image||undefined},state.controller.signal);
+      const {attributes,query,budget,look}=state.current;
+      state.results=await request('search',{attributes,query,budget,market:'in',image:state.source?.image||undefined,...(look?{look}:{})},state.controller.signal);
       state.stage='results';
       const found=Math.min(distinct(state.results.results||[]).length,6);
       state.messages.push({role:'assistant',text:found?`Found ${found} ${found===1?'match':'matches'}. Tap a piece to open it at the store.`:'No exact product matched this time. The store searches below are a good next step.'});
@@ -147,7 +147,7 @@
   function refine(form){
     if(state.busy||!state.current)return;const data=new FormData(form),value=k=>String(data.get(k)||'').trim();
     if(!value('category')){state.messages.push({role:'assistant',text:'Tell me what kind of item it is first.'});paint();return;}
-    state.current={...state.current,attributes:{...state.current.attributes,category:value('category'),colour:value('colour'),fit:value('fit'),details:value('details'),department:['menswear','womenswear'].includes(value('department'))?value('department'):''},query:[value('colour'),value('details'),value('category')].filter(Boolean).join(' ')||state.current.query,budget:value('budget')?Number(value('budget')):null};
+    state.current={...state.current,look:'',attributes:{...state.current.attributes,category:value('category'),colour:value('colour'),fit:value('fit'),details:value('details'),department:['menswear','womenswear'].includes(value('department'))?value('department'):''},query:[value('colour'),value('details'),value('category')].filter(Boolean).join(' ')||state.current.query,budget:value('budget')?Number(value('budget')):null};
     state.messages.push({role:'user',text:`Update: ${describe(state.current.attributes)}${state.current.budget?` under ₹${state.current.budget.toLocaleString('en-IN')}`:''}`});
     runSearch();
   }
@@ -209,7 +209,7 @@
   const renderRetrieval = () => {
     const t=state.results?.trace;if(!t)return '';
     const routes=new Map();for(const entry of t.queries||[]){const [phrase,route]=String(entry).split(' · ');if(!routes.has(phrase))routes.set(phrase,[]);if(route)routes.get(phrase).push(route);}
-    const queries=[...routes].slice(0,4),removed=(t.titleRejected||0)+(t.domesticRejected||0)+(t.colourRejected||0),shown=Math.min(distinct(state.results.results||[]).length,6),routeCount=(t.queries||[]).length;
+    const queries=[...routes].slice(0,4),removed=(t.titleRejected||0)+(t.domesticRejected||0)+(t.colourRejected||0)+(t.lookRejected||0),shown=Math.min(distinct(state.results.results||[]).length,6),routeCount=(t.queries||[]).length;
     const seconds=t.elapsedMs?` · ${(t.elapsedMs/1000).toFixed(1)}s`:'';
     const step=(n,title,body)=>`<li><span class="dc-step-n">${n}</span><div><strong>${title}</strong>${body}</div></li>`;
     return `<details class="dc-retrieval"><summary>How I searched · ${routeCount} ${routeCount===1?'search':'searches'}${seconds}</summary><ol>${
