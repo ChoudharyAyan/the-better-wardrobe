@@ -67,7 +67,7 @@ test('trending looks search from their researched spec with no model call, and n
 test('typed celebrity looks are understood, and a profile department applies only when the words don’t say otherwise',async()=>{
  const reply={category:'cardigan',colour:'black',fit:'',pattern:'',details:'',subtype:'knit cardigan',features:'',department:'unknown',query:'black knit cardigan',budget:null,uncertainty:'',question:''};
  let prompt='';const d=createDiscovery({env:{OPENROUTER_API_KEY:'k',VISION_PROVIDER:'openrouter'},fetcher:async(url,opts)=>{prompt=JSON.parse(opts.body).messages[1].content[0].text;return {ok:true,status:200,json:async()=>({choices:[{finish_reason:'stop',message:{content:JSON.stringify(reply)}}]})};}});
- const r=await d.interpret({text:"Virat Kohli's airport look",department:'menswear'});
+ const r=await d.interpret({text:"Hrithik Roshan's airport look",department:'menswear'});
  assert.equal(r.attributes.category,'cardigan','a named look counts as grounded');assert.equal(r.attributes.department,'menswear');
  assert.match(prompt,/Never put the person's or character's name in query/);
  assert.equal((await d.interpret({text:'black cardigan for women',department:'menswear'})).attributes.department,'','the words beat the profile');
@@ -90,4 +90,26 @@ test('look precision: a look keeps titles with its must-have word, and shoes nev
  const d=createDiscovery({env:{SERPAPI_API_KEY:'k'},fetcher:async()=>({ok:true,status:200,json:async()=>({shopping_results:results})}),pageFetcher:async()=>'',imageFetcher:async()=>{throw Error('offline');}});
  const r=await d.search({attributes:{...cardigan.attributes,department:'menswear'},query:cardigan.query,market:'in',look:cardigan.id});
  assert.ok(r.results.length>=3);assert.ok(r.results.every(p=>/cardigan/i.test(p.title)),'pullovers and sweaters are dropped for the cardigan look');
+});
+
+test('QA v5: typed references are grounded, Blade Runner maps to K’s coat, and photo colours are never gated',async()=>{
+ const {matchLook}=await import('../lib/looks.mjs');
+ // #18: "suit" is the person's word; the film's piece is the coat, and the reply says so. No model call.
+ const none=createDiscovery({env:{OPENROUTER_API_KEY:'k',VISION_PROVIDER:'openrouter'},fetcher:async()=>assert.fail('curated look, no model')});
+ const k=await none.interpret({text:'ryan gosling suit from blade runner'});
+ assert.equal(k.look.id,'blade-runner-k-coat');assert.match(k.look.note,/shearling collar, not a suit/);assert.equal(k.query,'shearling collar leather coat men');
+ assert.equal(matchLook('Don Draper suit'),null,'a different garment named for a non-iconic look goes to the model');
+ assert.equal(matchLook('Don Draper sunglasses').id,'don-draper-aviators');
+ // A named person or film grounds the model's answer even when the garment isn't in the words.
+ const reply={reference:'Brad Pitt in Fight Club',category:'jacket',colour:'red',fit:'',pattern:'',details:'leather',subtype:'leather jacket',features:'',department:'menswear',query:'red leather jacket men',budget:null,uncertainty:'',question:''};
+ const d=createDiscovery({env:{OPENROUTER_API_KEY:'k',VISION_PROVIDER:'openrouter'},fetcher:async()=>({ok:true,status:200,json:async()=>({choices:[{finish_reason:'stop',message:{content:JSON.stringify(reply)}}]})})});
+ const r=await d.interpret({text:'brad pitt suit from fight club'});
+ assert.equal(r.attributes.category,'jacket');assert.equal(r.reference,'Brad Pitt in Fight Club');assert.equal(r.question,'');
+});
+test('QA v5: the colour gate runs for typed colours only, and teal is its own colour',async()=>{
+ const {colourFamily,titleColourConflict}=await import('../lib/colour.mjs');
+ assert.equal(colourFamily('teal'),'teal');assert.equal(colourFamily('navy'),'blue');
+ assert.equal(titleColourConflict('Teal suede jacket','teal'),false);
+ const src=(await import('node:fs')).readFileSync(new URL('../lib/discovery.mjs',import.meta.url),'utf8');
+ assert.match(src,/if\(known\(a\.colour\)&&!body\.image\)/,'photo-derived colours are judged by the visual comparison, not the pixel gate');
 });

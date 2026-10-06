@@ -9,7 +9,19 @@
     chats:[],chatId:null,chatTitle:'',chatLimit:null,readyPill:false
   };
   const FALLBACK_MODELS=[{id:'gemini-3-flash',label:'Max',note:'Most accurate',credits:15},{id:'gpt-5-nano',label:'Lite',note:'More searches',credits:8}];
-  const LOADING_LINES=['Reading your vibe…','Searching Myntra, AJIO and Amazon…','Checking Flipkart and Nykaa Fashion…','Comparing cuts, colours and details…','Finding the right fashion for you…'];
+  // Loading lines speak to the person and their piece, never to which stores are searched (design QA #19):
+  // the store links come at the end anyway.
+  const firstName = () => String(globalThis.window?.TBWAccount?.profile?.name||'').trim().split(/\s+/)[0]||'';
+  const loadingLines = () => {
+    const piece=describe(state.current?.attributes),you=firstName();
+    return [
+      you?`On it, ${you}. Reading your vibe…`:'Reading your vibe…',
+      `Searching relevant Indian shopping options${piece?` for your ${piece}`:''}…`,
+      'Finding the closest match for you…',
+      `Comparing cut, colour and the details that matter${you?` to you, ${you}`:''}…`,
+      'Preparing your results…'
+    ];
+  };
   // Trending looks from real people and characters (design QA #14): three at a time, shuffled, leaning to the
   // person's own department when their profile says so. Each one searches from a researched spec on the server.
   let looks=[],shown=[];
@@ -99,7 +111,7 @@
   let rotation=null,hintTimer=null;
   function startLoading(label){
     state.busy=true;state.progress=label;state.loadingSince=Date.now();state.showMallHint=false;paint();
-    let i=0;if(typeof setInterval==='function'){clearInterval(rotation);rotation=setInterval(()=>{i=(i+1)%LOADING_LINES.length;const line=document.getElementById?.('dc-loading-line');if(line)line.textContent=LOADING_LINES[i];},1800);}
+    let i=0;if(typeof setInterval==='function'){clearInterval(rotation);rotation=setInterval(()=>{const lines=loadingLines();i=Math.min(i+1,lines.length-1);const line=document.getElementById?.('dc-loading-line');if(line)line.textContent=lines[i];},2200);}
     // Long searches: invite people to browse the mall and tell them when results land.
     if(typeof setTimeout==='function'){clearTimeout(hintTimer);hintTimer=setTimeout(()=>{if(state.busy){state.showMallHint=true;paint();}},4000);}
   }
@@ -107,18 +119,18 @@
   const metaFor = data => data.credits?(data.credits.cost?`${currentModel().label} · ${data.credits.cost} credits · ${data.credits.remaining} left`:`${currentModel().label} · free, nothing to search yet`):'';
 
   async function ask(text,image,target='',previous=null,look=''){
-    state.controller=new AbortController();startLoading(LOADING_LINES[0]);
+    state.controller=new AbortController();startLoading(loadingLines()[0]);
     try{
       const data=await request('interpret',look?{text,look}:{text,image,target,previous},state.controller.signal);
       if(data.question||!data.attributes){stopLoading();state.stage='clarify';state.followup={text,image,previous};state.messages.push({role:'assistant',meta:metaFor(data),text:data.question||'What kind of item should I look for?'});paint();saveChat();return;}
       state.current={attributes:data.attributes,query:data.query,budget:data.budget,uncertainty:data.uncertainty,look:data.look?.id||''};state.followup=null;
-      state.messages.push({role:'assistant',meta:metaFor(data),text:`Looking for ${describe(data.attributes)||'that piece'}${data.budget?` under ₹${Number(data.budget).toLocaleString('en-IN')}`:''}. ${departmentLine(data.attributes)}`});
+      state.messages.push({role:'assistant',meta:metaFor(data),text:`${data.look?.note?data.look.note+' ':''}Looking for ${describe(data.attributes)||'that piece'}${data.budget?` under ₹${Number(data.budget).toLocaleString('en-IN')}`:''}. ${departmentLine(data.attributes)}`});
       await runSearch();
     }catch(error){stopLoading();if(error.name!=='AbortError')state.messages.push({role:'assistant',text:error.message||'I could not read that. Please try again.'});state.stage=state.results?'results':'start';paint();}
   }
   async function runSearch(){
     if(!state.current?.attributes)return;
-    state.stage='loading';state.editing=false;state.controller??=new AbortController();if(!state.busy)startLoading(LOADING_LINES[1]);else paint();
+    state.stage='loading';state.editing=false;state.controller??=new AbortController();if(!state.busy)startLoading(loadingLines()[1]);else paint();
     try{
       const {attributes,query,budget,look}=state.current;
       state.results=await request('search',{attributes,query,budget,market:'in',image:state.source?.image||undefined,...(look?{look}:{})},state.controller.signal);
@@ -165,7 +177,7 @@
     if(!document.hidden&&resultsInView())return;
     state.readyPill=true;renderPill();
     try{navigator.vibrate?.([40,60,40]);}catch{}
-    if(document.hidden){baseTitle||=document.title;document.title='✨ Results ready · '+baseTitle;try{if(globalThis.Notification?.permission==='granted')new Notification('Your results are ready',{body:readyText(),tag:'tbw-results'});}catch{}}
+    if(document.hidden){baseTitle||=document.title;document.title='✨ Results ready · '+baseTitle;}
     if(!watching&&typeof addEventListener==='function'){watching=true;const check=()=>{if(state.readyPill&&!document.hidden&&resultsInView())dismissReady();};addEventListener('scroll',check,{passive:true});addEventListener('hashchange',()=>setTimeout(()=>{renderPill();check();},60));document.addEventListener('visibilitychange',()=>{if(!document.hidden&&baseTitle){document.title=baseTitle;baseTitle='';}check();});}
   }
   const readyText = () => {const n=Math.min(distinct(state.results?.results||[]).length,6),what=describe(state.current?.attributes);return n?`${n} ${n===1?'match':'matches'}${what?` for ${what}`:''}`:`Store searches${what?` for ${what}`:''} are ready`;};
@@ -175,8 +187,8 @@
     let pill=document.getElementById('dc-ready-pill');
     if(!state.readyPill){pill?.remove();return;}
     if(!pill){pill=document.createElement('div');pill.id='dc-ready-pill';pill.className='dc-ready-pill';pill.setAttribute('role','alert');document.body.append(pill);}
-    const first=distinct(state.results?.results||[]).find(x=>x.image);
-    pill.innerHTML=`${first?`<img src="${escape(first.image)}" alt="">`:'<span class="dc-ready-spark" aria-hidden="true">✨</span>'}<div><strong>Your results are ready ✨</strong><small>${escape(readyText())}</small></div><button type="button" class="dc-ready-go" data-conversation="show-results">See results →</button><button type="button" class="dc-ready-close" data-conversation="dismiss-ready" aria-label="Dismiss">×</button>`;
+    const thumbs=distinct(state.results?.results||[]).filter(x=>x.image).slice(0,3);
+    pill.innerHTML=`<div class="dc-ready-top"><span class="dc-ready-kicker">✨ Search complete</span><button type="button" class="dc-ready-close" data-conversation="dismiss-ready" aria-label="Dismiss">×</button></div><div class="dc-ready-body">${thumbs.length?`<span class="dc-ready-stack" aria-hidden="true">${thumbs.map(x=>`<img src="${escape(x.image)}" alt="">`).join('')}</span>`:'<span class="dc-ready-spark" aria-hidden="true">✨</span>'}<div><strong>${firstName()?`${escape(firstName())}, your picks are ready`:'Your picks are ready'}</strong><small>${escape(readyText())}</small></div></div><button type="button" class="dc-ready-go" data-conversation="show-results">See results <span aria-hidden="true">→</span></button>`;
   }
   function showResults(){dismissReady();const go=()=>document.querySelector('.dc-results')?.scrollIntoView({behavior:'smooth',block:'start'});if(!onDiscover()){location.hash='discover';setTimeout(go,350);}else go();}
 
@@ -198,7 +210,7 @@
   // ---- rendering ------------------------------------------------------------------------------
   const renderMessage = message => `<article class="dc-message ${message.role==='user'?'dc-user':'dc-assistant'}"><span class="dc-speaker">${message.role==='user'?'You':'The Better Wardrobe'}</span><div class="dc-bubble">${message.image?`<img src="${escape(message.image)}" alt="Uploaded fashion reference" class="dc-message-image">`:''}${message.text?`<p>${escape(message.text)}</p>`:''}${message.meta?`<small class="dc-meta">${escape(message.meta)}</small>`:''}</div></article>`;
   const renderChoices = () => state.stage!=='choose'?'':`<div class="dc-choice-panel"><p>Which piece should I look for?</p><div class="dc-choice-list">${state.choices.map((item,index)=>`<button type="button" data-conversation="choice" data-index="${index}">${escape(item.label)} <span aria-hidden="true">↗</span></button>`).join('')}</div></div>`;
-  const renderLoading = () => !state.busy?'':`<div class="dc-loading" role="status" aria-live="polite"><div class="dc-loading-orbit" aria-hidden="true"><i></i><i></i><i></i></div><p id="dc-loading-line">${escape(state.progress||LOADING_LINES[0])}</p>${state.showMallHint?`<div class="dc-mall-hint"><span>This one takes a moment. We’ll let you know when it’s ready.</span><button type="button" data-conversation="explore-mall">Explore the mall meanwhile ↓</button></div>`:''}<button type="button" class="dc-cancel" data-conversation="cancel">Cancel</button></div>`;
+  const renderLoading = () => !state.busy?'':`<div class="dc-loading" role="status" aria-live="polite"><div class="dc-loading-orbit" aria-hidden="true"><i></i><i></i><i></i></div><p id="dc-loading-line">${escape(state.progress||loadingLines()[0])}</p>${state.showMallHint?`<div class="dc-mall-hint"><span>This one takes a moment. We’ll let you know when it’s ready.</span><button type="button" data-conversation="explore-mall">Explore the mall meanwhile ↓</button></div>`:''}<button type="button" class="dc-cancel" data-conversation="cancel">Cancel</button></div>`;
   const field = (label,name,value,placeholder='') => `<label><span>${label}</span><input name="${name}" value="${escape(known(value))}" placeholder="${escape(placeholder)}"></label>`;
   const renderUnderstood = () => {
     const c=state.current;if(!c?.attributes)return '';const a=c.attributes;
@@ -271,7 +283,7 @@
     else if(action==='pick-model'){state.model=button.dataset.id;state.menuOpen=false;try{localStorage.setItem('tbw-discover-model',state.model);}catch{}paint();}
     else if(action==='edit'){state.editing=true;paint();}
     else if(action==='edit-cancel'){state.editing=false;paint();}
-    else if(action==='explore-mall'){const next=root()?.nextElementSibling;next?.scrollIntoView({behavior:'smooth',block:'start'});try{if(globalThis.Notification?.permission==='default')Notification.requestPermission();}catch{}}
+    else if(action==='explore-mall'){const next=root()?.nextElementSibling;next?.scrollIntoView({behavior:'smooth',block:'start'});}
     else if(action==='show-results')showResults();
     else if(action==='dismiss-ready')dismissReady();
     else if(action==='voice'){state.listening?stopListening():startListening();paint();}

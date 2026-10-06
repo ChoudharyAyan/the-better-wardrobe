@@ -149,3 +149,17 @@
 .dc-looks .dc-examples button{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 6px;text-align:left}
 .dc-looks .dc-examples button small{flex-basis:100%;font:700 10px 'Montserrat','Montserrat Fallback',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--dc-rose)}
 .dc-idea{border-style:dashed!important}
+
+/* Design QA 6 Oct (v5): the in-app "results ready" card, no browser permission prompt. */
+.dc-ready-pill{flex-direction:column;align-items:stretch;gap:10px;padding:12px 14px 14px;border:1px solid #ecd3dd;background:rgba(255,255,255,.97);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:0 20px 44px rgba(40,27,34,.24),0 0 0 4px rgba(142,27,77,.08)}
+.dc-ready-top{display:flex;justify-content:space-between;align-items:center}
+.dc-ready-kicker{font:800 10px 'Montserrat','Montserrat Fallback',sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--dc-rose,#8e1b4d)}
+.dc-ready-body{display:flex;align-items:center;gap:12px}
+.dc-ready-body div{flex:1;min-width:0}
+.dc-ready-body strong{display:block;font:800 16px/1.25 'Montserrat','Montserrat Fallback',sans-serif;color:var(--dc-ink,#281b22)}
+.dc-ready-body small{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;white-space:normal;margin-top:2px;font:600 13px/1.35 'Montserrat','Montserrat Fallback',sans-serif;color:var(--dc-muted,#74646c)}
+.dc-ready-stack{flex:none;display:flex}
+.dc-ready-stack img{width:44px;height:56px;border-radius:10px;object-fit:cover;background:#f6e3ea;border:2px solid #fff;box-shadow:0 4px 10px rgba(40,27,34,.18)}
+.dc-ready-stack img+img{margin-left:-18px}
+.dc-ready-pill .dc-ready-go{width:100%;padding:12px;font-size:14px}
+.dc-ready-pill .dc-ready-close{padding:0 2px;font-size:22px}
