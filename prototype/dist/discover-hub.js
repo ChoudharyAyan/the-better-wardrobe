@@ -1,129 +1,21 @@
-/* Discover extensions: the mall and a local community preview. */
+/* Shared Community surface. Mall retains its own renderer and event handlers. */
 (() => {
-  const brands = Array.isArray(window.DiscoverBrands) ? window.DiscoverBrands : [];
-  const storageKey = 'tbw-discover-community-v1';
-  const examplePosts = [
-    {
-      id: 'example-bomber', author: 'Maya', city: 'Bengaluru', question: 'Where can I find a cropped bomber like this in India?',
-      detail: 'Looking for a relaxed fit and a dark brown colour. An in-store sighting would help too.',
-      link: '', example: true,
-      replies: [{id: 'example-bomber-reply', author: 'Rhea', text: 'Try the relaxed outerwear at Bonkers Corner. Check the current sizes before ordering.', link: 'https://www.bonkerscorner.com/', helpful: 2}]
-    },
-    {
-      id: 'example-kurta', author: 'Arjun', city: 'Jaipur', question: 'Know a brand making simple cotton kurtas with this neckline?',
-      detail: 'No heavy embroidery. I am looking for something easy to wear every day.',
-      link: '', example: true, replies: []
-    }
-  ];
-  const escapeHtml = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[char]));
-  const safeUrl = (value) => {
-    try {
-      const url = new URL(String(value).trim());
-      return ['https:', 'http:'].includes(url.protocol) ? url.href : '';
-    } catch { return ''; }
-  };
-  const readCommunity = () => {
-    try {
-      const saved = JSON.parse(localStorage.getItem(storageKey));
-      if (saved && Array.isArray(saved.posts)) return {posts: saved.posts.slice(0, 100), votes: Array.isArray(saved.votes) ? saved.votes : []};
-    } catch {}
-    return {posts: examplePosts.map((post) => ({...post, replies: post.replies.map((reply) => ({...reply}))})), votes: []};
-  };
-  const savedCommunity = readCommunity();
-  let posts = savedCommunity.posts;
-  const votedReplies = new Set(savedCommunity.votes);
-  let communityFilter = 'All questions';
-  let composing = false;
-  let openThread = '';
-  let message = '';
-  const persist = () => {
-    try { localStorage.setItem(storageKey, JSON.stringify({posts, votes: [...votedReplies]})); return true; }
-    catch { message = 'Device storage is full. This change will last until you leave the page.'; return false; }
-  };
-  const points = () => posts.reduce((total, post) => total + post.replies.filter((reply) => reply.author === 'You').length * 5, 0);
-  const replyView = (post, reply) => `<div class="hub-reply"><div><strong>${escapeHtml(reply.author)}</strong><p>${escapeHtml(reply.text)}</p>${safeUrl(reply.link) ? `<a href="${escapeHtml(safeUrl(reply.link))}" target="_blank" rel="noopener noreferrer">View source ↗</a>` : ''}</div><button type="button" data-hub="helpful" data-post="${escapeHtml(post.id)}" data-reply="${escapeHtml(reply.id)}" aria-pressed="${votedReplies.has(reply.id)}" ${reply.author === 'You' ? 'disabled title="You cannot mark your own answer helpful"' : ''}>Helpful · ${Number(reply.helpful) || 0}</button></div>`;
-  const questionView = (post) => {
-    const opened = openThread === post.id;
-    return `<article class="hub-question">
-      <button type="button" class="hub-question-toggle" data-hub="thread" data-id="${escapeHtml(post.id)}" aria-expanded="${opened}">
-        <span><small>${post.example ? 'Example discussion' : post.author === 'You' ? 'Your question' : 'Community question'} · ${escapeHtml(post.city || 'India')}</small><strong>${escapeHtml(post.question)}</strong><em>${post.replies.length ? `${post.replies.length} ${post.replies.length === 1 ? 'reply' : 'replies'}` : 'Needs a lead'}</em></span><b aria-hidden="true">${opened ? '−' : '+'}</b>
-      </button>
-      ${opened ? `<div class="hub-thread"><p>${escapeHtml(post.detail || 'Can you help find it?')}</p>${safeUrl(post.link) ? `<a href="${escapeHtml(safeUrl(post.link))}" target="_blank" rel="noopener noreferrer">View reference ↗</a>` : ''}
-        ${post.replies.length ? `<div class="hub-replies">${post.replies.map((reply) => replyView(post, reply)).join('')}</div>` : '<p class="hub-empty-replies">No leads yet.</p>'}
-        ${post.author === 'You' ? '<p class="hub-local-note">This preview saves your question on this device. Shared replies need community accounts and a live service.</p>' : `<form class="hub-reply-form" data-hub-form="reply" data-id="${escapeHtml(post.id)}"><label for="reply-${escapeHtml(post.id)}">Share a lead</label><textarea id="reply-${escapeHtml(post.id)}" name="answer" minlength="12" maxlength="400" placeholder="Where did you spot it? Include what you know about availability." required></textarea><input type="url" name="link" placeholder="Source link (optional)" inputmode="url"><button type="submit">Post answer →</button></form>`}
-      </div>` : ''}
-    </article>`;
-  };
-  const community = () => {
-    const shown = posts.filter((post) => communityFilter === 'All questions' || (communityFilter === 'Needs help' ? !post.replies.length : !!post.replies.length));
-    return `<section class="hub-section hub-community" aria-labelledby="hub-community-title">
-      <div class="hub-heading"><div><p class="hub-eyebrow">Discover / 03</p><h2 id="hub-community-title">Find it through people</h2><p>Ask where a piece is from. Share a useful lead when you know one.</p></div></div>
-      <div class="hub-community-toolbar"><div class="hub-community-filters" role="group" aria-label="Filter questions">${['All questions', 'Needs help', 'Answered'].map((filter) => `<button type="button" class="${communityFilter === filter ? 'active' : ''}" data-hub="community-filter" data-value="${filter}">${filter}</button>`).join('')}</div><button type="button" class="hub-ask" data-hub="compose">${composing ? 'Cancel' : 'Ask the community +'}</button></div>
-      ${composing ? `<form class="hub-compose" data-hub-form="question"><label for="hub-question">What are you trying to find?</label><input id="hub-question" name="question" minlength="12" maxlength="180" placeholder="Where can I find a jacket like this?" required><label for="hub-detail">A little more detail</label><textarea id="hub-detail" name="detail" maxlength="500" placeholder="Colour, fit, budget or where you last saw it"></textarea><div class="hub-form-two"><label>City (optional)<input name="city" maxlength="50" placeholder="Mumbai"></label><label>Reference link (optional)<input type="url" name="link" placeholder="https://..." inputmode="url"></label></div><button type="submit">Post question →</button></form>` : ''}
-      <div class="hub-question-list">${shown.length ? shown.map(questionView).join('') : '<p class="hub-empty-replies">No questions in this view yet.</p>'}</div>
-      <div class="hub-rewards"><span aria-hidden="true">✳</span><div><strong>Your reputation · ${points()} preview points</strong><p>Answering earns 5 local preview points. Helpful finds can become digital badges; merchandise rewards are still being explored.</p></div></div>
-      <p class="hub-fineprint">Community posts and points are saved only in this browser preview. Example discussions are labelled. Links and local shop sightings are leads, not verified stock.</p>
-    </section>`;
-  };
-  const render = () => `<div id="discover-hub" class="discover-hub">${window.DiscoverMall?.render() || ''}${community()}<p class="hub-message" role="status" aria-live="polite">${escapeHtml(message)}</p></div>`;
-  const update = () => {
-    const root = document.querySelector('#discover-hub');
-    if (!root) return;
-    const focused = document.activeElement?.dataset;
-    const directoryOpen = root.querySelector?.('.mall-directory')?.open;
-    root.outerHTML = render();
-    const nextRoot = document.querySelector('#discover-hub');
-    const directory = nextRoot?.querySelector?.('.mall-directory');
-    if (directory) directory.open = !!directoryOpen;
-    if (focused?.hub) {
-      [...(nextRoot?.querySelectorAll?.('[data-hub]') || [])]
-        .find((item) => item.dataset.hub === focused.hub && item.dataset.value === focused.value && item.dataset.id === focused.id)
-        ?.focus();
-    }
-  };
-  document.addEventListener('click', (event) => {
-    const button = event.target.closest('[data-hub]');
-    if (!button || !document.querySelector('#discover-hub')) return;
-    message = '';
-    const action = button.dataset.hub;
-    if (action === 'community-filter') { communityFilter = button.dataset.value; openThread = ''; }
-    else if (action === 'compose') composing = !composing;
-    else if (action === 'thread') openThread = openThread === button.dataset.id ? '' : button.dataset.id;
-    else if (action === 'helpful') {
-      const post = posts.find((item) => item.id === button.dataset.post);
-      const reply = post?.replies.find((item) => item.id === button.dataset.reply);
-      if (reply && reply.author !== 'You') {
-        const voted = votedReplies.has(reply.id);
-        reply.helpful = Math.max(0, (Number(reply.helpful) || 0) + (voted ? -1 : 1));
-        if (voted) votedReplies.delete(reply.id); else votedReplies.add(reply.id);
-        persist();
-      }
-    }
-    else return;
-    update();
-  });
-  document.addEventListener('submit', (event) => {
-    const form = event.target.closest('[data-hub-form]');
-    if (!form) return;
-    event.preventDefault();
-    const values = new FormData(form);
-    const link = String(values.get('link') || '').trim();
-    if (link && !safeUrl(link)) { message = 'Use a full http or https link.'; update(); return; }
-    if (form.dataset.hubForm === 'question') {
-      const question = String(values.get('question') || '').trim().slice(0, 180);
-      if (question.length < 12) { message = 'Add a little more detail to your question.'; update(); return; }
-      const id = crypto.randomUUID?.() || `local-${Date.now()}`;
-      posts.unshift({id, author: 'You', city: String(values.get('city') || '').trim().slice(0, 50), question, detail: String(values.get('detail') || '').trim().slice(0, 500), link: safeUrl(link), example: false, replies: []});
-      posts = posts.slice(0, 100); composing = false; communityFilter = 'All questions'; openThread = id;
-      message = 'Question saved on this device.'; persist(); update();
-    } else if (form.dataset.hubForm === 'reply') {
-      const post = posts.find((item) => item.id === form.dataset.id);
-      const answer = String(values.get('answer') || '').trim().slice(0, 400);
-      if (!post || answer.length < 12) { message = 'Add a little more detail to your answer.'; update(); return; }
-      if (post.author === 'You') return;
-      post.replies.push({id: crypto.randomUUID?.() || `reply-${Date.now()}`, author: 'You', text: answer, link: safeUrl(link), helpful: 0});
-      openThread = post.id; message = 'Answer saved. You earned 5 preview reputation points.'; persist(); update();
-    }
-  });
-  window.DiscoverHub = {render, getBrands: () => brands, getPosts: () => posts};
+ const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ const safe=v=>{try{const u=new URL(v);return ['http:','https:'].includes(u.protocol)?u.href:'';}catch{return '';}};
+ let data=null,loading=false,mode='community',thread='',compose=false,busy=false,notice='',photo='',photoName='';const answerPhotos={};
+ async function api(url,body){const r=await fetch(url,{method:body?'POST':'GET',headers:body?{'Content-Type':'application/json'}:{},credentials:'same-origin',body:body?JSON.stringify(body):undefined});let value={};try{value=await r.json();}catch{}if(!r.ok)throw Error(value.error||'Community could not connect.');return value;}
+ async function load(){if(loading||data)return;loading=true;try{data=await api('/api/community');notice='';}catch(e){data={ready:false,questions:[],pending:[],viewer:{wallet:{balance:0}}};notice=e.message;}finally{loading=false;update();}}
+ const wallet=()=>{if(!data)queueMicrotask(load);return `<aside class="community-wallet"><span aria-hidden="true">✳</span><div><small>Spotter wallet · guest preview</small><strong>${data?.viewer?.wallet?.balance||0} XP</strong><p>Published leads earn 10 XP. Spend 20 XP to spotlight your question for a week.</p></div><i aria-hidden="true">✦</i></aside>`;};
+ const match=a=>`<details class="community-score"><summary>${a.score}% text match <span>How we scored it</span></summary><p>${esc(a.method)}. This checks words in the question, answer and link path—not the image, price, stock or seller.</p><div>${(a.breakdown||[]).map(r=>`<span>${esc(r.label)} ${r.matched.length}/${r.checked.length}</span>`).join('')}</div></details>`;
+ const answer=(q,a)=>`<article class="community-answer"><div class="community-person"><span class="community-avatar">${esc(a.author.slice(0,1).toUpperCase())}</span><div><strong>${esc(a.author)}</strong><small>Shared a lead · ${new Date(a.createdAt).toLocaleDateString()}</small></div><span class="community-xp">+10 XP</span></div><p>${esc(a.text)}</p>${a.image?`<img class="community-lead-image" src="${a.image}" alt="Product reference supplied with the lead">`:''}${safe(a.url)?`<a class="community-source" href="${esc(safe(a.url))}" target="_blank" rel="noopener noreferrer">Open the lead ↗</a>`:''}${match(a)}<div class="community-votes"><button type="button" data-community="vote" data-question="${q.id}" data-id="${a.id}" data-vote="1" aria-label="Upvote answer" aria-pressed="${a.myVote===1}" ${a.mine?'disabled':''}>↑</button><span>${a.votes}</span><button type="button" data-community="vote" data-question="${q.id}" data-id="${a.id}" data-vote="-1" aria-label="Downvote answer" aria-pressed="${a.myVote===-1}" ${a.mine?'disabled':''}>↓</button><small>Votes are opinions, not verification.</small></div></article>`;
+ const detail=q=>`<div class="community-thread"><p>${esc(q.detail)}</p>${q.contextTitle?`<div class="community-context">Seen in: ${esc(q.contextTitle)}</div>`:''}${q.image?`<img class="community-reference" src="${q.image}" alt="Reference uploaded by ${esc(q.author)}">`:''}${safe(q.referenceUrl)?`<a class="community-source" href="${esc(safe(q.referenceUrl))}" target="_blank" rel="noopener noreferrer">Original reference ↗</a>`:''}<div class="community-thread-head"><strong>${q.answerCount?`${q.answerCount} ${q.answerCount===1?'lead':'leads'}`:'No leads yet'}</strong><span>Preliminary matches only</span></div>${q.answers.map(a=>answer(q,a)).join('')}${q.mine?`<div class="community-own"><span>✳</span><p>${q.spotlightUntil>Date.now()?'In the spotlight for 7 days.':'Spend 20 XP to spotlight this question for 7 days.'}</p>${q.spotlightUntil>Date.now()?'':`<button type="button" data-community="spotlight" data-id="${q.id}" ${data.viewer.wallet.balance<20?'disabled title="Earn 20 XP first"':''}>Spotlight · 20 XP</button>`}</div>`:`<form class="community-answer-form" data-community-form="answer" data-id="${q.id}"><label>Found a lead? Tell us why it matches.<textarea name="text" minlength="24" maxlength="600" placeholder="e.g. Brown aviator sunglasses with gold frames at…" required></textarea></label><input name="url" type="url" placeholder="Product or source link (optional)" aria-label="Product or source link"><label class="community-lead-upload">${answerPhotos[q.id]?`<img src="${answerPhotos[q.id]}" alt="Selected product preview">`:''}<span>${answerPhotos[q.id]?'Product preview ready':'＋ Add product preview (optional)'}</span><input type="file" accept="image/jpeg,image/png,image/webp" aria-label="Add product preview"></label><button type="submit" ${busy?'disabled':''}>${busy?'Screening your lead…':'Screen and share lead ↗'}</button><small>We screen wording before a lead goes live. It is not visually verified.</small></form>`}</div>`;
+ const question=q=>`<article class="community-question ${q.spotlightUntil>Date.now()?'spotlight':''}"><button type="button" class="community-question-top" data-community="thread" data-id="${q.id}" aria-expanded="${thread===q.id}"><span class="community-avatar">${esc(q.author.slice(0,1).toUpperCase())}</span><span class="community-question-copy"><small>${q.mine?'Asked by you':esc(q.author)} · ${esc(q.kind)} ${q.spotlightUntil>Date.now()?'✦ Spotlight':''}</small><strong>${esc(q.title)}</strong><em>${q.answerCount?`${q.answerCount} ${q.answerCount===1?'lead':'leads'}`:'Be first to help'} · ${new Date(q.createdAt).toLocaleDateString()}</em></span>${q.image?`<img class="community-thumb" src="${q.image}" alt="">`:'<span class="community-symbol" aria-hidden="true">✳</span>'}<span class="community-plus" aria-hidden="true">${thread===q.id?'−':'+'}</span></button>${thread===q.id?detail(q):''}</article>`;
+ const form=()=>`<form class="community-compose" data-community-form="question"><div class="community-compose-heading"><span>✳</span><div><strong>Start a search party</strong><p>Ask about a piece, a look, or what to wear.</p></div></div><label>What do you need?<select name="kind"><option>Find this</option><option>Recommendations</option><option>Style advice</option></select></label><label>Your question<input name="title" minlength="16" maxlength="160" placeholder="Where can I find these sunglasses?" required></label><label>Details that matter<textarea name="detail" minlength="20" maxlength="800" placeholder="Colour, shape, budget, size, location, or the scene you saw it in…" required></textarea></label><div class="community-form-grid"><label>Seen in (optional)<input name="contextTitle" maxlength="80" placeholder="F1, episode 2, a creator…"></label><label>Reference link (optional)<input name="referenceUrl" type="url" placeholder="https://…"></label></div><label class="community-upload">${photo?`<img src="${photo}" alt="Selected reference">`:''}<span>${photoName?esc(photoName):'＋ Add a screenshot or reference image'}</span><input type="file" accept="image/jpeg,image/png,image/webp" aria-label="Add a screenshot or reference image"></label><div class="community-form-actions"><button type="submit" ${busy?'disabled':''}>${busy?'Posting…':'Ask the community →'}</button><button type="button" data-community="compose">Cancel</button></div><small>Only share images you have the right to post. Keep questions about fashion.</small></form>`;
+ const community=()=>{if(!data)queueMicrotask(load);const all=data?.questions||[],shown=mode==='mine'?all.filter(q=>q.mine):all;return `<section class="hub-section hub-community"><div class="community-intro"><div><p class="hub-eyebrow">Discover / Community</p><h2>Find it, together<span>.</span></h2><p>Ask for a piece. Spot a lead. Help someone find their next favourite.</p></div><div class="community-intro-art" aria-hidden="true"><span>✦</span><span>✳</span><span>↗</span></div></div>${wallet()}<div class="community-nav"><div role="tablist" aria-label="Community questions"><button type="button" role="tab" data-community="mode" data-value="community" aria-selected="${mode==='community'}">Community <span>${all.length}</span></button><button type="button" role="tab" data-community="mode" data-value="mine" aria-selected="${mode==='mine'}">My questions <span>${all.filter(q=>q.mine).length}</span></button></div><button type="button" class="community-ask" data-community="compose">${compose?'Close':'＋ Ask a question'}</button></div>${compose?form():''}${notice?`<p class="community-notice" role="status">${esc(notice)}</p>`:''}${!data?'<p class="community-loading">Loading the community…</p>':data.ready?`<div class="community-feed">${shown.length?shown.map(question).join(''):`<div class="community-empty"><span>✳</span><strong>${mode==='mine'?'Your search starts here.':'Be the first spotter.'}</strong><p>${mode==='mine'?'Ask about a look and see every lead in one place.':'Ask a question or help someone find a piece.'}</p><button type="button" data-community="compose">＋ Ask a question</button>${mode==='community'?'<p class="community-example-label">Need an idea?</p><div class="community-starters"><button type="button" data-community="starter" data-title="Where can I find brown aviator sunglasses?" data-detail="Looking for brown tinted aviators with a gold frame, similar to a film still.">Find a film look ↗</button><button type="button" data-community="starter" data-title="Which brands make simple cotton kurtas?" data-detail="I want clean necklines and minimal embroidery for everyday wear in India.">Ask for a brand rec ↗</button></div>':''}</div>`}</div>${data.pending.length?`<p class="community-pending">${data.pending.length} of your leads need more matching detail and are not public yet.</p>`:''}`:'<div class="community-empty"><strong>Community is not live here yet.</strong><p>Shared questions need the Community database. No posts or XP are stored in this preview.</p></div>'}<p class="hub-fineprint">Matches use a text rubric, not visual verification. Check seller, product, price and availability yourself. XP is a guest preview reward, not money.</p></section>`;};
+ const render=()=>`<div id="discover-hub" class="discover-hub">${window.DiscoverMall?.render()||''}${community()}</div>`;
+ function update(){const el=document.querySelector('#discover-hub');if(el){const opened=el.querySelector('.mall-directory')?.open;el.outerHTML=render();const dir=document.querySelector('#discover-hub .mall-directory');if(dir)dir.open=!!opened;}else{const card=document.querySelector('.community-wallet');if(card)card.outerHTML=wallet();}}
+ document.addEventListener('click',async event=>{const b=event.target.closest('[data-community]');if(!b||!document.querySelector('#discover-hub'))return;const action=b.dataset.community;if(action==='mode'){mode=b.dataset.value;thread='';update();}else if(action==='compose'){compose=!compose;photo='';photoName='';update();}else if(action==='starter'){compose=true;update();const f=document.querySelector('.community-compose');f.elements.title.value=b.dataset.title;f.elements.detail.value=b.dataset.detail;f.elements.title.focus();}else if(action==='thread'){thread=thread===b.dataset.id?'':b.dataset.id;update();}else if(action==='vote'||action==='spotlight'){if(busy)return;busy=true;try{const answer=data.questions.find(q=>q.id===b.dataset.question)?.answers.find(a=>a.id===b.dataset.id);const vote=answer?.myVote===Number(b.dataset.vote)?0:Number(b.dataset.vote);const r=await api(action==='vote'?`/api/community/answers/${b.dataset.id}/vote`:`/api/community/questions/${b.dataset.id}/spotlight`,action==='vote'?{vote}:{});data=r.feed;notice=action==='vote'?'Vote saved.':'Your question is in the spotlight for 7 days.';}catch(e){notice=e.message;}finally{busy=false;update();}}});
+ document.addEventListener('change',async event=>{const input=event.target.closest('.community-upload input,.community-lead-upload input');if(!input?.files?.[0])return;const file=input.files[0];if(file.size>1_000_000){notice='Choose an image under 1 MB.';update();return;}try{const value=await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(file);});const isLead=!!input.closest('.community-lead-upload');if(isLead)answerPhotos[input.closest('form').dataset.id]=value;else{photo=value;photoName=file.name;}const label=input.closest('label');label.querySelector('span').textContent=file.name;label.querySelector('img')?.remove();const img=document.createElement('img');img.src=value;img.alt=isLead?'Selected product preview':'Selected reference';label.prepend(img);}catch{notice='Could not read that image.';update();}});
+ document.addEventListener('submit',async event=>{const el=event.target.closest('[data-community-form]');if(!el)return;event.preventDefault();if(busy)return;busy=true;notice='';const values=Object.fromEntries(new FormData(el));delete values.image;try{if(el.dataset.communityForm==='question'){const r=await api('/api/community/questions',{...values,image:photo});data=r.feed;mode='mine';thread=r.question.id;compose=false;photo='';photoName='';notice='Your question is live. Let the spotting begin.';}else{const r=await api(`/api/community/questions/${el.dataset.id}/answers`,{...values,image:answerPhotos[el.dataset.id]||''});data=r.feed;delete answerPhotos[el.dataset.id];notice=`${r.screening.message} ${r.screening.score}% preliminary text match.`;}}catch(e){notice=e.message;}finally{busy=false;update();}});
+ window.DiscoverHub={render,wallet,getBrands:()=>window.DiscoverBrands||[],getPosts:()=>data?.questions||[]};
 })();

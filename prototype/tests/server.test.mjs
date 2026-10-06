@@ -8,6 +8,7 @@ test('HTTP boundary serves app, reports missing keys and keeps configuration pri
  assert.equal((await fetch(base)).status,200);
  const mallScript=await fetch(base+'/discover-mall.js');assert.equal(mallScript.status,200);assert.match(await mallScript.text(),/mall-lane-floor/);
  const brandIcon=await fetch(base+'/assets/brand-icons/71.png');assert.equal(brandIcon.status,200);assert.equal(brandIcon.headers.get('content-type'),'image/png');
+ const mallFeed=await fetch(base+'/api/mall/updates');assert.equal(mallFeed.status,200);assert.equal(typeof (await mallFeed.json()).brands,'object');
  assert.equal((await fetch(base+'/.env')).status,403);
  assert.equal((await fetch(base+'/api/discover/image/'+'a'.repeat(48))).status,404);
  const status=await(await fetch(base+'/api/discover/status')).json();assert.equal(status.shopping,false);

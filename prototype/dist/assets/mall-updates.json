@@ -1,0 +1,3134 @@
+{
+  "generatedAt": "2026-10-05T09:37:58.532Z",
+  "brands": {
+    "1": {
+      "status": "blocked",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {},
+      "error": "Crawling disallowed or robots unavailable"
+    },
+    "2": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {
+        "offers": {
+          "url": "https://www.amazon.in/deals?ref_=nav_cs_gb",
+          "label": "Today's Deals"
+        }
+      },
+      "error": null
+    },
+    "3": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {
+        "offers": {
+          "url": "https://www.flipkart.com/fashion-boss-intrigue-2020-store",
+          "label": "Flipkart Best of Season Sale"
+        }
+      },
+      "error": null
+    },
+    "4": {
+      "status": "blocked",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {},
+      "error": "Crawling disallowed or robots unavailable"
+    },
+    "5": {
+      "status": "blocked",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {},
+      "error": "Crawling disallowed or robots unavailable"
+    },
+    "6": {
+      "status": "blocked",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {},
+      "error": "Crawling disallowed or robots unavailable"
+    },
+    "7": {
+      "status": "error",
+      "checkedAt": "2026-10-05T09:15:32.510Z",
+      "designs": [],
+      "offers": [],
+      "sources": {
+        "offers": {
+          "url": "https://www.lifestylestores.com/in/en/c/women?q=%3AbadgeVisibleTitle_uFilter%3ANew&discount=0,10",
+          "label": ""
+        }
+      },
+      "error": "Crawling disallowed or robots unavailable",
+      "lastAttemptAt": "2026-10-05T09:24:44.812Z"
+    },
+    "8": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {},
+      "error": null
+    },
+    "9": {
+      "status": "error",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://www.pantaloons.com/c/menswear-latest-drop-",
+          "label": "menswear latest drop "
+        },
+        "offers": {
+          "url": "https://www.pantaloons.com/c/sale",
+          "label": "SALE"
+        }
+      },
+      "error": "Source HTTP 404"
+    },
+    "10": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://www.westside.com/collections/new-in-western-wear-for-women",
+          "label": "New In"
+        },
+        "offers": {
+          "url": "https://www.westside.com/collections/view-all-sale",
+          "label": "View All"
+        }
+      },
+      "error": null
+    },
+    "11": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:37:58.532Z",
+      "designs": [],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://api.thesouledstore.com/tags/new-arrival",
+          "label": "New arrivals"
+        },
+        "offers": {
+          "url": "https://www.thesouledstore.com/exclusive-deals",
+          "label": "exclusive deals"
+        }
+      },
+      "error": null
+    },
+    "12": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {},
+      "error": null
+    },
+    "13": {
+      "status": "ok",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [
+        {
+          "id": "0b5092d764fc4c88",
+          "title": "Garfield Relaxed Fit Tshirt& Shorts Co-Ords Set Men",
+          "url": "https://www.freeauthority.co/products/garfield-relaxed-fit-tshirt-shorts-co-ords-set-for-men-men-grfaw26ymcod19",
+          "image": "https://www.freeauthority.co/cdn/shop/files/GRFAW26YMCOD19_1.jpg?v=1790059349",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://www.freeauthority.co/collections/new-arrivals",
+          "isNew": false
+        },
+        {
+          "id": "96c13319b6cccb40",
+          "title": "Peanuts Relaxed Fit Tshirt Men",
+          "url": "https://www.freeauthority.co/products/peanuts-relaxed-fit-tshirt-men-pntaw26ymtsrt007418",
+          "image": "https://www.freeauthority.co/cdn/shop/files/PNTAW26YMTSRT007418_1.jpg?v=1790059307",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://www.freeauthority.co/collections/new-arrivals",
+          "isNew": false
+        },
+        {
+          "id": "cffffac31b7e831f",
+          "title": "One Piece Straw Hat Crew Relaxed Fit Tshirt Men",
+          "url": "https://www.freeauthority.co/products/one-piece-straw-hat-crew-relaxed-fit-tshirt-men-onpaw26ymtsrt009085",
+          "image": "https://www.freeauthority.co/cdn/shop/files/ONPAW26YMTSRT009085_1.jpg?v=1790059268",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://www.freeauthority.co/collections/new-arrivals",
+          "isNew": false
+        },
+        {
+          "id": "3fca07bcd8c77bb3",
+          "title": "Naruto Minato Namikaze Relaxed Fit Tshirt Men",
+          "url": "https://www.freeauthority.co/products/naruto-minato-namikaze-relaxed-fit-tshirt-men-narsaw26ymtsrt008370",
+          "image": "https://www.freeauthority.co/cdn/shop/files/NARSAW26YMTSRT008370_1.jpg?v=1790059236",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://www.freeauthority.co/collections/new-arrivals",
+          "isNew": false
+        }
+      ],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://www.freeauthority.co/collections/new-arrivals",
+          "label": "New Arrivals"
+        },
+        "offers": {
+          "url": "https://www.freeauthority.co/collections/sale",
+          "label": "sale"
+        }
+      },
+      "error": null
+    },
+    "14": {
+      "status": "ok",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [
+        {
+          "id": "ffa1af9a41c62b10",
+          "title": "Japan U-20 Shidou Jersey",
+          "url": "https://www.comicsense.store/product/japan-u-20-shidou-jersey/",
+          "image": "https://www.comicsense.store/wp-content/uploads/2026/09/shidou_japan_u20_listing_comicsense.webp",
+          "price": 949,
+          "originalPrice": 1299,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://www.comicsense.store/shop/?orderby=date",
+          "isNew": false
+        },
+        {
+          "id": "42b182442d7031d9",
+          "title": "Bastard Munchen-11 Jersey (Boxy Fit)",
+          "url": "https://www.comicsense.store/product/bluelock-unisex-bastard-munchen-11-jersey-boxy-fit/",
+          "image": "https://www.comicsense.store/wp-content/uploads/2026/09/bastard-11.jpg_comicsense.webp",
+          "price": 999,
+          "originalPrice": 1299,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://www.comicsense.store/shop/?orderby=date",
+          "isNew": false
+        },
+        {
+          "id": "b21ffc142662e720",
+          "title": "Blue Lock-10 Jersey (Boxy Fit)",
+          "url": "https://www.comicsense.store/product/blue-lock-10-jersey-boxy-fit/",
+          "image": "https://www.comicsense.store/wp-content/uploads/2026/09/bluelock-10-front.jpg-1_comicsense.webp",
+          "price": 999,
+          "originalPrice": 1299,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://www.comicsense.store/shop/?orderby=date",
+          "isNew": false
+        },
+        {
+          "id": "ce0c86a6faa29ddf",
+          "title": "Fukurodani-4 Jersey (Boxy Fit)",
+          "url": "https://www.comicsense.store/product/haikyuu-unisex-fukurodani-4-jersey-boxy-fit/",
+          "image": "https://www.comicsense.store/wp-content/uploads/2026/09/Fukurodani-4-Boxy-jersey-listing-1-tag_comicsense.webp",
+          "price": 949,
+          "originalPrice": 1299,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://www.comicsense.store/shop/?orderby=date",
+          "isNew": false
+        }
+      ],
+      "offers": [
+        {
+          "id": "570f5a44e5b35125",
+          "title": "D4C T-Shirt",
+          "url": "https://www.comicsense.store/product/jojo-sbr-d4c-anime-unisex-oversized-graphic-d4c-t-shirt/",
+          "image": "https://www.comicsense.store/wp-content/uploads/2026/09/D4C-tee-listing-1_comicsense.webp",
+          "price": 1399,
+          "originalPrice": 1699,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://www.comicsense.store/shop/?orderby=sale_per_view_with_date",
+          "discountPercent": 18,
+          "observedAt": "2026-10-05T09:24:44.812Z"
+        },
+        {
+          "id": "8cc636c201aa3fc0",
+          "title": "Karasuno-10 Oversize Jersey",
+          "url": "https://www.comicsense.store/product/karasuno-10-oversize-jersey/",
+          "image": "https://www.comicsense.store/wp-content/uploads/2021/05/Haikyu-Oversized-Jersey_Listing-Image1A_comicsense.png",
+          "price": 949,
+          "originalPrice": 1299,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://www.comicsense.store/shop/?orderby=sale_per_view_with_date",
+          "discountPercent": 27,
+          "observedAt": "2026-10-05T09:24:44.812Z"
+        }
+      ],
+      "sources": {
+        "designs": {
+          "url": "https://www.comicsense.store/shop/?orderby=date",
+          "label": "New Arrivals"
+        },
+        "offers": {
+          "url": "https://www.comicsense.store/shop/?orderby=sale_per_view_with_date",
+          "label": "Best Sellers"
+        }
+      },
+      "error": null
+    },
+    "15": {
+      "status": "ok",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [
+        {
+          "id": "e6f4513e2bce0970",
+          "title": "Ideas Are Bulletproof - SVK Official T-Shirt",
+          "url": "https://fullyfilmy.in/products/ideas-are-bulletproof-svk-official-t-shirt",
+          "image": "https://fullyfilmy.in/cdn/shop/products/Mockup-Tshirt.jpg?v=1747991555&width=1000",
+          "price": 599,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://fullyfilmy.in/collections/new-arrivals",
+          "isNew": false
+        }
+      ],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://fullyfilmy.in/collections/new-arrivals",
+          "label": "new arrivals"
+        },
+        "offers": {
+          "url": "https://fullyfilmy.in/collections/mystery-sale",
+          "label": ""
+        }
+      },
+      "error": null
+    },
+    "16": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {},
+      "error": null
+    },
+    "17": {
+      "status": "blocked",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {},
+      "error": "Crawling disallowed or robots unavailable"
+    },
+    "18": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {},
+      "error": null
+    },
+    "19": {
+      "status": "ok",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [
+        {
+          "id": "a9308d1c8d238462",
+          "title": "Solid Oversized T-shirt | 240 GSM | Unisex | 3 for 1499 | 4 for 1799",
+          "url": "https://www.zenrobe.com/products/240-gsm-solids-unisex-oversized-t-shirt",
+          "image": "https://www.zenrobe.com/cdn/shop/files/pdp.gif?v=1758042024",
+          "price": 699,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://www.zenrobe.com/collections/new-arrivals",
+          "isNew": false
+        },
+        {
+          "id": "fcaeb0d0660d2281",
+          "title": "Stay True Unisex Oversized T-Shirt",
+          "url": "https://www.zenrobe.com/products/stay-true-unisex-oversized-t-shirt",
+          "image": "https://www.zenrobe.com/cdn/shop/files/Stay_True_Unisex_Oversized_T-Shirt_Off_White_page1.jpg?v=1772868433",
+          "price": 799,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://www.zenrobe.com/collections/new-arrivals",
+          "isNew": false
+        },
+        {
+          "id": "dac9bdcad272b169",
+          "title": "ZR Rebirth Unisex Oversized T-Shirt",
+          "url": "https://www.zenrobe.com/products/zr-rebirth-unisex-oversized-t-shirt",
+          "image": "https://www.zenrobe.com/cdn/shop/files/Rebirth_Unisex_Oversized_T-Shirt_Green_page1.jpg?v=1772866679",
+          "price": 799,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://www.zenrobe.com/collections/new-arrivals",
+          "isNew": false
+        },
+        {
+          "id": "62f3af765ac8c284",
+          "title": "Cannabis Unisex Oversized T-shirt",
+          "url": "https://www.zenrobe.com/products/cannabis-unisex-oversized-tshirt",
+          "image": "https://www.zenrobe.com/cdn/shop/files/Cannabis_Unisex_Oversized_Tshirt_page1.jpg?v=1770313109",
+          "price": 1299,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://www.zenrobe.com/collections/new-arrivals",
+          "isNew": false
+        }
+      ],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://www.zenrobe.com/collections/new-arrivals",
+          "label": ""
+        },
+        "offers": {
+          "url": "https://www.zenrobe.com/products/nezuko-demon-slayer-womens-oversized-t-shirt",
+          "label": "Sale Nezuko | Demon Slayer Women's Oversized T-shirt Rs. 1,649.00 Rs. 999.00"
+        }
+      },
+      "error": null
+    },
+    "20": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {},
+      "error": null
+    },
+    "21": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://www.urbanmonkey.com/collections/new-arrivals?utm_source=website&utm_campaign=websitemenu&utm_id=homepagemenu",
+          "label": "new arrivals new arrivals"
+        },
+        "offers": {
+          "url": "https://www.urbanmonkey.com/pages/offers",
+          "label": "offers offers"
+        }
+      },
+      "error": null
+    },
+    "22": {
+      "status": "ok",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [
+        {
+          "id": "e826450ac934cf15",
+          "title": "Terrain Tape Track Pants",
+          "url": "https://www.bonkerscorner.com/products/terrain-tape-track-pants-1",
+          "image": "https://www.bonkerscorner.com/cdn/shop/files/TerrainTapeTrackPantsEdited_1_1000x.jpg?v=1791180275",
+          "price": 1499,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://www.bonkerscorner.com/collections/womens-new-arrivals",
+          "isNew": false
+        },
+        {
+          "id": "fb94667baefb2972",
+          "title": "Space Grid Oversized T-shirt",
+          "url": "https://www.bonkerscorner.com/products/space-grid-oversized-t-shirt-1",
+          "image": "https://www.bonkerscorner.com/cdn/shop/files/SpaceGridOversizedT-shirtEdited_3_1000x.jpg?v=1791180124",
+          "price": 999,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://www.bonkerscorner.com/collections/womens-new-arrivals",
+          "isNew": false
+        },
+        {
+          "id": "cb4e4f04adae627a",
+          "title": "Dimension Jump Oversized T-shirt",
+          "url": "https://www.bonkerscorner.com/products/dimension-jump-oversized-t-shirt-1",
+          "image": "https://www.bonkerscorner.com/cdn/shop/files/DimensionJumpOversizedT-shirtEdited_6_1000x.jpg?v=1791180039",
+          "price": 999,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://www.bonkerscorner.com/collections/womens-new-arrivals",
+          "isNew": false
+        },
+        {
+          "id": "6968d0112f2f3269",
+          "title": "Baseline Black Pants",
+          "url": "https://www.bonkerscorner.com/products/baseline-black-pants",
+          "image": "https://www.bonkerscorner.com/cdn/shop/files/BonkerCorner02-10-2026-67460_1000x.jpg?v=1790076053",
+          "price": 1499,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://www.bonkerscorner.com/collections/womens-new-arrivals",
+          "isNew": false
+        }
+      ],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://www.bonkerscorner.com/collections/womens-new-arrivals",
+          "label": "Womens New Arrivals"
+        },
+        "offers": {
+          "url": "https://www.bonkerscorner.com/pages/bonkers-corner-offers",
+          "label": "Offers and Deals"
+        }
+      },
+      "error": null
+    },
+    "23": {
+      "status": "ok",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [
+        {
+          "id": "147c10d1a66d2b06",
+          "title": "BLACK NOCTURNAL HOODIE - Oversized Unisex Hoodie",
+          "url": "https://bluorng.com/products/black-nocturnal-hoodie-1",
+          "image": "https://bluorng.com/cdn/shop/files/BLUORNG01009_937f737c-b67e-4bf8-afce-b4a8370a6606.jpg?v=1764343213",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://bluorng.com/collections/new-in",
+          "isNew": false
+        },
+        {
+          "id": "f01ef7f2794cfbdd",
+          "title": "Buy Star Studded Saber Tooth Tiger Printed Premium Hoodie in Brown Colour | BLUORNG",
+          "url": "https://bluorng.com/products/star-studded-brown-hoodie",
+          "image": "https://bluorng.com/cdn/shop/files/BLUORNG00261.jpg?v=1764337091",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://bluorng.com/collections/new-in",
+          "isNew": false
+        },
+        {
+          "id": "0fce60e350e64bdb",
+          "title": "Buy Mammoth Printed Grey Start Studded Hoodie | BLUORNG",
+          "url": "https://bluorng.com/products/star-studded-grey-hoodie",
+          "image": "https://bluorng.com/cdn/shop/files/BLUORNG00111.jpg?v=1764336787",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://bluorng.com/collections/new-in",
+          "isNew": false
+        },
+        {
+          "id": "3335daa631bd584e",
+          "title": "BLACK NOCTURNAL HOODIE - Oversized Unisex Hoodie",
+          "url": "https://bluorng.com/products/brown-wildloom-hoodie",
+          "image": "https://bluorng.com/cdn/shop/files/BLUORNG01190.jpg?v=1764342775",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://bluorng.com/collections/new-in",
+          "isNew": false
+        }
+      ],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://bluorng.com/collections/new-in",
+          "label": "New in"
+        }
+      },
+      "error": null
+    },
+    "24": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {
+        "offers": {
+          "url": "https://www.jaywalking.in/collections/7-year-anniversary",
+          "label": "SALE"
+        }
+      },
+      "error": null
+    },
+    "25": {
+      "status": "ok",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [
+        {
+          "id": "7dc61d97805a17fd",
+          "title": "Ascension Plaid Boxy Shirt",
+          "url": "https://almostgods.com/products/ascension-plaid-relaxed-shirt",
+          "image": "https://almostgods.com/cdn/shop/files/Artboard2copy_c11b8884-2bbf-46d9-a8a9-4452b2c83cf5.webp?v=1790854565",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://almostgods.com/collections/new-arrivals-menswear",
+          "isNew": false
+        },
+        {
+          "id": "e4f6f2ab2362f676",
+          "title": "Military Relaxed Overshirt in Linen",
+          "url": "https://almostgods.com/products/military-relaxed-overshirt-in-linen",
+          "image": "https://almostgods.com/cdn/shop/files/Artboard5copy_7d55d374-e2fb-421e-b3a4-f0b9beab5986.webp?v=1790854444",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://almostgods.com/collections/new-arrivals-menswear",
+          "isNew": false
+        },
+        {
+          "id": "c08a601f511b1f60",
+          "title": "Hydra Embroidered Relaxed Tee",
+          "url": "https://almostgods.com/products/hydra-embroidered-relaxed-tee",
+          "image": "https://almostgods.com/cdn/shop/files/front_26f73807-58b5-4780-82bd-2bdbf8100549.webp?v=1787056990",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://almostgods.com/collections/new-arrivals-menswear",
+          "isNew": false
+        },
+        {
+          "id": "e4cf013874e395f2",
+          "title": "Templar Oversized Sweatshirt",
+          "url": "https://almostgods.com/products/templar-embroidered-oversized-sweatshirt",
+          "image": "https://almostgods.com/cdn/shop/files/Artboard_1_copy_2_34a187ed-84d5-443c-b9c4-d09e123b3ebd.webp?v=1791013372",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://almostgods.com/collections/new-arrivals-menswear",
+          "isNew": false
+        }
+      ],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://almostgods.com/collections/new-arrivals-menswear",
+          "label": "New Arrivals"
+        },
+        "offers": {
+          "url": "https://almostgods.com/pages/eoss-faq",
+          "label": "End of Season Sale Policy"
+        }
+      },
+      "error": null
+    },
+    "26": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://toffle.in/collections/latest",
+          "label": "latest"
+        },
+        "offers": {
+          "url": "https://toffle.in/pages/wholesale",
+          "label": "Manufacture"
+        }
+      },
+      "error": null
+    },
+    "27": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {
+        "offers": {
+          "url": "https://norblacknorwhite.in/collections/sale",
+          "label": "SALE"
+        }
+      },
+      "error": null
+    },
+    "28": {
+      "status": "ok",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [
+        {
+          "id": "df3099006f2c0d44",
+          "title": "Golden Flight Shirt",
+          "url": "https://nogreyarea.com/products/golden-flight-shirt-navy",
+          "image": "https://nogreyarea.com/cdn/shop/files/NGA-SS26-RSH-08_FRONT.jpg?v=1786446873&width=2048",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://nogreyarea.com/collections/new-inmen",
+          "isNew": false
+        },
+        {
+          "id": "407979bfd04669aa",
+          "title": "Zodiac Shirt",
+          "url": "https://nogreyarea.com/products/zodiac-shirt-white",
+          "image": "https://nogreyarea.com/cdn/shop/files/NGA-SS26-MSH-14_BACK_1.jpg?v=1787294918&width=2048",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://nogreyarea.com/collections/new-inmen",
+          "isNew": false
+        },
+        {
+          "id": "658e9ed6025daa1c",
+          "title": "Sun Sigil Shirt",
+          "url": "https://nogreyarea.com/products/sun-sigil-shirt-pale-pink",
+          "image": "https://nogreyarea.com/cdn/shop/files/NGA-SS26-RSH-05_BACK_1.jpg?v=1788950192&width=2048",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://nogreyarea.com/collections/new-inmen",
+          "isNew": false
+        },
+        {
+          "id": "891ca310df694e8b",
+          "title": "Celestial Bloom Shirt",
+          "url": "https://nogreyarea.com/products/celestial-bloom-shirt-white",
+          "image": "https://nogreyarea.com/cdn/shop/files/NGA-SS26-SH-03_Front.jpg?v=1788957535&width=2048",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://nogreyarea.com/collections/new-inmen",
+          "isNew": false
+        }
+      ],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://nogreyarea.com/collections/new-inmen",
+          "label": "NEW IN"
+        },
+        "offers": {
+          "url": "https://nogreyarea.com/collections/private-sale-men",
+          "label": "SALE"
+        }
+      },
+      "error": null
+    },
+    "29": {
+      "status": "ok",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [
+        {
+          "id": "1ee32bea26311516",
+          "title": "Hand-embroidered 'Blood' cropped shirt - Black",
+          "url": "https://huemn.in/collections/new/products/hand-embroidered-blood-cropped-shirt-black",
+          "image": "https://huemn.in/cdn/shop/files/Artboard_4_21d6d382-4392-4708-a119-5337d43bd648_1200x1200.jpg?v=1784639313",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://huemn.in/collections/new",
+          "isNew": false
+        },
+        {
+          "id": "61d7fd4b5d8c1ae1",
+          "title": "Inside out raw-edged shirt - Red",
+          "url": "https://huemn.in/collections/new/products/inside-out-raw-edged-shirt-red",
+          "image": "https://huemn.in/cdn/shop/files/Artboard_37_1200x1200.jpg?v=1784638042",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://huemn.in/collections/new",
+          "isNew": false
+        },
+        {
+          "id": "28a0e5e935c99bec",
+          "title": "Cotton pullover - Hot Pink",
+          "url": "https://huemn.in/collections/new/products/cotton-pullover-hot-pink",
+          "image": "https://huemn.in/cdn/shop/files/Artboard22_1200x1200.jpg?v=1786945909",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://huemn.in/collections/new",
+          "isNew": false
+        }
+      ],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://huemn.in/collections/new",
+          "label": "NEW IN"
+        }
+      },
+      "error": null
+    },
+    "30": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {
+        "offers": {
+          "url": "https://spacebiskit.com/collections/archive-sale-1",
+          "label": "Archive"
+        }
+      },
+      "error": null
+    },
+    "31": {
+      "status": "ok",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [
+        {
+          "id": "a93b283dcde30a1e",
+          "title": "DOME DENIM",
+          "url": "https://www.six5sixstreet.com/collections/new-arrivals/products/dome-denim",
+          "image": "https://www.six5sixstreet.com/cdn/shop/files/AC08FB9C-ACFC-4B1F-AB8D-FA3CB5021F8D_1200x1200.jpg?v=1761986321",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://www.six5sixstreet.com/collections/new-arrivals/new",
+          "isNew": false
+        },
+        {
+          "id": "5f9982af5b33b4fe",
+          "title": "CLASSIC STRIPED POLO IN GREEN/GREY",
+          "url": "https://www.six5sixstreet.com/collections/new-arrivals/products/classic-striped-polo-in-green-grey",
+          "image": "https://www.six5sixstreet.com/cdn/shop/files/0A8DCA87-F772-4129-81BA-9DEC281D1FCB_1200x1200.jpg?v=1761979435",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://www.six5sixstreet.com/collections/new-arrivals/new",
+          "isNew": false
+        },
+        {
+          "id": "d23e22fdba9ae11e",
+          "title": "PROTOTYPE DENIM IN JET BLACK",
+          "url": "https://www.six5sixstreet.com/collections/new-arrivals/products/prototype-denim-in-jet-black",
+          "image": "https://www.six5sixstreet.com/cdn/shop/files/9F3C2C6F-68ED-4D04-BCD7-B8921F5AFF0B_1200x1200.jpg?v=1761981581",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://www.six5sixstreet.com/collections/new-arrivals/new",
+          "isNew": false
+        }
+      ],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://www.six5sixstreet.com/collections/new-arrivals/new",
+          "label": "NEW ARRIVALS"
+        },
+        "offers": {
+          "url": "https://www.six5sixstreet.com/collections/warehouse-sale",
+          "label": "Warehouse Sale"
+        }
+      },
+      "error": null
+    },
+    "32": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {},
+      "error": null
+    },
+    "33": {
+      "status": "ok",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [
+        {
+          "id": "0f24cb27cdabb59d",
+          "title": "Navy Ridged Washed Denim",
+          "url": "https://overlaysnow.com/products/navy-ridged-washed-denim",
+          "image": "https://overlaysnow.com/cdn/shop/files/ChatGPTImageJun8_2026at07_21_45PM.jpg?v=1780929932",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://overlaysnow.com/collections/new-inn",
+          "isNew": false
+        },
+        {
+          "id": "996a869319273114",
+          "title": "Phantom Black Washed Denim",
+          "url": "https://overlaysnow.com/products/wash-distressed-baggy-denim",
+          "image": "https://overlaysnow.com/cdn/shop/files/ChatGPTImageJun8_2026at07_16_14PM.jpg?v=1780929815",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://overlaysnow.com/collections/new-inn",
+          "isNew": false
+        },
+        {
+          "id": "046228f045f42ed8",
+          "title": "Navy Ridged Washed Denim",
+          "url": "https://overlaysnow.com/products/navy-ridged-washed-denim?variant=49173189951740",
+          "image": "https://overlaysnow.com/cdn/shop/files/ChatGPTImageJun8_2026at07_21_45PM.jpg?v=1780929932",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://overlaysnow.com/collections/new-inn",
+          "isNew": false
+        },
+        {
+          "id": "f04819fa4aa4681a",
+          "title": "Phantom Black Washed Denim",
+          "url": "https://overlaysnow.com/products/wash-distressed-baggy-denim?variant=49175144562940",
+          "image": "https://overlaysnow.com/cdn/shop/files/ChatGPTImageJun8_2026at07_16_14PM.jpg?v=1780929815",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://overlaysnow.com/collections/new-inn",
+          "isNew": false
+        }
+      ],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://overlaysnow.com/collections/new-inn",
+          "label": "Shop By Category"
+        },
+        "offers": {
+          "url": "https://overlaysnow.com/collections/sale",
+          "label": "Sale"
+        }
+      },
+      "error": null
+    },
+    "34": {
+      "status": "ok",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [
+        {
+          "id": "cad9e3f4569a6d00",
+          "title": "Butter Yellow Zipper Kurta Shirt for Men | POWERLOOK",
+          "url": "https://www.powerlook.in/products/butter-yellow-zipper-kurta-shirt",
+          "image": "https://www.powerlook.in/cdn/shop/files/3_3x_ea9ba64e-9089-4db8-9a6b-f9e83b5a15f7.jpg?v=1790837348",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://www.powerlook.in/collections/new-arrivals-shirts",
+          "isNew": false
+        },
+        {
+          "id": "f5c40f65a22f13cb",
+          "title": "Navy Printed Microchecks Shirt",
+          "url": "https://www.powerlook.in/products/navy-printed-microchecks-shirt",
+          "image": "https://www.powerlook.in/cdn/shop/files/3_3da6fe4d-efe6-4a3b-98c0-0b4ace310ee0.jpg?v=1788931221",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://www.powerlook.in/collections/new-arrivals-shirts",
+          "isNew": false
+        },
+        {
+          "id": "621bc8eafa0c6a7e",
+          "title": "Tan 100% Linen Shirt for Men | POWERLOOK",
+          "url": "https://www.powerlook.in/products/tan-100-linen-shirt",
+          "image": "https://www.powerlook.in/cdn/shop/files/4_ada19baf-cfe6-402e-9063-d7de4e0e74d0.jpg?v=1790839579",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://www.powerlook.in/collections/new-arrivals-shirts",
+          "isNew": false
+        },
+        {
+          "id": "9024466256f49553",
+          "title": "Beige 100% Linen Premium Shirt for Men | POWERLOOK",
+          "url": "https://www.powerlook.in/products/beige-100-linen-premium-shirt",
+          "image": "https://www.powerlook.in/cdn/shop/files/5_503e1229-543a-4ac5-b994-f4ca337909aa.jpg?v=1791180622",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://www.powerlook.in/collections/new-arrivals-shirts",
+          "isNew": false
+        }
+      ],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://www.powerlook.in/collections/new-arrivals-shirts",
+          "label": "Shirts"
+        },
+        "offers": {
+          "url": "https://www.powerlook.in/collections/on-sale",
+          "label": "on sale"
+        }
+      },
+      "error": null
+    },
+    "35": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {},
+      "error": null
+    },
+    "36": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://offduty.in/collections/new-arrivals-women",
+          "label": "New Arrivals"
+        },
+        "offers": {
+          "url": "https://offduty.in/collections/clearance-sale-women",
+          "label": "Clearance Sale"
+        }
+      },
+      "error": null
+    },
+    "37": {
+      "status": "ok",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [
+        {
+          "id": "3e4b7bc5e42c1582",
+          "title": "Fun Fact I Don't Care It Girl Baby tee for Women",
+          "url": "https://www.burgerbaeclothing.com/collections/new-arrivals-1/products/fun-fact-i-dont-care-it-girl-baby-tee-for-women",
+          "image": "https://www.burgerbaeclothing.com/cdn/shop/files/Aicontent_060dda42-5daf-4731-bf92-e744d488770c.png?v=1773229665",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://www.burgerbaeclothing.com/collections/new-arrivals-1",
+          "isNew": false
+        },
+        {
+          "id": "82920a26fc733d75",
+          "title": "Heavy Hitter Acid Wash Drop Sleeved Tee for Men & Women",
+          "url": "https://www.burgerbaeclothing.com/collections/new-arrivals-1/products/heavy-hitter-acid-wash-drop-sleeved-tee-for-men-women",
+          "image": "https://www.burgerbaeclothing.com/cdn/shop/files/Untitled_design_18478299-bdde-458e-828f-6532c2264d59.png?v=1772096015",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://www.burgerbaeclothing.com/collections/new-arrivals-1",
+          "isNew": false
+        },
+        {
+          "id": "42a81b5023dbe0cc",
+          "title": "Wherever I Go Trouble Follows It Girl Baby tee for Women",
+          "url": "https://www.burgerbaeclothing.com/collections/new-arrivals-1/products/wherever-i-go-trouble-follows-it-girl-baby-tee-for-women",
+          "image": "https://www.burgerbaeclothing.com/cdn/shop/files/Aicontent_2d8d79c8-e8ed-4bd5-93f5-2fab345e5f96.png?v=1773232947",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://www.burgerbaeclothing.com/collections/new-arrivals-1",
+          "isNew": false
+        },
+        {
+          "id": "b46b66dea14710f8",
+          "title": "Midnight Killer Acid Wash Drop Sleeved Tee for Men & Women",
+          "url": "https://www.burgerbaeclothing.com/collections/new-arrivals-1/products/midnight-killer-acid-wash-drop-sleeved-tee-for-men-women",
+          "image": "https://www.burgerbaeclothing.com/cdn/shop/files/Untitled_design_197d6c4a-4608-43bb-8dd6-42a318af1140.png?v=1772106250",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://www.burgerbaeclothing.com/collections/new-arrivals-1",
+          "isNew": false
+        }
+      ],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://www.burgerbaeclothing.com/collections/new-arrivals-1",
+          "label": "new arrivals 1"
+        },
+        "offers": {
+          "url": "https://www.burgerbaeclothing.com/pages/late-friday-sale",
+          "label": "late friday sale"
+        }
+      },
+      "error": null
+    },
+    "38": {
+      "status": "ok",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [
+        {
+          "id": "90fc6036fe5de448",
+          "title": "Fade Grey Balloon Pants",
+          "url": "https://genrage.com/products/fade-grey-balloon-pants",
+          "image": "https://genrage.com/cdn/shop/files/ChatGPT_Image_Sep_4_2026_07_03_06_PM.png?v=1788528881&width=2048",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://genrage.com/collections/shop",
+          "isNew": false
+        },
+        {
+          "id": "387684eeef6a177e",
+          "title": "Coven Corduroy Full Sleeves",
+          "url": "https://genrage.com/products/coven-corduroy-full-sleeves",
+          "image": "https://genrage.com/cdn/shop/files/coven-corduroy-full-sleeves-genrage-1_2f7eb274-d4c0-4988-be5f-54ea76ecdb8a.png?v=1790399989&width=2048",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://genrage.com/collections/shop",
+          "isNew": false
+        },
+        {
+          "id": "fe7648bc6d996723",
+          "title": "Burial Black Baggy Pants",
+          "url": "https://genrage.com/products/burial-black-baggy-pants",
+          "image": "https://genrage.com/cdn/shop/files/burial-black-baggy-pants-genrage-2.png?v=1784637835&width=2048",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://genrage.com/collections/shop",
+          "isNew": false
+        },
+        {
+          "id": "9db25ca2576ddc44",
+          "title": "Signature Black Baggy Pants",
+          "url": "https://genrage.com/products/signature-black-baggy-pants",
+          "image": "https://genrage.com/cdn/shop/files/Ragor_3d_front.png?v=1786178578&width=2048",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://genrage.com/collections/shop",
+          "isNew": false
+        }
+      ],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://genrage.com/collections/shop",
+          "label": "NEW ARRIVALS"
+        },
+        "offers": {
+          "url": "https://genrage.com/collections/clearance-sale",
+          "label": "CLEARANCE"
+        }
+      },
+      "error": null
+    },
+    "39": {
+      "status": "blocked",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {},
+      "error": "Crawling disallowed or robots unavailable"
+    },
+    "40": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://thehouseofrare.com/collections/rare-rabbit-aw-26",
+          "label": "NEW IN"
+        },
+        "offers": {
+          "url": "https://thehouseofrare.com/collections/rr-sale-aug",
+          "label": "SALE"
+        }
+      },
+      "error": null
+    },
+    "41": {
+      "status": "blocked",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {},
+      "error": "Crawling disallowed or robots unavailable"
+    },
+    "42": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://www.andamen.com/collections/new-arrivals",
+          "label": "New Arrivals New"
+        },
+        "offers": {
+          "url": "https://www.andamen.com/collections/mirai-sale",
+          "label": "Mirai Sale - Early Access Ends in: Shop Now"
+        }
+      },
+      "error": null
+    },
+    "43": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {
+        "offers": {
+          "url": "https://www.marchtee.com/clearance",
+          "label": "Clearance"
+        }
+      },
+      "error": null
+    },
+    "44": {
+      "status": "ok",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [
+        {
+          "id": "bb96c793674d5fe0",
+          "title": "JONEL-GY",
+          "url": "https://thebearhouse.com/products/jonel-gy",
+          "image": "https://thebearhouse.com/cdn/shop/files/JAC-JONEL-GY_3.webp?v=1791003040&width=1200",
+          "price": 3999,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://thebearhouse.com/collections/newarrival",
+          "isNew": false
+        },
+        {
+          "id": "0e905f2ed71d63ac",
+          "title": "LURAE-DB",
+          "url": "https://thebearhouse.com/products/lurae-db",
+          "image": "https://thebearhouse.com/cdn/shop/files/DNM-LURAE-DB_1.webp?v=1790933906&width=1200",
+          "price": 2599,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://thebearhouse.com/collections/newarrival",
+          "isNew": false
+        },
+        {
+          "id": "75be97fd325b4382",
+          "title": "AEGIS-MB",
+          "url": "https://thebearhouse.com/products/aegis-mb",
+          "image": "https://thebearhouse.com/cdn/shop/files/DNM-AEGIS-MB_1.webp?v=1790854638&width=1200",
+          "price": 2599,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://thebearhouse.com/collections/newarrival",
+          "isNew": false
+        },
+        {
+          "id": "6b8dacf38d79d07f",
+          "title": "MOZZY-BL",
+          "url": "https://thebearhouse.com/products/swe-mozzy-bl",
+          "image": "https://thebearhouse.com/cdn/shop/files/SWE-MOZZY-BL_1.webp?v=1790849336&width=1200",
+          "price": 3299,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://thebearhouse.com/collections/newarrival",
+          "isNew": false
+        }
+      ],
+      "offers": [
+        {
+          "id": "f494b9d9b2a2bfb4",
+          "title": "Cherlos",
+          "url": "https://thebearhouse.com/products/cherlos",
+          "image": "https://thebearhouse.com/cdn/shop/files/1_0dbcd3b4-2000-494a-b579-071bb35f762f.jpg?v=1753869551&width=1200",
+          "price": 998,
+          "originalPrice": 2495,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://thebearhouse.com/collections/tbh-sale",
+          "discountPercent": 60,
+          "observedAt": "2026-10-05T09:24:44.812Z"
+        },
+        {
+          "id": "aac3cbb2d28a981b",
+          "title": "Spice",
+          "url": "https://thebearhouse.com/products/spice",
+          "image": "https://thebearhouse.com/cdn/shop/products/3_9d33e4c5-6dd2-4e2d-91e5-6a01be821ed3.jpg?v=1753869571&width=1200",
+          "price": 997,
+          "originalPrice": 1995,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://thebearhouse.com/collections/tbh-sale",
+          "discountPercent": 50,
+          "observedAt": "2026-10-05T09:24:44.812Z"
+        },
+        {
+          "id": "8d2ff986cc7dd905",
+          "title": "Perth",
+          "url": "https://thebearhouse.com/products/perth",
+          "image": "https://thebearhouse.com/cdn/shop/products/3_f0965e4f-d292-40cb-bfc3-7f50350327f8.jpg?v=1753869555&width=1200",
+          "price": 998,
+          "originalPrice": 2495,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://thebearhouse.com/collections/tbh-sale",
+          "discountPercent": 60,
+          "observedAt": "2026-10-05T09:24:44.812Z"
+        }
+      ],
+      "sources": {
+        "designs": {
+          "url": "https://thebearhouse.com/collections/newarrival",
+          "label": "New Arrivals"
+        },
+        "offers": {
+          "url": "https://thebearhouse.com/collections/tbh-sale",
+          "label": "SALE"
+        }
+      },
+      "error": null
+    },
+    "45": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://www.damensch.com/men/new-arrivals",
+          "label": "new arrivals"
+        },
+        "offers": {
+          "url": "https://www.damensch.com/men/sale?ireftp=nav&iref=nav-sale",
+          "label": "Special Price"
+        }
+      },
+      "error": null
+    },
+    "46": {
+      "status": "ok",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [
+        {
+          "id": "61a5c78cc3ef1c96",
+          "title": "Japanese Black Straight Fit Pleated Formal Trousers",
+          "url": "https://pantproject.com/products/japanese-black-straight-fit-pleated-formal-trousers",
+          "image": "https://cdn.shopify.com/s/files/1/0423/3576/4634/files/02_bd6f52cf-7ce3-45a9-821a-3e83e26f9484.jpg?v=1784092313",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://pantproject.com/collections/new-arrivals-1",
+          "isNew": false
+        },
+        {
+          "id": "fd239e1542a2a7e1",
+          "title": "Japanese Brown Straight Fit Pleated Formal Trousers",
+          "url": "https://pantproject.com/products/japanese-brown-straight-fit-pleated-formal-trousers",
+          "image": "https://cdn.shopify.com/s/files/1/0423/3576/4634/files/03_1_c37899cb-6a9d-4828-a9d7-55ddab673016.jpg?v=1784092851",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://pantproject.com/collections/new-arrivals-1",
+          "isNew": false
+        },
+        {
+          "id": "b09ceec4dfe0b426",
+          "title": "Japanese Navy Straight Fit Pleated Formal Trousers",
+          "url": "https://pantproject.com/products/japanese-navy-straight-fit-pleated-formal-trousers",
+          "image": "https://cdn.shopify.com/s/files/1/0423/3576/4634/files/10_2b93da0f-ea84-4b7d-b4c2-f4d3246f473c.jpg?v=1784092518",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://pantproject.com/collections/new-arrivals-1",
+          "isNew": false
+        }
+      ],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://pantproject.com/collections/new-arrivals-1",
+          "label": "New Arrivals"
+        },
+        "offers": {
+          "url": "https://pantproject.com/collections/ready-to-wear-formal-trousers?ref_=nav_menu&filter.v.availability=1&utm_source=Empty+Cart+Formals&utm_medium=Empty+Cart&utm_campaign=Empty+Cart+Formals&utm_id=Sales&utm_term=Empty+Cart+Formals&utm_content=Empty+Cart+Formals",
+          "label": "Shop Formals"
+        }
+      },
+      "error": "Crawling disallowed or robots unavailable"
+    },
+    "47": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://louisphilippe.abfrl.in/c/new-arrivals",
+          "label": "NEW IN"
+        },
+        "offers": {
+          "url": "https://louisphilippe.abfrl.in/c/sale",
+          "label": "SALE"
+        }
+      },
+      "error": null
+    },
+    "48": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://vanheusenindia.abfrl.in/c/new-arrivals",
+          "label": "NEW ARRIVALS"
+        },
+        "offers": {
+          "url": "https://vanheusenindia.abfrl.in/shop/midsummerfest",
+          "label": "SALE"
+        }
+      },
+      "error": null
+    },
+    "49": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://allensolly.abfrl.in/c/latest-styles",
+          "label": "latest styles"
+        },
+        "offers": {
+          "url": "https://allensolly.abfrl.in/shop/allen-solly-sale",
+          "label": "SALE"
+        }
+      },
+      "error": null
+    },
+    "50": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://peterengland.abfrl.in/c/newarrivals",
+          "label": "NEW IN"
+        },
+        "offers": {
+          "url": "https://peterengland.abfrl.in/sale/vybe",
+          "label": "VYBE"
+        }
+      },
+      "error": null
+    },
+    "51": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {
+        "offers": {
+          "url": "https://blackberrys.com/collections/mid-season-sale",
+          "label": "mid season sale"
+        }
+      },
+      "error": null
+    },
+    "52": {
+      "status": "ok",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [
+        {
+          "id": "03a53ea2668794a9",
+          "title": "Oversized Moses Co-ord Set",
+          "url": "https://nobero.com/products/oversized-moses-co-ord-set-14",
+          "image": "https://nobero.com/cdn/shop/files/Olive_Green_982a3fa9-1842-450a-a583-c6f29878dbf9.jpg?v=1788438058",
+          "price": 1599,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://nobero.com/collections/new-arrivals",
+          "isNew": false
+        },
+        {
+          "id": "df4b71d2ddf1cfb4",
+          "title": "2-Pack Zip Pocket Joggers",
+          "url": "https://nobero.com/products/2-pack-zip-pocket-joggers-3",
+          "image": "https://nobero.com/cdn/shop/files/BlackArctic_841f6a33-bc4b-432a-b711-8d797a9c0eb8.jpg?v=1741675654",
+          "price": 1799,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://nobero.com/collections/new-arrivals",
+          "isNew": false
+        },
+        {
+          "id": "9be1f628226fe08b",
+          "title": "Oversized Moses Co-ord Set",
+          "url": "https://nobero.com/products/oversized-moses-co-ord-set-9",
+          "image": "https://nobero.com/cdn/shop/files/Mauve_4.jpg?v=1789725789",
+          "price": 1599,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://nobero.com/collections/new-arrivals",
+          "isNew": false
+        },
+        {
+          "id": "7ebd941c8c3cb6b9",
+          "title": "Oversized Moses Co-ord Set",
+          "url": "https://nobero.com/products/oversized-moses-co-ord-set-10",
+          "image": "https://nobero.com/cdn/shop/files/Sand_f7e99657-48de-443f-9ca6-06770adf6ccb.jpg?v=1788438059",
+          "price": 1599,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://nobero.com/collections/new-arrivals",
+          "isNew": false
+        }
+      ],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://nobero.com/collections/new-arrivals",
+          "label": "See the Latest Explore fash-leisure must-haves"
+        },
+        "offers": {
+          "url": "https://nobero.com/collections/pick-printed-t-shirts",
+          "label": "Sale Up to 60% off"
+        }
+      },
+      "error": null
+    },
+    "53": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://www.beyoung.in/mens-new-arrival",
+          "label": "New Arrivals"
+        },
+        "offers": {
+          "url": "https://www.beyoung.in/clearance-sale",
+          "label": ""
+        }
+      },
+      "error": null
+    },
+    "54": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {},
+      "error": null
+    },
+    "55": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://www.fablestreet.com/collections/celeb-bestsellers-new-arrivals",
+          "label": "celeb bestsellers new arrivals"
+        },
+        "offers": {
+          "url": "https://www.fablestreet.com/collections/sale-has-ended",
+          "label": "sale has ended"
+        }
+      },
+      "error": null
+    },
+    "56": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://www.andindia.com/new-arrivals",
+          "label": "New Arrivals"
+        },
+        "offers": {
+          "url": "https://www.andindia.com/sale",
+          "label": "Sale"
+        }
+      },
+      "error": null
+    },
+    "57": {
+      "status": "ok",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [
+        {
+          "id": "f76160562f8cf7ab",
+          "title": "Buy Alaris Button Detail Darted Dress-Wine Color | Dress for Women | SALT Attire",
+          "url": "https://saltattire.com/products/alaris-button-detail-darted-dress-wine-color",
+          "image": "https://saltattire.com/cdn/shop/files/1-3DRE-05-4250-1.jpg?v=1790745397",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://saltattire.com/collections/new-arrivals",
+          "isNew": false
+        },
+        {
+          "id": "4305e1441c4d0dfb",
+          "title": "Buy Spunky Ruched Sleeve Blazer-Mint Green Color | Blazer for Women | SALT Attire",
+          "url": "https://saltattire.com/products/spunky-ruched-sleeve-blazer-mint-green-color",
+          "image": "https://saltattire.com/cdn/shop/files/1-3BLA-05-1313-1.jpg?v=1790745307",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://saltattire.com/collections/new-arrivals",
+          "isNew": false
+        },
+        {
+          "id": "6f46208bd07c6004",
+          "title": "Buy Avoria Pleat Detail Wrap Dress-Teal Color | Dress for Women | SALT Attire",
+          "url": "https://saltattire.com/products/avoria-pleat-detail-wrap-dress-teal-color",
+          "image": "https://saltattire.com/cdn/shop/files/1-3DRE-05-1319-1.jpg?v=1790745472",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://saltattire.com/collections/new-arrivals",
+          "isNew": false
+        }
+      ],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://saltattire.com/collections/new-arrivals",
+          "label": "NEW IN"
+        },
+        "offers": {
+          "url": "https://saltattire.com/collections/sale",
+          "label": "SPECIAL PRICES"
+        }
+      },
+      "error": null
+    },
+    "58": {
+      "status": "ok",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [
+        {
+          "id": "72d03424493886b0",
+          "title": "Angular Peplum Set",
+          "url": "https://www.qua.clothing/products/angular-peplum-set-graphite",
+          "image": "https://www.qua.clothing/cdn/shop/files/QUA3599_1024x.jpg?v=1789782697",
+          "price": 6690,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://www.qua.clothing/collections/pre-fall-2026",
+          "isNew": false
+        },
+        {
+          "id": "c24bcaab7bd17629",
+          "title": "Smocked Tapered Set",
+          "url": "https://www.qua.clothing/products/smocked-tapered-set-black-and-umber-pinstripe",
+          "image": "https://www.qua.clothing/cdn/shop/files/QUA20908_1024x.jpg?v=1788423500",
+          "price": 6690,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://www.qua.clothing/collections/pre-fall-2026",
+          "isNew": false
+        },
+        {
+          "id": "f3e436e2f1c74c14",
+          "title": "Draped Tie Blouse",
+          "url": "https://www.qua.clothing/products/draped-tie-blouse-plum",
+          "image": "https://www.qua.clothing/cdn/shop/files/6_9c1f1311-85a6-4bb6-a659-81185aa4dc10_1024x.png?v=1789826066",
+          "price": 3495,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://www.qua.clothing/collections/pre-fall-2026",
+          "isNew": false
+        }
+      ],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://www.qua.clothing/collections/pre-fall-2026",
+          "label": "New In: Pre-Fall 2026"
+        },
+        "offers": {
+          "url": "https://www.qua.clothing/collections/sales",
+          "label": "Sales"
+        }
+      },
+      "error": null
+    },
+    "59": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://summeraway.in/collections/new-arrivals",
+          "label": "New"
+        },
+        "offers": {
+          "url": "https://summeraway.in/collections/sale",
+          "label": "Final Sale"
+        }
+      },
+      "error": null
+    },
+    "60": {
+      "status": "ok",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [
+        {
+          "id": "87ff4532478d3b0d",
+          "title": "Geometric Scarf Print Maxi Dress",
+          "url": "https://thelabellife.com/products/geometric-scarf-print-maxi-dress?variant=45332922237063",
+          "image": "https://thelabellife.com/cdn/shop/files/GeometricScarfPrintMaxiDress1_4041f9cb-8e9d-413a-b167-06cb9f94a1e5.jpg?v=1790144543&width=1200",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://thelabellife.com/collections/new-arrivals",
+          "isNew": false
+        },
+        {
+          "id": "dabbedee0dce89b4",
+          "title": "Geometric Scarf Print Shirt",
+          "url": "https://thelabellife.com/products/geometric-scarf-print-shirt?variant=45332922564743",
+          "image": "https://thelabellife.com/cdn/shop/files/GeometricScarfPrintShirt4_ea95a0da-4120-4d37-8585-62e93be0322a.jpg?v=1790144660&width=1200",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://thelabellife.com/collections/new-arrivals",
+          "isNew": false
+        },
+        {
+          "id": "2efc9d9e3a1f9c54",
+          "title": "Geometric Scarf Print Shirt Dress",
+          "url": "https://thelabellife.com/products/geometric-scarf-print-shirt-dress?variant=45332922400903",
+          "image": "https://thelabellife.com/cdn/shop/files/GeometricScarfPrintShirtDress1.jpg?v=1785131104&width=1200",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://thelabellife.com/collections/new-arrivals",
+          "isNew": false
+        },
+        {
+          "id": "c1eabefc4c54fea3",
+          "title": "Royal Blue Checked Pleated Dress",
+          "url": "https://thelabellife.com/products/royal-blue-checked-pleated-dress?variant=45332921548935",
+          "image": "https://thelabellife.com/cdn/shop/files/RoyalBlueCheckedPleatedDress1.jpg?v=1785131801&width=1200",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://thelabellife.com/collections/new-arrivals",
+          "isNew": false
+        }
+      ],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://thelabellife.com/collections/new-arrivals",
+          "label": "NEW SEASON, NEW ARRIVALS"
+        },
+        "offers": {
+          "url": "https://thelabellife.com/collections/new-on-sale",
+          "label": "NEW ON SALE"
+        }
+      },
+      "error": null
+    },
+    "61": {
+      "status": "ok",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [
+        {
+          "id": "90b210ce3786ac74",
+          "title": "Frida Dress",
+          "url": "https://www.cordstudio.in/products/frida-dress-fs26-fdadrs-bf",
+          "image": "https://www.cordstudio.in/cdn/shop/files/NewProject_48_08f49179-a502-41e0-afa0-7e006eb3a0e4.jpg?v=1787753180",
+          "price": 17500,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://www.cordstudio.in/collections/women-new-arrivals",
+          "isNew": false
+        },
+        {
+          "id": "c40025f0e0b09ca4",
+          "title": "July Dress",
+          "url": "https://www.cordstudio.in/products/july-dress-fs26-jlydrs-flrt",
+          "image": "https://www.cordstudio.in/cdn/shop/files/NewProject_59_065ee690-ec87-43db-92db-11450ea4fa1c.jpg?v=1787753807",
+          "price": 19200,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://www.cordstudio.in/collections/women-new-arrivals",
+          "isNew": false
+        }
+      ],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://www.cordstudio.in/collections/women-new-arrivals",
+          "label": "NEW IN"
+        },
+        "offers": {
+          "url": "https://www.cordstudio.in/collections/surprise-sale-flat-20-off",
+          "label": "surprise sale flat 20 off"
+        }
+      },
+      "error": null
+    },
+    "62": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://thesummerhouse.in/collections/new-sustainable-styles",
+          "label": "New Arrivals"
+        },
+        "offers": {
+          "url": "https://thesummerhouse.in/collections/dresses-sale",
+          "label": "dresses sale"
+        }
+      },
+      "error": null
+    },
+    "63": {
+      "status": "ok",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [
+        {
+          "id": "d5f9eec715c3422e",
+          "title": "Ivory Trousers",
+          "url": "https://kazo.com/products/kz02215",
+          "image": "https://kazo.com/cdn/shop/files/1_64afb2ae-e243-4d62-9dd8-87787b2fa830_1080x.jpg?v=1790769405",
+          "price": 3490,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://kazo.com/collections/kazo-new-arrivals",
+          "isNew": false
+        }
+      ],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://kazo.com/collections/kazo-new-arrivals",
+          "label": "NEW ARRIVALS"
+        },
+        "offers": {
+          "url": "https://kazo.com/collections/end-of-season-sale",
+          "label": "SALE"
+        }
+      },
+      "error": null
+    },
+    "64": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {},
+      "error": null
+    },
+    "65": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://www.nicobar.com/collections/firefly",
+          "label": "NEW IN: FIREFLY FOR FESTIVE"
+        },
+        "offers": {
+          "url": "https://www.nicobar.com/collections/employee-discount",
+          "label": "employee discount"
+        }
+      },
+      "error": null
+    },
+    "66": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://www.fabindia.com/shop/new-arrivals",
+          "label": "new arrivals"
+        },
+        "offers": {
+          "url": "https://www.fabindia.com/shop/sale",
+          "label": "sale"
+        }
+      },
+      "error": null
+    },
+    "67": {
+      "status": "ok",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [
+        {
+          "id": "81bba76593ef1dce",
+          "title": "Gerua Beige Floral Printed Cotton Blend Straight Suit Set With Dupatta",
+          "url": "https://www.libas.in/products/beige-floral-printed-cotton-blend-straight-suit-set-with-dupatta-gs1547",
+          "image": "https://www.libas.in/cdn/shop/files/GS1547_7Main_1024x1024.jpg?v=1780655640",
+          "price": 939,
+          "originalPrice": 3499,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:04:26.023Z",
+          "sourceUrl": "https://www.libas.in/collections/new-arrivals",
+          "isNew": false
+        },
+        {
+          "id": "23fc9cf53202d4af",
+          "title": "Libas Red Cotton Co-Ord Set",
+          "url": "https://www.libas.in/products/libas-red-cotton-co-ord-set-93540",
+          "image": "https://www.libas.in/cdn/shop/files/Libas-Red-Cotton-Co-Ord-Set-93540_c44a9dd3-dcc7-4813-92e7-e2f521d3343b_1024x1024.jpg?v=1789638621",
+          "price": 1129,
+          "originalPrice": 3299,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:04:26.023Z",
+          "sourceUrl": "https://www.libas.in/collections/new-arrivals",
+          "isNew": false
+        },
+        {
+          "id": "a0b51b9a7a65c179",
+          "title": "Gerua Pink Floral Printed Straight Suit Set With Dupatta",
+          "url": "https://www.libas.in/products/pink-floral-printed-cotton-blend-straight-suit-set-with-dupatta-gs1555",
+          "image": "https://www.libas.in/cdn/shop/files/GS1555_6Main_1024x1024.jpg?v=1780655344",
+          "price": 859,
+          "originalPrice": 3499,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:04:26.023Z",
+          "sourceUrl": "https://www.libas.in/collections/new-arrivals",
+          "isNew": false
+        },
+        {
+          "id": "529117ccd5e7a6d2",
+          "title": "Libas Rust Woven Design Silk Blend A-Line Suit Set With Dupatta",
+          "url": "https://www.libas.in/products/rust-woven-design-silk-blend-a-line-suit-set-with-dupatta-56637",
+          "image": "https://www.libas.in/cdn/shop/files/56637_7_Main_f73ae148-4a81-48df-9fec-ec3e8b1ed82e_1024x1024.jpg?v=1780644195",
+          "price": 2619,
+          "originalPrice": 6999,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:04:26.023Z",
+          "sourceUrl": "https://www.libas.in/collections/new-arrivals",
+          "isNew": false
+        }
+      ],
+      "offers": [
+        {
+          "id": "d250ac54a39f6e71",
+          "title": "Libas Teal Embroidered Silk Blend Straight Suit Set With Dupatta",
+          "url": "https://www.libas.in/products/teal-embroidered-silk-blend-straight-suit-set-with-dupatta-49541",
+          "image": "https://www.libas.in/cdn/shop/files/49541_8Main_1024x1024.jpg?v=1755938899",
+          "price": 1289,
+          "originalPrice": 3999,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:04:26.023Z",
+          "sourceUrl": "https://www.libas.in/collections/sale",
+          "discountPercent": 68,
+          "observedAt": "2026-10-05T09:24:44.812Z"
+        },
+        {
+          "id": "4fb4621296516263",
+          "title": "Gerua Black Ethnic Motifs Printed A-Line Suit Set With Dupatta",
+          "url": "https://www.libas.in/products/black-ethnic-motifs-printed-cotton-blend-a-line-suit-set-with-dupatta-gs1145",
+          "image": "https://www.libas.in/cdn/shop/files/GS1145Main_1024x1024.jpg?v=1776931644",
+          "price": 1139,
+          "originalPrice": 3599,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:04:26.023Z",
+          "sourceUrl": "https://www.libas.in/collections/sale",
+          "discountPercent": 68,
+          "observedAt": "2026-10-05T09:24:44.812Z"
+        },
+        {
+          "id": "dc25214ddb79539f",
+          "title": "Plus Size Mauve Printed Cotton Straight Suit Set With Dupatta",
+          "url": "https://www.libas.in/products/plus-size-mauve-printed-cotton-straight-suit-set-with-dupatta-15901r",
+          "image": "https://www.libas.in/cdn/shop/files/15901_8Main_1024x1024.jpg?v=1776246179",
+          "price": 1389,
+          "originalPrice": 4949,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:04:26.023Z",
+          "sourceUrl": "https://www.libas.in/collections/sale",
+          "discountPercent": 72,
+          "observedAt": "2026-10-05T09:24:44.812Z"
+        },
+        {
+          "id": "b4146612e7b5ebb0",
+          "title": "Gerua Anya-Cut Sunlit Striped Suit Set",
+          "url": "https://www.libas.in/products/yellow-striped-woven-design-cotton-blend-straight-suit-set-with-dupatta-gs1243",
+          "image": "https://www.libas.in/cdn/shop/files/GS1243Main_1024x1024.jpg?v=1776931691",
+          "price": 1049,
+          "originalPrice": 3199,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:04:26.023Z",
+          "sourceUrl": "https://www.libas.in/collections/sale",
+          "discountPercent": 67,
+          "observedAt": "2026-10-05T09:24:44.812Z"
+        }
+      ],
+      "sources": {
+        "designs": {
+          "url": "https://www.libas.in/collections/new-arrivals",
+          "label": "Fresh Arrivals"
+        },
+        "offers": {
+          "url": "https://www.libas.in/collections/sale",
+          "label": "Libas Fashion Festival 50-70% OFF"
+        }
+      },
+      "error": null
+    },
+    "68": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {
+        "offers": {
+          "url": "https://www.biba.in/sale/",
+          "label": "Sale"
+        }
+      },
+      "error": null
+    },
+    "69": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://wforwoman.com/collections/new",
+          "label": "New In"
+        },
+        "offers": {
+          "url": "https://wforwoman.com/collections/sale",
+          "label": "Sale"
+        }
+      },
+      "error": null
+    },
+    "70": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://www.soch.com/in/new.html",
+          "label": "New In!"
+        },
+        "offers": {
+          "url": "https://www.soch.com/in/sale.html",
+          "label": "Sale"
+        }
+      },
+      "error": null
+    },
+    "71": {
+      "status": "ok",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [
+        {
+          "id": "c629d0fca5d8e0a6",
+          "title": "Aakari",
+          "url": "https://suta.in/products/aakari",
+          "image": "https://suta.in/cdn/shop/files/DSC05335.jpg?v=1737547696&width=2048",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://suta.in/collections/new-arrival-sarees",
+          "isNew": false
+        },
+        {
+          "id": "08f04fe000dc8d7a",
+          "title": "Aafaaq Sakhi",
+          "url": "https://suta.in/products/aafaaq-sakhi",
+          "image": "https://suta.in/cdn/shop/products/aafaaq-sakhi-327530.jpg?v=1684840803&width=1920",
+          "price": 4800,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://suta.in/collections/new-arrival-sarees",
+          "isNew": false
+        },
+        {
+          "id": "ad6240baf926243b",
+          "title": "Kavyam",
+          "url": "https://suta.in/products/kavyam",
+          "image": "https://suta.in/cdn/shop/files/3kavya1.jpg?v=1753807220&width=1920",
+          "price": 3895,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://suta.in/collections/new-arrival-sarees",
+          "isNew": false
+        }
+      ],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://suta.in/collections/new-arrival-sarees",
+          "label": "New Arrivals NEW"
+        },
+        "offers": {
+          "url": "https://suta.in/collections/sale",
+          "label": "🔥 DIL WALI SALE IS LIVE 🔥 ✨ UPTO 60% OFF SITEWIDE 🛍️ 🎁 SHOP ABOVE 30K — GET ADDITIONAL 10% OFF 💸 SHOP ABOVE 20K — GET ADDITIONAL 5% OFF"
+        }
+      },
+      "error": null
+    },
+    "72": {
+      "status": "ok",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [
+        {
+          "id": "0a765678ad2e4334",
+          "title": "Okhai \"Caspia\" Cotton Handloom Antifit Dress",
+          "url": "https://okhai.org/products/okhai-caspia-cotton-handloom-antifit-dress",
+          "image": "https://okhai.org/cdn/shop/files/LSD26541300_1_Hero.webp?v=1779788861&width=1920",
+          "price": 5800,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://okhai.org/collections/okhai-store-new-arrival-sarees-new-arrivals-dresses-online",
+          "isNew": false
+        }
+      ],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://okhai.org/collections/okhai-store-new-arrival-sarees-new-arrivals-dresses-online",
+          "label": "New Arrivals"
+        },
+        "offers": {
+          "url": "https://okhai.org/collections/sale-all",
+          "label": "Sale All"
+        }
+      },
+      "error": null
+    },
+    "73": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://www.houseofindya.com/men-clothing/new-arrival/cat",
+          "label": "New Arrivals"
+        },
+        "offers": {
+          "url": "https://www.houseofindya.com/wholesale",
+          "label": "Wholesale"
+        }
+      },
+      "error": null
+    },
+    "74": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://www.aachho.com/collections/new-arrivals",
+          "label": "New"
+        },
+        "offers": {
+          "url": "https://www.aachho.com/collections/sos-sale",
+          "label": "TYOHAR Sale"
+        }
+      },
+      "error": null
+    },
+    "75": {
+      "status": "ok",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [
+        {
+          "id": "a9506f0146bededa",
+          "title": "Red Halter Neck Kurta Set",
+          "url": "https://ambraee.com/products/red-halter-neck-kurta-set?variant=50906268991782",
+          "image": "https://ambraee.com/cdn/shop/files/Project_20250716_0001_afb78e0f-f767-4902-9ef3-3923b342181f.jpg?v=1755066897",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://ambraee.com/collections/solid-new-arrivals",
+          "isNew": false
+        },
+        {
+          "id": "1debaed53575d9c0",
+          "title": "Buy V-Neck Orange Chanderi Co-ord Set Online in India",
+          "url": "https://ambraee.com/products/v-neck-orange-chanderi-co-ord-set?variant=50172342632742",
+          "image": "https://ambraee.com/cdn/shop/files/17_21051cea-6127-434f-8cd4-f3cdb51ebd7f.jpg?v=1740471620",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://ambraee.com/collections/solid-new-arrivals",
+          "isNew": false
+        },
+        {
+          "id": "c67e5bcf9c3ff817",
+          "title": "Buy Blue Cotton Crop Top & Palazzo Set Online in India",
+          "url": "https://ambraee.com/products/blue-cotton-crop-top-palazzo-set?variant=50172353085734",
+          "image": "https://ambraee.com/cdn/shop/files/23_2ba30de8-30a8-4739-b484-78d319946ab7.jpg?v=1740471122",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://ambraee.com/collections/solid-new-arrivals",
+          "isNew": false
+        },
+        {
+          "id": "a22400ae9964a056",
+          "title": "Buy Tie-up Detailed Cotton Kurta Set Online in India",
+          "url": "https://ambraee.com/products/tie-up-detailed-cotton-kurta-set?variant=50172371763494",
+          "image": "https://ambraee.com/cdn/shop/files/5_af45b70c-f282-4f61-89d9-9edf6a4ceb2b.jpg?v=1740469388",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://ambraee.com/collections/solid-new-arrivals",
+          "isNew": false
+        }
+      ],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://ambraee.com/collections/solid-new-arrivals",
+          "label": "Solid"
+        },
+        "offers": {
+          "url": "https://ambraee.com/collections/on-demand-sale",
+          "label": ""
+        }
+      },
+      "error": null
+    },
+    "76": {
+      "status": "ok",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [
+        {
+          "id": "7b288a9f20eb3a60",
+          "title": "Belle Fleur Maxi Dress",
+          "url": "https://www.bunastudio.com/products/belle-fleur-maxi-dress",
+          "image": "https://www.bunastudio.com/cdn/shop/files/AC01-BelleFleurMaxiDress05.jpg?v=1786516725&width=1024",
+          "price": 17800,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://www.bunastudio.com/collections/under-the-peach-tree",
+          "isNew": false
+        },
+        {
+          "id": "6e6f8f619edd5f4c",
+          "title": "Once Upon a Blush Dress",
+          "url": "https://www.bunastudio.com/products/once-upon-a-blush-dress",
+          "image": "https://www.bunastudio.com/cdn/shop/files/AC02-OnceUponaBlushDress03.jpg?v=1786517677&width=1024",
+          "price": 17400,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://www.bunastudio.com/collections/under-the-peach-tree",
+          "isNew": false
+        },
+        {
+          "id": "4ed6eee5b96e9eac",
+          "title": "Woven by Starlight Maxi Dress",
+          "url": "https://www.bunastudio.com/products/woven-by-starlight-maxi-dress",
+          "image": "https://www.bunastudio.com/cdn/shop/files/AC08-WovenbyStarlightMaxiDress01.jpg?v=1786521933&width=1024",
+          "price": 27600,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://www.bunastudio.com/collections/under-the-peach-tree",
+          "isNew": false
+        },
+        {
+          "id": "b1b13ff45aa520dc",
+          "title": "Flax Threads Shirt Dress",
+          "url": "https://www.bunastudio.com/products/flax-threads-shirt-dress",
+          "image": "https://www.bunastudio.com/cdn/shop/files/AC14-FlaxThreadsShirtDress06.jpg?v=1786525933&width=1024",
+          "price": 25400,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://www.bunastudio.com/collections/under-the-peach-tree",
+          "isNew": false
+        }
+      ],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://www.bunastudio.com/collections/under-the-peach-tree",
+          "label": "New Arrivals"
+        }
+      },
+      "error": null
+    },
+    "77": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://cottonsjaipur.com/collections/new-arrivals",
+          "label": "New Arrivals"
+        }
+      },
+      "error": null
+    },
+    "78": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://www.manyavar.com/en-in/men/new-arrivals",
+          "label": "NEW ARRIVALS"
+        }
+      },
+      "error": null
+    },
+    "79": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://www.tasva.com/c/new-arrivals-in-ethnic-wear-for-men",
+          "label": "New Arrival"
+        }
+      },
+      "error": null
+    },
+    "80": {
+      "status": "ok",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [
+        {
+          "id": "64be26d3faa236ac",
+          "title": "trueBrowns Mustard and Purple Gold Foil Print Muslin Silk Jacket Set",
+          "url": "https://www.truebrowns.com/products/truebrowns-mustard-and-purple-gold-foil-print-muslin-silk-jacket-set",
+          "image": "https://www.truebrowns.com//www.truebrowns.com/cdn/shop/files/0_72311984-225b-4b64-9543-1ab0c496412b_small.webp?v=1757496779",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://www.truebrowns.com/collections/new-arrival",
+          "isNew": false
+        },
+        {
+          "id": "8bb6dcbe7a3084a7",
+          "title": "trueBrowns Magenta Gold Foil Print Muslin Silk Asymmetric One-Shoulder Kurta Co-ord Set",
+          "url": "https://www.truebrowns.com/products/truebrowns-magenta-gold-foil-print-muslin-silk-asymmetric-one-shoulder-kurta-co-ord-set",
+          "image": "https://www.truebrowns.com//www.truebrowns.com/cdn/shop/files/0_a96d9b7d-fce4-4ed8-9d02-d184717a29e1_small.webp?v=1757495658",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://www.truebrowns.com/collections/new-arrival",
+          "isNew": false
+        },
+        {
+          "id": "ac08a0bbd4f2916c",
+          "title": "trueBrowns Light Green Pink Jaal Print Viscose Jacket and Flared Pants Co-ord Set",
+          "url": "https://www.truebrowns.com/products/truebrowns-light-green-pink-jaal-print-viscose-jacket-and-flared-pants-co-ord-set",
+          "image": "https://www.truebrowns.com//www.truebrowns.com/cdn/shop/files/0_6cf191d3-5c77-4947-a51d-daaec92be9ed_small.webp?v=1757495069",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://www.truebrowns.com/collections/new-arrival",
+          "isNew": false
+        },
+        {
+          "id": "d9e64e55153040a0",
+          "title": "trueBrowns Pink Gold Foil Print Muslin Silk Flared Kurta Set",
+          "url": "https://www.truebrowns.com/products/truebrowns-pink-gold-foil-print-muslin-silk-flared-kurta-set",
+          "image": "https://www.truebrowns.com//www.truebrowns.com/cdn/shop/files/0_f33fb1ac-88b6-43ed-9e8f-403b5b87d719_small.webp?v=1757495772",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://www.truebrowns.com/collections/new-arrival",
+          "isNew": false
+        }
+      ],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://www.truebrowns.com/collections/new-arrival",
+          "label": "New Arrivals - Limited Edition"
+        },
+        "offers": {
+          "url": "https://www.truebrowns.com/collections/sale-1",
+          "label": "sale 1"
+        }
+      },
+      "error": null
+    },
+    "81": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {
+        "offers": {
+          "url": "https://tilfi.com/pages/retail-sales-advisor-1",
+          "label": "retail sales advisor 1"
+        }
+      },
+      "error": null
+    },
+    "82": {
+      "status": "error",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {},
+      "error": "Source HTTP 403"
+    },
+    "83": {
+      "status": "ok",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [
+        {
+          "id": "49333cde934a01fe",
+          "title": "Parthi Lurex Organza Teal Blue Saree",
+          "url": "https://shopmulmul.com/products/mulmul-lurex-organza-parthi-teal-blue-saree",
+          "image": "https://shopmulmul.com/cdn/shop/files/62_cba3c0e2-e4cb-4a99-9bb9-da4d7541d222.jpg?v=1790230934&width=1024",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://shopmulmul.com/collections/new-in",
+          "isNew": false
+        },
+        {
+          "id": "1f40e0f4b56ab91e",
+          "title": "Yaira Cupro Satin Fuchsia Kurta Set",
+          "url": "https://shopmulmul.com/products/mulmul-cupro-satin-yaira-fuschia-kurta-with-mulmul-cupro-satin-yaira-fuschia-pant",
+          "image": "https://shopmulmul.com/cdn/shop/files/25_7fa60eba-4c03-471a-a0c5-8cae10eb7f09.jpg?v=1790166152&width=1024",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://shopmulmul.com/collections/new-in",
+          "isNew": false
+        },
+        {
+          "id": "17bb3d110adeda53",
+          "title": "Surkhi Cupro Satin Emerald Green Kurta with Garara",
+          "url": "https://shopmulmul.com/products/mulmul-cupro-satin-surkhi-emerald-green-kurta-with-mulmul-cupro-satin-surkhi-purple-pant",
+          "image": "https://shopmulmul.com/cdn/shop/files/28_0091d0e6-19d8-4ac8-852a-ff5bd737e20a.jpg?v=1790166098&width=1024",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://shopmulmul.com/collections/new-in",
+          "isNew": false
+        },
+        {
+          "id": "b9e0425d45a5cc9e",
+          "title": "Rimya Bemberg Raw Silk Lime Kurta Set",
+          "url": "https://shopmulmul.com/products/mulmul-bemberg-raw-silk-rimya-lime-kurta-with-mulmul-bemberg-raw-silk-rimya-lime-pant",
+          "image": "https://shopmulmul.com/cdn/shop/files/11_d7b150f3-bfa9-4c3a-83ed-a01aca6d00c4.jpg?v=1790165733&width=1024",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://shopmulmul.com/collections/new-in",
+          "isNew": false
+        }
+      ],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://shopmulmul.com/collections/new-in",
+          "label": "New In"
+        },
+        "offers": {
+          "url": "https://shopmulmul.com/collections/happiness-sale",
+          "label": "Happiness Sale"
+        }
+      },
+      "error": null
+    },
+    "84": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {},
+      "error": null
+    },
+    "85": {
+      "status": "ok",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [
+        {
+          "id": "29d24462598d5a8f",
+          "title": "Deep pink flared Leheriya Kurta & pants Set with Kota Dupatta",
+          "url": "https://terhataali.com/collections/new-arrivals/products/deep-pink-flared-leheriya-kurta-pants-set-with-kota-dupatta",
+          "image": "https://terhataali.com/cdn/shop/files/leheriya-rani-a-s_5.jpg?crop=center&height=1200&v=1758533183&width=1200",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://terhataali.com/collections/new-arrivals",
+          "isNew": false
+        },
+        {
+          "id": "5fd7c54cb891812d",
+          "title": "Deep pink flared Leheriya Kurta & pants Set with Kota Dupatta",
+          "url": "https://terhataali.com/products/deep-pink-flared-leheriya-kurta-pants-set-with-kota-dupatta",
+          "image": "https://terhataali.com/cdn/shop/files/leheriya-rani-a-s_5.jpg?crop=center&height=1200&v=1758533183&width=1200",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://terhataali.com/collections/new-arrivals",
+          "isNew": false
+        },
+        {
+          "id": "961fbdd50436be56",
+          "title": "Warm Beige Dabu Print Co-ord Set with Mirror & Thread Work Kurta and C",
+          "url": "https://terhataali.com/collections/new-arrivals/products/warm-beige-dabu-print-co-ord-set-with-mirror-thread-work-kurta-and-contrast-multicolor-stripe-pants",
+          "image": "https://terhataali.com/cdn/shop/files/CO-BEIGE-BAGRU-01_1.jpg?crop=center&height=1200&v=1758873637&width=1200",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://terhataali.com/collections/new-arrivals",
+          "isNew": false
+        },
+        {
+          "id": "8a2092e33dbc944b",
+          "title": "Warm Beige Dabu Print Co-ord Set with Mirror & Thread Work Kurta and C",
+          "url": "https://terhataali.com/products/warm-beige-dabu-print-co-ord-set-with-mirror-thread-work-kurta-and-contrast-multicolor-stripe-pants",
+          "image": "https://terhataali.com/cdn/shop/files/CO-BEIGE-BAGRU-01_1.jpg?crop=center&height=1200&v=1758873637&width=1200",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://terhataali.com/collections/new-arrivals",
+          "isNew": false
+        }
+      ],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://terhataali.com/collections/new-arrivals",
+          "label": "New Arrivals"
+        }
+      },
+      "error": null
+    },
+    "86": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {
+        "offers": {
+          "url": "https://blissclub.com/pages/march-and-move-sale",
+          "label": "march and move sale"
+        }
+      },
+      "error": null
+    },
+    "87": {
+      "status": "ok",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [
+        {
+          "id": "40eeb440fdf35057",
+          "title": "Berry Ruched Flared Leggings",
+          "url": "https://cavaathleisure.com/products/berry-ruched-flared-leggings",
+          "image": "https://cavaathleisure.com/cdn/shop/files/1_012f59d8-e102-4380-9e0e-7537b9dc8142_1024x1024.jpg?v=1788027350",
+          "price": 2299,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://cavaathleisure.com/collections/soft-serve",
+          "isNew": false
+        },
+        {
+          "id": "b38d383f328ab02b",
+          "title": "Berry Lace Scoop Neck Top",
+          "url": "https://cavaathleisure.com/products/berry-lace-scoop-neck-top",
+          "image": "https://cavaathleisure.com/cdn/shop/files/1_b30f45b3-7ee7-40c0-ba39-4385820b2b56_1024x1024.jpg?v=1787999957",
+          "price": 1699,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://cavaathleisure.com/collections/soft-serve",
+          "isNew": false
+        }
+      ],
+      "offers": [
+        {
+          "id": "3fa0e42e871fc4d3",
+          "title": "Black Techpique Sleeveless Polo",
+          "url": "https://cavaathleisure.com/products/black-techpique-sleeveless-polo",
+          "image": "https://cavaathleisure.com/cdn/shop/files/14_0142_1024x1024.jpg?v=1760642867",
+          "price": 800,
+          "originalPrice": 1599,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://cavaathleisure.com/collections/women-sale",
+          "discountPercent": 50,
+          "observedAt": "2026-10-05T09:24:44.812Z"
+        },
+        {
+          "id": "a23e68ca41e4a466",
+          "title": "Sand Ease Wrap Top",
+          "url": "https://cavaathleisure.com/products/taupe-ease-wrap-top",
+          "image": "https://cavaathleisure.com/cdn/shop/files/08_2235_1024x1024.jpg?v=1760643166",
+          "price": 660,
+          "originalPrice": 2199,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://cavaathleisure.com/collections/women-sale",
+          "discountPercent": 70,
+          "observedAt": "2026-10-05T09:24:44.812Z"
+        }
+      ],
+      "sources": {
+        "designs": {
+          "url": "https://cavaathleisure.com/collections/soft-serve",
+          "label": "Khushi Kapoor x Cava Latest Drop"
+        },
+        "offers": {
+          "url": "https://cavaathleisure.com/collections/women-sale",
+          "label": "Sale"
+        }
+      },
+      "error": null
+    },
+    "88": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {
+        "offers": {
+          "url": "https://www.technosport.in/sale/performance-wear",
+          "label": ""
+        }
+      },
+      "error": null
+    },
+    "89": {
+      "status": "ok",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [
+        {
+          "id": "5dcac2939d42f392",
+          "title": "Graphic Performance Leggings Red Marks",
+          "url": "https://www.silvertraq.com/products/graphic-performance-luxe-leggings-red-marks",
+          "image": "https://www.silvertraq.com/cdn/shop/products/W274REDMARKS-6779.jpg?v=1724743888&width=1024",
+          "price": 999,
+          "originalPrice": 2999,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://www.silvertraq.com/collections/new-collection",
+          "isNew": false
+        }
+      ],
+      "offers": [
+        {
+          "id": "bbbc44285de4a81f",
+          "title": "CottonFlex Leggings Java",
+          "url": "https://www.silvertraq.com/products/cottonflex-leggings-java",
+          "image": "https://www.silvertraq.com/cdn/shop/files/1_690a9f81-8f50-44dd-94ef-ca8a6f9e33af.jpg?v=1790578890&width=1024",
+          "price": 1399,
+          "originalPrice": 2199,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://www.silvertraq.com/collections/traqsteal-sale",
+          "discountPercent": 36,
+          "observedAt": "2026-10-05T09:24:44.812Z"
+        },
+        {
+          "id": "c858c1a4ccaada0e",
+          "title": "Traq PaceLine Pants Black",
+          "url": "https://www.silvertraq.com/products/traq-paceline-pants-black",
+          "image": "https://www.silvertraq.com/cdn/shop/files/4THSEP2026SILVERTRAQ4860.jpg?v=1790579961&width=1024",
+          "price": 1999,
+          "originalPrice": 3699,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://www.silvertraq.com/collections/traqsteal-sale",
+          "discountPercent": 46,
+          "observedAt": "2026-10-05T09:24:44.812Z"
+        },
+        {
+          "id": "cee9ff22357f7194",
+          "title": "CottonFlex Sports Bra Java",
+          "url": "https://www.silvertraq.com/products/cottonflex-sports-bra-java",
+          "image": "https://www.silvertraq.com/cdn/shop/files/1_2729337e-7d29-42f4-a493-73f7d114bf80.jpg?v=1790579092&width=1024",
+          "price": 1399,
+          "originalPrice": 1999,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://www.silvertraq.com/collections/traqsteal-sale",
+          "discountPercent": 30,
+          "observedAt": "2026-10-05T09:24:44.812Z"
+        },
+        {
+          "id": "27478d19c0200d38",
+          "title": "TraqGo Tee Pine Moss",
+          "url": "https://www.silvertraq.com/products/traqgo-tee-pine-moss",
+          "image": "https://www.silvertraq.com/cdn/shop/files/1_0a963aae-ecb8-4e59-9507-e72374aabdd7.jpg?v=1789037232&width=1024",
+          "price": 899,
+          "originalPrice": 1999,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://www.silvertraq.com/collections/traqsteal-sale",
+          "discountPercent": 55,
+          "observedAt": "2026-10-05T09:24:44.812Z"
+        }
+      ],
+      "sources": {
+        "designs": {
+          "url": "https://www.silvertraq.com/collections/new-collection",
+          "label": "new collection"
+        },
+        "offers": {
+          "url": "https://www.silvertraq.com/collections/traqsteal-sale",
+          "label": "SHOP"
+        }
+      },
+      "error": null
+    },
+    "90": {
+      "status": "ok",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [
+        {
+          "id": "ba9b7e63818335ef",
+          "title": "White Renee Dress - Ready To Ship",
+          "url": "https://www.angrakhaa.com/products/white-renee-dress-ready-to-ship",
+          "image": "https://www.angrakhaa.com/cdn/shop/files/B_W_49c3db12-26fa-4af6-a508-bd54f994ce92.jpg?v=1739284147&width=2048",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:24:44.812Z",
+          "sourceUrl": "https://www.angrakhaa.com/collections/new-arrivals",
+          "isNew": true
+        },
+        {
+          "id": "f02f2c04a11e3347",
+          "title": "Miranda Set - Ready To Ship",
+          "url": "https://www.angrakhaa.com/products/miranda-set-ready-to-ship-1",
+          "image": "https://www.angrakhaa.com/cdn/shop/files/B_W_49c3db12-26fa-4af6-a508-bd54f994ce92.jpg?v=1739284147&width=2048",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:24:44.812Z",
+          "sourceUrl": "https://www.angrakhaa.com/collections/new-arrivals",
+          "isNew": true
+        },
+        {
+          "id": "17677d550bcb2c62",
+          "title": "Beige Mehar Dress - Ready To Ship",
+          "url": "https://www.angrakhaa.com/products/beige-mehar-dress-ready-to-ship",
+          "image": "https://www.angrakhaa.com/cdn/shop/files/B_W_49c3db12-26fa-4af6-a508-bd54f994ce92.jpg?v=1739284147&width=2048",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:24:44.812Z",
+          "sourceUrl": "https://www.angrakhaa.com/collections/new-arrivals",
+          "isNew": true
+        },
+        {
+          "id": "dbb4fd1e27913a73",
+          "title": "Fuchsia Mehar Dress - Ready To Ship",
+          "url": "https://www.angrakhaa.com/products/fuchsia-mehar-dress-ready-to-ship",
+          "image": "https://www.angrakhaa.com/cdn/shop/files/B_W_49c3db12-26fa-4af6-a508-bd54f994ce92.jpg?v=1739284147&width=2048",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:24:44.812Z",
+          "sourceUrl": "https://www.angrakhaa.com/collections/new-arrivals",
+          "isNew": true
+        }
+      ],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://www.angrakhaa.com/collections/new-arrivals",
+          "label": "NEW ARRIVALS"
+        },
+        "offers": {
+          "url": "https://www.angrakhaa.com/collections/stock-clearance-sale",
+          "label": "stock clearance sale"
+        }
+      },
+      "error": null
+    },
+    "91": {
+      "status": "ok",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [
+        {
+          "id": "4fcac5d17e3c4044",
+          "title": "Mountain Mail Denim Jacket",
+          "url": "https://crepdogcrew.com/products/mountain-mail-denim-jacket",
+          "image": "https://crepdogcrew.com/cdn/shop/files/front-01.png?v=1791025280&width=2048",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://crepdogcrew.com/collections/new-arrivals",
+          "isNew": false
+        },
+        {
+          "id": "1ac66a413b8fba95",
+          "title": "adidas Adizero Evo SL Black White",
+          "url": "https://crepdogcrew.com/products/adidas-adizero-evo-sl-black-white",
+          "image": "https://crepdogcrew.com/cdn/shop/files/ONE_RANDOM_ITEM_PER_4f9780bd-c7fd-4e73-99f0-9810ed1e93bb.png?v=1785311323&width=2048",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://crepdogcrew.com/collections/new-arrivals",
+          "isNew": false
+        },
+        {
+          "id": "4ca8b7f1dbf1b337",
+          "title": "Google Fitbit Air Classic",
+          "url": "https://crepdogcrew.com/products/google-fitbit-air-classic",
+          "image": "https://crepdogcrew.com/cdn/shop/files/1_f7cc5d90-8ff9-45ff-8587-821805ab3936.png?v=1782805551&width=2048",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://crepdogcrew.com/collections/new-arrivals",
+          "isNew": false
+        }
+      ],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://crepdogcrew.com/collections/new-arrivals",
+          "label": "WHAT'S NEW"
+        },
+        "offers": {
+          "url": "https://crepdogcrew.com/collections/crocs-pollex-clog-by-salehe-bembury",
+          "label": "crocs pollex clog by salehe bembury"
+        }
+      },
+      "error": null
+    },
+    "92": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://www.perniaspopupshop.com/eid-festival/clothing/new-arrivals",
+          "label": "new arrivals"
+        },
+        "offers": {
+          "url": "https://www.perniaspopupshop.com/listing/festive-offers",
+          "label": "SALE"
+        }
+      },
+      "error": null
+    },
+    "93": {
+      "status": "error",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://www.azafashions.com/designers/samyukta-singhania/1949?sort=new_arrivals",
+          "label": ""
+        },
+        "offers": {
+          "url": "https://www.azafashions.com/on-sale",
+          "label": ""
+        }
+      },
+      "error": "Crawling disallowed or robots unavailable"
+    },
+    "94": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://www.ogaan.com/just-in",
+          "label": "New Arrivals"
+        },
+        "offers": {
+          "url": "https://www.ogaan.com/sale",
+          "label": "Sale"
+        }
+      },
+      "error": null
+    },
+    "95": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://www.jaypore.com/c/new-arrivals",
+          "label": "new arrivals"
+        },
+        "offers": {
+          "url": "https://www.jaypore.com/c/july-deals",
+          "label": "july deals"
+        }
+      },
+      "error": null
+    },
+    "96": {
+      "status": "ok",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [
+        {
+          "id": "fa7515438c1d53f8",
+          "title": "Noir V-Neck Tee",
+          "url": "https://www.nonasties.in/products/v-neck-tee-noir",
+          "image": "https://www.nonasties.in/cdn/shop/files/NoirVneckTee_3_84566862-411b-4428-9d35-50a24ed745e8.jpg?v=1788524366&width=2048",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://www.nonasties.in/collections/new-arrivals-for-her",
+          "isNew": false
+        },
+        {
+          "id": "8f51cf8059e97988",
+          "title": "Sage V-Neck Tee",
+          "url": "https://www.nonasties.in/products/v-neck-tee-sage",
+          "image": "https://www.nonasties.in/cdn/shop/files/SageVneckTee_4.jpg?v=1788524058&width=2048",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://www.nonasties.in/collections/new-arrivals-for-her",
+          "isNew": false
+        },
+        {
+          "id": "71ea874828b8d529",
+          "title": "Cream Cropped Tee",
+          "url": "https://www.nonasties.in/products/cream-white-organic-cotton-cropped-t-shirt-for-women-online",
+          "image": "https://www.nonasties.in/cdn/shop/files/Cream_3.jpg?v=1790333625&width=2048",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://www.nonasties.in/collections/new-arrivals-for-her",
+          "isNew": false
+        },
+        {
+          "id": "3db653ad25e4313b",
+          "title": "Mustard Cropped Tee",
+          "url": "https://www.nonasties.in/products/mustard-yellow-organic-cotton-cropped-t-shirt-for-women-online",
+          "image": "https://www.nonasties.in/cdn/shop/files/Mustard_3.jpg?v=1790333625&width=2048",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://www.nonasties.in/collections/new-arrivals-for-her",
+          "isNew": false
+        }
+      ],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://www.nonasties.in/collections/new-arrivals-for-her",
+          "label": "new arrivals for her"
+        },
+        "offers": {
+          "url": "https://www.nonasties.in/collections/women-organic-cotton-sale",
+          "label": "Sale"
+        }
+      },
+      "error": null
+    },
+    "97": {
+      "status": "ok",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [
+        {
+          "id": "9d9f9744b4069394",
+          "title": "JUDY DENIM PANELLED SKIRT",
+          "url": "https://doodlage.in/products/dl26-sk-001-judy-denim-panelled-skirt",
+          "image": "https://doodlage.in/cdn/shop/files/2_d551dd40-2783-4413-a47e-574953d4b1ad.jpg?v=1776938291&width=2048",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://doodlage.in/collections/new-in-styles",
+          "isNew": false
+        },
+        {
+          "id": "d2c230b7f5bec8c2",
+          "title": "AMELIA DENIM PATCHWORK TRENCH",
+          "url": "https://doodlage.in/products/dl26-jk-011-amelia-denim-patchwork-trench",
+          "image": "https://doodlage.in/cdn/shop/files/human_back_other_1_8.jpg?v=1784703287&width=2048",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://doodlage.in/collections/new-in-styles",
+          "isNew": false
+        },
+        {
+          "id": "e9849494ac1f7ae1",
+          "title": "SYLVIA SET",
+          "url": "https://doodlage.in/products/dl26-st-012-sylvia-set",
+          "image": "https://doodlage.in/cdn/shop/files/website-images_5_21d9a2a6-ff2b-457c-84bf-2c186bd2a514.jpg?v=1775111196&width=2048",
+          "price": null,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:15:32.510Z",
+          "sourceUrl": "https://doodlage.in/collections/new-in-styles",
+          "isNew": false
+        },
+        {
+          "id": "bd71bde21d62e5a8",
+          "title": "Joy Scrunchie Flora",
+          "url": "https://doodlage.in/products/joy-scrunchie-flora",
+          "image": "https://doodlage.in/cdn/shop/files/Untitleddesign_3_b5f254d4-4ea9-4500-9c85-7b5963374053.jpg?v=1787549436&width=1920",
+          "price": 1500,
+          "originalPrice": null,
+          "currency": "INR",
+          "firstSeenAt": "2026-10-05T09:09:44.090Z",
+          "sourceUrl": "https://doodlage.in/collections/new-in-styles",
+          "isNew": false
+        }
+      ],
+      "offers": [],
+      "sources": {
+        "designs": {
+          "url": "https://doodlage.in/collections/new-in-styles",
+          "label": "New In"
+        },
+        "offers": {
+          "url": "https://doodlage.in/collections/all-time-sale-edit",
+          "label": "Reset Sale"
+        }
+      },
+      "error": null
+    },
+    "98": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {},
+      "error": null
+    },
+    "99": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {
+        "offers": {
+          "url": "https://leavetherest.com/collections/sale",
+          "label": "sale"
+        }
+      },
+      "error": null
+    },
+    "100": {
+      "status": "empty",
+      "checkedAt": "2026-10-05T09:24:44.812Z",
+      "designs": [],
+      "offers": [],
+      "sources": {},
+      "error": null
+    }
+  }
+}
