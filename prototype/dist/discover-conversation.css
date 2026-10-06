@@ -177,3 +177,13 @@
 .dc-credits-card{display:flex;flex-direction:column;gap:4px;background:#fff;border:1px solid var(--dc-line,#e7d8ce);border-radius:22px;padding:18px;margin:0 0 20px;font-family:'Montserrat','Montserrat Fallback',sans-serif;color:#281b22}
 .dc-credits-card .dc-kicker{font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#8e1b4d}
 .dc-credits-card strong{font-size:20px;font-weight:800}.dc-credits-card small{font-size:13px;color:#74646c}
+
+/* Design QA #20: the welcome mascot replaces the star. */
+.dc-hello{position:relative;display:inline-flex;flex-direction:column;align-items:center;gap:2px;border:0;background:none;padding:22px 0 0;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.dc-hello svg{width:92px;height:92px;animation:dc-bob 2.4s ease-in-out infinite;transform-origin:50% 90%}
+.dc-hello .dc-eyes{animation:dc-blink 4s infinite;transform-origin:50% 50%;transform-box:fill-box}
+.dc-hello .dc-mascot-shadow{animation-duration:2.4s}
+.dc-hello-bubble{position:absolute;top:0;left:62%;white-space:nowrap;background:#fff;border:1px solid var(--dc-line);border-radius:12px 12px 12px 3px;padding:4px 9px;font:800 11px 'Montserrat','Montserrat Fallback',sans-serif;color:var(--dc-ink);box-shadow:0 6px 14px rgba(40,27,34,.1)}
+.dc-hello:active svg{transform:scale(.94)}
+@media(prefers-reduced-motion:reduce){.dc-hello svg,.dc-hello .dc-eyes,.dc-hello .dc-mascot-shadow{animation:none}}
+.dc-mascot svg,.dc-hello svg{stroke:none}
