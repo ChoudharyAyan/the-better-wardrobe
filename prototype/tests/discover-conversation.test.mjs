@@ -48,7 +48,7 @@ test('asking goes straight to results: one interpret, one search, no confirmatio
  assert.match(html,/Search it on/);assert.match(html,/https:\/\/www\.myntra\.com\/black-linen-shirt/);
  assert.match(html,/How I searched · 3 searches · 4\.2s/);
  assert.equal((html.match(/<code>black linen shirt men<\/code>/g)||[]).length,1,'a phrase sent to two routes is listed once');
- assert.match(html,/24 found · 8 off-topic or outside India removed · 6 compared against your piece · <b>1 shown<\/b>/);
+ assert.match(html,/24 found · 8 off-topic, wrong colour or outside India removed · 6 compared against your piece · <b>1 shown<\/b>/);
 });
 
 test('the in-app model dropdown offers Max and Lite and the choice travels with the request',async()=>{
@@ -87,4 +87,18 @@ test('size variants of one product collapse into a single match',async()=>{
  h.context.window.DiscoverConversation.render();await h.ask('olive cargo pants');
  const html=h.latest();
  assert.equal((html.match(/class="dc-result"/g)||[]).length,2);assert.match(html,/Found 2 matches/);
+});
+
+test('the reply says whose styles are shown: both when unknown, one when asked',async()=>{
+ const both=harness({interpret:{attributes:{...shirt,department:''},query:'black linen shirt',budget:null,credits:{remaining:105,cost:15},turn:'t'},search:found});
+ await both.ask('black linen shirt');
+ assert.match(both.latest(),/I’ll show both men’s and women’s styles\. Say “men’s” or “women’s” to narrow it\./);
+ assert.match(both.latest(),/<span>men’s &amp; women’s<\/span>/);
+ const womens=harness({interpret:{attributes:{...shirt,department:'womenswear'},query:'black linen shirt',budget:null,credits:{remaining:105,cost:15},turn:'t'},search:found});
+ await womens.ask("black linen shirt for women");
+ assert.match(womens.latest(),/Showing women&#39;s styles\. Say “men&#39;s” if you want the other\./);
+});
+test('saved chats stay visible as tabs, with an empty state before the first search',async()=>{
+ const h=harness({});
+ assert.match(h.context.window.DiscoverConversation.render(),/Your chats <em>0\/3<\/em>.*Your searches are saved here.*＋ New chat/s);
 });

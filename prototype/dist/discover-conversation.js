@@ -23,6 +23,9 @@
   const searchesLeft = model => state.wallet?Math.floor(state.wallet.remaining/model.credits):null;
   // The subtype ("suede jacket") is what people asked for; the category ("outerwear") is the shelf it sits on.
   const describe = a => [known(a?.colour),known(a?.subtype)||[known(a?.fit),known(a?.category)].filter(Boolean).join(' ')].filter(Boolean).join(' ');
+  // Who the results are for. Unknown means both; the person can say "men's" or "women's" to narrow it.
+  const forWhom = a => a?.department==='menswear'?"men's":a?.department==='womenswear'?"women's":'';
+  const departmentLine = a => forWhom(a)?`Showing ${forWhom(a)} styles. Say “${forWhom(a)==='men\'s'?'women\'s':'men\'s'}” if you want the other.`:'I’ll show both men’s and women’s styles. Say “men’s” or “women’s” to narrow it.';
   // Size variants of one product ("Cargos (36)", "Cargos (34)") are one match, not three.
   const variantKey = item => tidyTitle(item.title).toLowerCase().replace(/\(\s*(\d{2,3}|xs|s|m|l|xl|xxl|\d?xl)\s*\)/g,'').replace(/\bby myntra\b/g,'').replace(/[^a-z0-9]+/g,' ').trim()+'|'+String(item.merchant||'').toLowerCase();
   const distinct = list => {const seen=new Set();return list.filter(item=>{const k=variantKey(item);if(seen.has(k))return false;seen.add(k);return true;});};
@@ -96,7 +99,7 @@
       const data=await request('interpret',{text,image,target,previous},state.controller.signal);
       if(data.question||!data.attributes){stopLoading();state.stage='clarify';state.followup={text,image,previous};state.messages.push({role:'assistant',meta:metaFor(data),text:data.question||'What kind of item should I look for?'});paint();saveChat();return;}
       state.current={attributes:data.attributes,query:data.query,budget:data.budget,uncertainty:data.uncertainty};state.followup=null;
-      state.messages.push({role:'assistant',meta:metaFor(data),text:`Looking for ${describe(data.attributes)||'that piece'}${data.budget?` under ₹${Number(data.budget).toLocaleString('en-IN')}`:''}.`});
+      state.messages.push({role:'assistant',meta:metaFor(data),text:`Looking for ${describe(data.attributes)||'that piece'}${data.budget?` under ₹${Number(data.budget).toLocaleString('en-IN')}`:''}. ${departmentLine(data.attributes)}`});
       await runSearch();
     }catch(error){stopLoading();if(error.name!=='AbortError')state.messages.push({role:'assistant',text:error.message||'I could not read that. Please try again.'});state.stage=state.results?'results':'start';paint();}
   }
@@ -131,26 +134,38 @@
   function refine(form){
     if(state.busy||!state.current)return;const data=new FormData(form),value=k=>String(data.get(k)||'').trim();
     if(!value('category')){state.messages.push({role:'assistant',text:'Tell me what kind of item it is first.'});paint();return;}
-    state.current={...state.current,attributes:{...state.current.attributes,category:value('category'),colour:value('colour'),fit:value('fit'),details:value('details')},query:[value('colour'),value('details'),value('category')].filter(Boolean).join(' ')||state.current.query,budget:value('budget')?Number(value('budget')):null};
+    state.current={...state.current,attributes:{...state.current.attributes,category:value('category'),colour:value('colour'),fit:value('fit'),details:value('details'),department:['menswear','womenswear'].includes(value('department'))?value('department'):''},query:[value('colour'),value('details'),value('category')].filter(Boolean).join(' ')||state.current.query,budget:value('budget')?Number(value('budget')):null};
     state.messages.push({role:'user',text:`Update: ${describe(state.current.attributes)}${state.current.budget?` under ₹${state.current.budget.toLocaleString('en-IN')}`:''}`});
     runSearch();
   }
 
-  // ---- results-ready pill ---------------------------------------------------------------------
-  // Shown when results land while the person is elsewhere (the mall, another tab).
-  function flagReady(){
-    const section=document.querySelector?.('.dc-results'),onDiscover=!globalThis.location||/^#?(discover)?$/.test(globalThis.location.hash||'');
-    const visible=section&&onDiscover&&section.getBoundingClientRect().top<(globalThis.innerHeight||0)&&section.getBoundingClientRect().bottom>0;
-    state.readyPill=!visible;renderPill();
+  // ---- results-ready pop-up ------------------------------------------------------------------
+  // Shown when results land while the person is elsewhere (the mall, another tab, another app).
+  // It stays until they see the results or close it.
+  const onDiscover = () => !globalThis.location||/^#?(discover)?$/.test(globalThis.location.hash||'');
+  function resultsInView(){
+    const r=document.querySelector?.('.dc-results')?.getBoundingClientRect?.(),h=globalThis.innerHeight||0;
+    return Boolean(r&&onDiscover()&&r.top<h*.7&&r.bottom>h*.2);
   }
+  let watching=false,baseTitle='';
+  function flagReady(){
+    if(!document.hidden&&resultsInView())return;
+    state.readyPill=true;renderPill();
+    try{navigator.vibrate?.([40,60,40]);}catch{}
+    if(document.hidden){baseTitle||=document.title;document.title='✨ Results ready · '+baseTitle;try{if(globalThis.Notification?.permission==='granted')new Notification('Your results are ready',{body:readyText(),tag:'tbw-results'});}catch{}}
+    if(!watching&&typeof addEventListener==='function'){watching=true;const check=()=>{if(state.readyPill&&!document.hidden&&resultsInView())dismissReady();};addEventListener('scroll',check,{passive:true});addEventListener('hashchange',()=>setTimeout(()=>{renderPill();check();},60));document.addEventListener('visibilitychange',()=>{if(!document.hidden&&baseTitle){document.title=baseTitle;baseTitle='';}check();});}
+  }
+  const readyText = () => {const n=Math.min(distinct(state.results?.results||[]).length,6),what=describe(state.current?.attributes);return n?`${n} ${n===1?'match':'matches'}${what?` for ${what}`:''}`:`Store searches${what?` for ${what}`:''} are ready`;};
+  function dismissReady(){state.readyPill=false;renderPill();}
   function renderPill(){
     if(!document.body||typeof document.createElement!=='function')return;
     let pill=document.getElementById('dc-ready-pill');
     if(!state.readyPill){pill?.remove();return;}
-    if(!pill){pill=document.createElement('button');pill.id='dc-ready-pill';pill.type='button';pill.className='dc-ready-pill';pill.dataset.conversation='show-results';document.body.append(pill);}
-    pill.textContent='Your results are ready ✨';
+    if(!pill){pill=document.createElement('div');pill.id='dc-ready-pill';pill.className='dc-ready-pill';pill.setAttribute('role','alert');document.body.append(pill);}
+    const first=distinct(state.results?.results||[]).find(x=>x.image);
+    pill.innerHTML=`${first?`<img src="${escape(first.image)}" alt="">`:'<span class="dc-ready-spark" aria-hidden="true">✨</span>'}<div><strong>Your results are ready ✨</strong><small>${escape(readyText())}</small></div><button type="button" class="dc-ready-go" data-conversation="show-results">See results →</button><button type="button" class="dc-ready-close" data-conversation="dismiss-ready" aria-label="Dismiss">×</button>`;
   }
-  function showResults(){state.readyPill=false;renderPill();const go=()=>document.querySelector('.dc-results')?.scrollIntoView({behavior:'smooth',block:'start'});if(globalThis.location&&!/^#?(discover)?$/.test(location.hash)){location.hash='discover';setTimeout(go,350);}else go();}
+  function showResults(){dismissReady();const go=()=>document.querySelector('.dc-results')?.scrollIntoView({behavior:'smooth',block:'start'});if(!onDiscover()){location.hash='discover';setTimeout(go,350);}else go();}
 
   // ---- voice input (Web Speech API; needs https) -----------------------------------------------
   const Recognition = () => (typeof window!=='undefined'&&(window.SpeechRecognition||window.webkitSpeechRecognition))||null;
@@ -174,19 +189,19 @@
   const field = (label,name,value,placeholder='') => `<label><span>${label}</span><input name="${name}" value="${escape(known(value))}" placeholder="${escape(placeholder)}"></label>`;
   const renderUnderstood = () => {
     const c=state.current;if(!c?.attributes)return '';const a=c.attributes;
-    const chips=[known(a.category),known(a.colour),known(a.fit),known(a.pattern),known(a.details),c.budget?`under ₹${Number(c.budget).toLocaleString('en-IN')}`:''].filter(Boolean);
+    const chips=[known(a.category),known(a.colour),known(a.fit),known(a.pattern),known(a.details),forWhom(a)||'men’s & women’s',c.budget?`under ₹${Number(c.budget).toLocaleString('en-IN')}`:''].filter(Boolean);
     if(!state.editing)return `<div class="dc-understood"><span class="dc-kicker">Searched for</span><div class="dc-chips">${chips.map(x=>`<span>${escape(x)}</span>`).join('')}</div><button type="button" class="dc-edit" data-conversation="edit" ${state.busy?'disabled':''}>Edit ✎</button></div>`;
-    return `<form id="dc-refine" class="dc-refine"><div class="dc-review-grid">${field('Item','category',a.category,'e.g. blazer')}${field('Colour','colour',a.colour,'Any colour')}${field('Fit','fit',a.fit,'Any fit')}${field('Detail','details',a.details,'Collar, fabric, print…')}${field('Budget in ₹','budget',c.budget??'','Optional')}</div><div class="dc-review-actions"><button type="submit" class="dc-main-button">Update results <span aria-hidden="true">→</span></button><button type="button" class="dc-edit" data-conversation="edit-cancel">Cancel</button><span>Updating is free for this search.</span></div></form>`;
+    return `<form id="dc-refine" class="dc-refine"><div class="dc-review-grid">${field('Item','category',a.category,'e.g. blazer')}${field('Colour','colour',a.colour,'Any colour')}${field('Fit','fit',a.fit,'Any fit')}${field('Detail','details',a.details,'Collar, fabric, print…')}${field('Budget in ₹','budget',c.budget??'','Optional')}<label><span>For</span><select name="department">${[['','Men’s and women’s'],['menswear','Men’s'],['womenswear','Women’s']].map(([v,l])=>`<option value="${v}" ${(a.department||'')===v?'selected':''}>${l}</option>`).join('')}</select></label></div><div class="dc-review-actions"><button type="submit" class="dc-main-button">Update results <span aria-hidden="true">→</span></button><button type="button" class="dc-edit" data-conversation="edit-cancel">Cancel</button><span>Updating is free for this search.</span></div></form>`;
   };
   const renderRetrieval = () => {
     const t=state.results?.trace;if(!t)return '';
     const routes=new Map();for(const entry of t.queries||[]){const [phrase,route]=String(entry).split(' · ');if(!routes.has(phrase))routes.set(phrase,[]);if(route)routes.get(phrase).push(route);}
-    const queries=[...routes].slice(0,4),removed=(t.titleRejected||0)+(t.domesticRejected||0),shown=Math.min(distinct(state.results.results||[]).length,6),routeCount=(t.queries||[]).length;
+    const queries=[...routes].slice(0,4),removed=(t.titleRejected||0)+(t.domesticRejected||0)+(t.colourRejected||0),shown=Math.min(distinct(state.results.results||[]).length,6),routeCount=(t.queries||[]).length;
     const seconds=t.elapsedMs?` · ${(t.elapsedMs/1000).toFixed(1)}s`:'';
     const step=(n,title,body)=>`<li><span class="dc-step-n">${n}</span><div><strong>${title}</strong>${body}</div></li>`;
     return `<details class="dc-retrieval"><summary>How I searched · ${routeCount} ${routeCount===1?'search':'searches'}${seconds}</summary><ol>${
       step(1,'Searched',`<div class="dc-queries">${queries.map(([q,via])=>`<span class="dc-query"><code>${escape(q)}</code>${via.length?`<small>${escape(via.join(' · '))}</small>`:''}</span>`).join('')}</div>`)}${
-      step(2,'Narrowed down',`<p>${t.retrieved||0} found${removed?` · ${removed} off-topic or outside India removed`:''}${t.visuallyAssessed?` · ${t.visuallyAssessed} compared against your piece`:''} · <b>${shown} shown</b></p>${t.providerFailures?.length?`<p class="dc-result-note">${t.providerFailures.length} source${t.providerFailures.length===1?' was':'s were'} slow and skipped.</p>`:''}`)}</ol></details>`;
+      step(2,'Narrowed down',`<p>${t.retrieved||0} found${removed?` · ${removed} off-topic, wrong colour or outside India removed`:''}${t.visuallyAssessed?` · ${t.visuallyAssessed} compared against your piece`:''} · <b>${shown} shown</b></p>${t.providerFailures?.length?`<p class="dc-result-note">${t.providerFailures.length} source${t.providerFailures.length===1?' was':'s were'} slow and skipped.</p>`:''}`)}</ol></details>`;
   };
   const renderResults = () => {
     if(!state.results||!['results','loading'].includes(state.stage))return '';
@@ -195,10 +210,13 @@
     const stores=storeSearches.length?`<div class="dc-stores"><span class="dc-kicker">Search it on</span><div class="dc-store-row">${storeSearches.map(s=>`<a href="${escape(s.url)}" target="_blank" rel="noopener noreferrer">${escape(s.store)} ↗</a>`).join('')}</div></div>`:'';
     return `<section class="dc-results" aria-label="Shopping results">${renderUnderstood()}<div class="dc-results-head"><span class="dc-kicker">Matches</span><h3>${results.length?'Pieces that match':'Keep looking'}</h3></div>${matches}${stores}${renderRetrieval()}<p class="dc-result-note">Suggestions, not verified exact matches. Confirm size, delivery and availability with the store.</p></section>`;
   };
+  // Saved chats as tabs that stay pinned above the conversation, so earlier searches are one tap away.
+  const ago = iso => {const m=Math.round((Date.now()-Date.parse(iso))/60000);return !Number.isFinite(m)?'':m<1?'just now':m<60?`${m} min ago`:m<1440?`${Math.round(m/60)} h ago`:`${Math.round(m/1440)} d ago`;};
   const renderChats = () => {
-    const list=state.chats;if(!list.length&&!state.messages.length)return '';
-    const unsaved=state.messages.length&&!list.some(c=>c.id===state.chatId);
-    return `<nav class="dc-chats" aria-label="Saved chats">${unsaved?`<span class="dc-chat active">${escape((state.chatTitle||state.messages.find(m=>m.role==='user'&&m.text)?.text||'New search').slice(0,24))}</span>`:''}${list.map(c=>`<button type="button" class="dc-chat ${c.id===state.chatId?'active':''}" data-conversation="open-chat" data-id="${escape(c.id)}">${escape(c.title.slice(0,24))}</button>`).join('')}<button type="button" class="dc-chat new" data-conversation="new-chat">＋ New chat</button></nav>`;
+    const list=state.chats,unsaved=state.messages.length&&!list.some(c=>c.id===state.chatId);
+    const tab=(label,sub,active,attrs)=>`<${attrs?'button type="button"':'span'} class="dc-chat ${active?'active':''}" ${attrs||''} ${active?'aria-current="true"':''}><b>${escape(label.slice(0,26))}</b><small>${escape(sub)}</small></${attrs?'button':'span'}>`;
+    const tabs=[unsaved?tab(state.chatTitle||state.messages.find(m=>m.role==='user'&&m.text)?.text||'Screenshot search','Now',true,''):'',...list.map(c=>tab(c.title,c.id===state.chatId?'Open now':ago(c.updatedAt),c.id===state.chatId,`data-conversation="open-chat" data-id="${escape(c.id)}"`))].join('');
+    return `<nav class="dc-chats" aria-label="Your chats"><span class="dc-chats-label">Your chats <em>${list.length}/3</em></span><div class="dc-chat-row">${tabs||'<span class="dc-chat-empty">Your searches are saved here</span>'}<button type="button" class="dc-chat new" data-conversation="new-chat" ${state.busy?'disabled':''}><b>＋ New chat</b></button></div></nav>`;
   };
   const renderChatLimit = () => !state.chatLimit?'':`<div class="dc-chat-limit" role="dialog" aria-label="Chat limit"><strong>You can keep 3 chats in the beta.</strong><p>${state.chatLimit.retrySave?'Delete one to save this chat.':'Delete one to start a new chat.'}</p><ul>${state.chatLimit.chats.map(c=>`<li><span>${escape(c.title)}</span><button type="button" data-conversation="delete-chat" data-id="${escape(c.id)}">Delete</button></li>`).join('')}</ul><button type="button" class="dc-edit" data-conversation="limit-cancel">Keep all</button></div>`;
   const renderModelMenu = () => {
@@ -215,6 +233,8 @@
 
   // ---- images ---------------------------------------------------------------------------------
   async function toImage(file){if(!file||!['image/jpeg','image/png','image/webp'].includes(file.type))throw new Error('Choose a JPG, PNG or WebP screenshot.');if(file.size>10*1024*1024)throw new Error('Choose an image under 10 MB.');const bitmap=await createImageBitmap(file);try{const scale=Math.min(1,1280/Math.max(bitmap.width,bitmap.height));const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(bitmap.width*scale));canvas.height=Math.max(1,Math.round(bitmap.height*scale));canvas.getContext('2d').drawImage(bitmap,0,0,canvas.width,canvas.height);let quality=.86,data=canvas.toDataURL('image/jpeg',quality);while(data.length>3_700_000&&quality>.45){quality-=.12;data=canvas.toDataURL('image/jpeg',quality);}if(data.length>4_100_000)throw new Error('This image is still too large. Try a tighter crop.');return data;}finally{bitmap.close();}}
+  // Small pieces (sunglasses, a watch) get a margin so the crop still shows what they are.
+  const pad = c => {const w=Math.min(100,Math.max(c.width*1.3,22)),h=Math.min(100,Math.max(c.height*1.3,22));return {left:Math.max(0,Math.min(100-w,c.left-(w-c.width)/2)),top:Math.max(0,Math.min(100-h,c.top-(h-c.height)/2)),width:w,height:h};};
   async function cropImage(src,crop){const bitmap=await createImageBitmap(await (await fetch(src)).blob());try{const x=Math.max(0,Math.round(bitmap.width*crop.left/100)),y=Math.max(0,Math.round(bitmap.height*crop.top/100));const w=Math.max(1,Math.min(bitmap.width-x,Math.round(bitmap.width*crop.width/100))),h=Math.max(1,Math.min(bitmap.height-y,Math.round(bitmap.height*crop.height/100)));const canvas=document.createElement('canvas');canvas.width=w;canvas.height=h;canvas.getContext('2d').drawImage(bitmap,x,y,w,h,0,0,w,h);return canvas.toDataURL('image/jpeg',.84);}finally{bitmap.close();}}
 
   // ---- events ---------------------------------------------------------------------------------
@@ -225,13 +245,14 @@
     else if(action==='remove-image'){state.pending=null;paint(true);}
     else if(action==='example'){state.draft=examples[Number(button.dataset.index)]||'';paint(true);}
     else if(action==='cancel'){state.controller?.abort();stopLoading();state.stage=state.results?'results':'start';paint();}
-    else if(action==='choice'){const item=state.choices[Number(button.dataset.index)];if(!item||!state.source?.image)return;state.choices=[];try{const crop=await cropImage(state.source.image,item.crop);state.source.image=crop;await ask(state.source.text||'',crop,item.label);}catch{state.messages.push({role:'assistant',text:'That crop could not be read. Please attach the image again.'});state.stage='start';paint();}}
+    else if(action==='choice'){const item=state.choices[Number(button.dataset.index)];if(!item||!state.source?.image)return;state.choices=[];try{const full=state.source.image,crop=await cropImage(full,pad(item.crop));state.source.image=crop;await ask(state.source.text||'',full,item.label);}catch{state.messages.push({role:'assistant',text:'That crop could not be read. Please attach the image again.'});state.stage='start';paint();}}
     else if(action==='model-menu'){state.menuOpen=!state.menuOpen;paint();}
     else if(action==='pick-model'){state.model=button.dataset.id;state.menuOpen=false;try{localStorage.setItem('tbw-discover-model',state.model);}catch{}paint();}
     else if(action==='edit'){state.editing=true;paint();}
     else if(action==='edit-cancel'){state.editing=false;paint();}
-    else if(action==='explore-mall'){const next=root()?.nextElementSibling;next?.scrollIntoView({behavior:'smooth',block:'start'});}
+    else if(action==='explore-mall'){const next=root()?.nextElementSibling;next?.scrollIntoView({behavior:'smooth',block:'start'});try{if(globalThis.Notification?.permission==='default')Notification.requestPermission();}catch{}}
     else if(action==='show-results')showResults();
+    else if(action==='dismiss-ready')dismissReady();
     else if(action==='voice'){state.listening?stopListening():startListening();paint();}
     else if(action==='new-chat')newChat();
     else if(action==='open-chat')openChat(button.dataset.id);
