@@ -250,3 +250,29 @@ test('Google Shopping India listings with a rupee price survive the domestic fil
  const out=await d.search({attributes:{category:'jacket',colour:'brown',fit:'',pattern:'',details:'suede'},query:'brown suede jacket',market:'in'});
  assert.equal(out.results[0].merchant,'Myntra');assert.equal(out.results[0].priceText,'₹2,099');
 });
+
+test('colour gate: a white-shirt search drops blue and pink shirts by title or photo, in under a second',async()=>{
+ const {colourGate,colourFamily,titleColourConflict}=await import('../lib/colour.mjs');
+ const {default:sharp}=await import('sharp');
+ const solid=async rgb=>({data:(await sharp({create:{width:60,height:80,channels:3,background:rgb}}).png().toBuffer()).toString('base64'),mimeType:'image/png'});
+ const photos={'w':{r:245,g:245,b:243},'b':{r:168,g:198,b:226},'p':{r:214,g:180,b:206},'k':{r:20,g:20,b:22}};
+ assert.equal(colourFamily('white'),'white');assert.equal(colourFamily('navy'),'blue');
+ assert.equal(titleColourConflict('Light Blue Oxford Shirt','white'),true);
+ assert.equal(titleColourConflict('Blue and White Striped Shirt','white'),false);
+ assert.equal(titleColourConflict('Giza Cotton Shirt','white'),false);
+ const items=[{title:'French Cuff Giza Cotton Shirt',image:'b'},{title:'French Cuff Giza Cotton Shirt',image:'p'},{title:'Non-Iron Twill Spread Collar Shirt',image:'w'},{title:'Sky Blue Shirt',image:'w'},{title:'Linen Shirt',image:'slow'},{title:'Cotton Shirt',image:'tiny'}];
+ const fetchImage=async id=>{if(id==='slow')return new Promise(()=>{});if(id==='tiny')return {data:(await sharp({create:{width:1,height:1,channels:3,background:{r:0,g:0,b:255}}}).png().toBuffer()).toString('base64')};return solid(photos[id]);};
+ const started=Date.now();const {items:kept,report}=await colourGate(items,'white',fetchImage,{budgetMs:300});
+ assert.ok(Date.now()-started<1000);
+ assert.deepEqual(kept.map(p=>p.image),['w','slow','tiny'],'blue and pink photos and a blue title are gone; unchecked pieces stay');
+ assert.equal(report.titleRejected,1);assert.equal(report.photoRejected,2);
+ const black=await colourGate([{title:'Shirt',image:'k'},{title:'Shirt',image:'w'}],'black',fetchImage);
+ assert.deepEqual(black.items.map(p=>p.image),['k']);
+ assert.equal((await colourGate(items,'',fetchImage)).items.length,items.length,'no colour asked, nothing filtered');
+});
+test('a piece picked from the photo is searched even when the model says it cannot see it',async()=>{
+ const reply={category:'',colour:'',fit:'',pattern:'',details:'',subtype:'',features:'',department:'unknown',query:'',budget:null,uncertainty:'',question:"I couldn't find any sunglasses in the image."};
+ const d=createDiscovery({env:{OPENROUTER_API_KEY:'k',VISION_PROVIDER:'openrouter'},fetcher:async()=>({ok:true,status:200,json:async()=>({choices:[{finish_reason:'stop',message:{content:JSON.stringify(reply)}}]})})});
+ const r=await d.interpret({text:'',image:image,target:'sunglasses'});
+ assert.equal(r.attributes.category,'sunglasses');assert.equal(r.question,'');
+});
