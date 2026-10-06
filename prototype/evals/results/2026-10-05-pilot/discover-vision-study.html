@@ -1,0 +1,273 @@
+<title>Discover Vision Study</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column for the story, widening to full-bleed panels for the data tables and charts. */
+:root{
+  --bg:#f6f7fb; --panel:#ffffff; --ink:#1b1f3b; --muted:#5b6080; --rule:#dde0ec;
+  --indigo:#2f3a8f; --marigold:#c9780a; --good:#1f7a4d; --bad:#b4233b; --warn:#a86500;
+  --heat:#2f3a8f;
+  --display:"Montserrat",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --body:"Montserrat",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,SFMono-Regular,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#11132a; --panel:#191c38; --ink:#e9eaf6; --muted:#a3a7c7; --rule:#2c3058;
+  --indigo:#9aa6ff; --marigold:#f0a63a; --good:#5cc98f; --bad:#ff7a8f; --warn:#f0b04a; --heat:#8f9cff; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#11132a; --panel:#191c38; --ink:#e9eaf6; --muted:#a3a7c7; --rule:#2c3058;
+  --indigo:#9aa6ff; --marigold:#f0a63a; --good:#5cc98f; --bad:#ff7a8f; --warn:#f0b04a; --heat:#8f9cff; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6;margin:0}
+.wrap{max-width:1080px;margin:0 auto;padding-inline:20px;padding-block:40px 80px;display:grid;gap:56px}
+.prose{max-width:68ch}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;line-height:1.2;margin:0}
+h1{font-size:clamp(2rem,5vw,3rem);font-weight:800;letter-spacing:-.02em}
+h2{font-size:1.6rem;font-weight:700;letter-spacing:-.01em}
+h3{font-size:1.1rem;font-weight:700}
+p{margin:0}
+.stack{display:grid;gap:16px}
+.eyebrow{font-size:.75rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--marigold)}
+.muted{color:var(--muted)}
+.mono,.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+header.stack{gap:20px}
+.lede{font-size:1.15rem;color:var(--muted);max-width:62ch}
+.facts{display:flex;flex-wrap:wrap;gap:12px 32px;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);padding-block:16px}
+.facts div{display:grid}
+.facts b{font-family:var(--mono);font-size:1.4rem;font-weight:500}
+.facts span{font-size:.8rem;color:var(--muted)}
+.verdict{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.pick{background:var(--panel);border:1px solid var(--rule);border-radius:10px;padding:20px;display:grid;gap:6px;align-content:start}
+.pick .role{font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.pick .who{font-size:1.25rem;font-weight:700}
+.pick .why{font-size:.92rem;color:var(--muted)}
+.pick.main{border-color:var(--indigo);box-shadow:inset 4px 0 0 var(--indigo)}
+.panel{background:var(--panel);border:1px solid var(--rule);border-radius:10px;padding:20px;min-width:0}
+.scroll{overflow-x:auto}
+table{border-collapse:collapse;width:100%;font-size:.88rem}
+th,td{padding:9px 10px;text-align:left;border-bottom:1px solid var(--rule);vertical-align:middle;white-space:nowrap}
+th{font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+th.sort{cursor:pointer;user-select:none}
+th.sort:hover,th.sort:focus-visible{color:var(--ink);outline:none}
+th.sort[aria-sort]::after{content:" ↓";color:var(--marigold)}
+td.r,th.r{text-align:right}
+tr.off td{color:var(--muted)}
+.chip{display:inline-block;font-size:.72rem;font-weight:700;padding:2px 8px;border-radius:999px;letter-spacing:.02em}
+.chip.ok{background:color-mix(in srgb,var(--good) 16%,transparent);color:var(--good)}
+.chip.no{background:color-mix(in srgb,var(--bad) 14%,transparent);color:var(--bad)}
+.bar{display:flex;align-items:center;gap:8px;min-width:150px}
+.bar i{display:block;height:8px;border-radius:4px;background:var(--indigo)}
+.bar.off i{background:var(--muted);opacity:.5}
+.ex{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
+.ex .panel{display:grid;gap:10px;align-content:start}
+.quote{font-family:var(--mono);font-size:.85rem;background:var(--bg);border-radius:6px;padding:10px 12px;line-height:1.5;white-space:normal}
+.quote mark{background:color-mix(in srgb,var(--bad) 22%,transparent);color:inherit;padding:0 2px;border-radius:3px}
+.quote mark.fine{background:color-mix(in srgb,var(--good) 22%,transparent)}
+.tag{font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase}
+.tag.no{color:var(--bad)} .tag.ok{color:var(--good)}
+.reasons{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.reasons div{display:grid;gap:4px;border-top:2px solid var(--marigold);padding-top:12px}
+.reasons b{font-size:.98rem}
+.reasons span{font-size:.9rem;color:var(--muted)}
+svg text{font-family:var(--body)}
+.chart{width:100%;height:auto;display:block}
+.legend{display:flex;flex-wrap:wrap;gap:8px 20px;font-size:.8rem;color:var(--muted);margin-top:10px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.heat td.h{text-align:center;font-family:var(--mono);font-size:.8rem;min-width:56px}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+ol.plain,ul.plain{margin:0;padding-left:1.2em;display:grid;gap:8px}
+.note{font-size:.85rem;color:var(--muted)}
+footer{font-size:.8rem;color:var(--muted);border-top:1px solid var(--rule);padding-top:16px}
+@media (max-width:560px){.wrap{padding-inline:16px;gap:44px}th,td{padding:8px 7px}}
+</style>
+
+<main class="wrap">
+
+<header class="stack">
+  <p class="eyebrow">The Better Wardrobe · Discover · 5 October 2026</p>
+  <h1>Which model should read your fashion screenshots?</h1>
+  <p class="lede">We gave 11 AI vision models the same 100 outfit screenshots and scored how well each one finds every item, names it, describes it and writes a search phrase a shopper could use. This is the first step of every Discover search.</p>
+  <div class="facts">
+    <div><b>100</b><span>screenshots (46 celebrity, 54 everyday)</span></div>
+    <div><b>11</b><span>models from 4 companies</span></div>
+    <div><b>342</b><span>items in the answer key</span></div>
+    <div><b>1,100</b><span>scored answers</span></div>
+    <div><b>$7.06</b><span>total study cost</span></div>
+  </div>
+</header>
+
+<section class="stack">
+  <p class="eyebrow">The answer</p>
+  <div class="verdict">
+    <div class="pick main"><span class="role">Launch model</span><span class="who">Gemini 3.5 Flash</span><span class="why">90.8 out of 100. Already in production, and no model that can ship beats it.</span></div>
+    <div class="pick"><span class="role">Fallback, different company</span><span class="who">GPT-5.4 mini</span><span class="why">88.1 at 40% of the price. Also the pick from 1,000 to 10,000 searches a month.</span></div>
+    <div class="pick"><span class="role">Worth a second look</span><span class="who">Gemini 3 Flash</span><span class="why">94.7 at under a third of the cost of 3.5 Flash, but it names celebrities from their faces. Fixable, see below.</span></div>
+  </div>
+</section>
+
+<section class="stack" id="celebrities">
+  <p class="eyebrow">Explained</p>
+  <h2>What “names celebrities” means</h2>
+  <div class="prose stack">
+    <p>Discover's job is to describe the clothes, never the person wearing them. When someone shares a photo of an actress at an airport, the right answer is “olive green organza saree with silver embroidery”, not her name.</p>
+    <p>Some models go further than asked. They recognise the face and write the person's name into their answer, for example in the search phrase or in their guess at what the outfit is. We checked every answer on the 46 celebrity images for this.</p>
+  </div>
+
+  <div class="ex">
+    <div class="panel">
+      <span class="tag no">Counts: recognised from the face</span>
+      <p class="quote">known item: “<mark>[actress's name]</mark> in an olive green tissue organza saree with silver embroidery”</p>
+      <p class="note">Nothing in the image says who she is. The model worked it out from her face. Gemini 3 Flash, Gemini 3.6 Flash and Qwen3-VL 30B each did this on about 3 of 46 images.</p>
+    </div>
+    <div class="panel">
+      <span class="tag ok">Doesn't count: reading printed text</span>
+      <p class="quote">caption text: “<mark class="fine">[name] @[photo agency]</mark>”</p>
+      <p class="note">One paparazzi photo has a watermark with the actress's name printed on it. Models that copied the visible text were reading, not recognising. Our first check counted these and wrongly failed 9 of 11 models.</p>
+    </div>
+    <div class="panel">
+      <span class="tag ok">Doesn't count: brand names</span>
+      <p class="quote">brand visible: “<mark class="fine">Onitsuka Tiger</mark>”, “<mark class="fine">Sabyasachi</mark>”</p>
+      <p class="note">Brands and designer labels are exactly what a shopper needs. They are allowed.</p>
+    </div>
+  </div>
+
+  <h3>Why we rule a model out for it</h3>
+  <div class="reasons">
+    <div><b>Privacy</b><span>Users send photos of friends and family too. A model that names people from faces can't be trusted with that.</span></div>
+    <div><b>Personality rights</b><span>Indian courts have protected several film stars against unauthorised commercial use of their name and likeness. A shopping app shouldn't label products with them.</span></div>
+    <div><b>Worse search</b><span>A name in the search phrase pulls up fan pages and news, not products. The clothes are what we need to find.</span></div>
+  </div>
+
+  <div class="panel stack">
+    <h3>Results, per model</h3>
+    <p class="note">The production rule is at most 2% of celebrity images. With 46 images, a single name is 2.2%, so in practice the bar is zero.</p>
+    <div class="scroll"><table id="privacy"></table></div>
+  </div>
+
+  <div class="prose stack">
+    <h3>Can it be fixed?</h3>
+    <p>Probably, and cheaply. Two things to try: tell the model plainly never to name a person, and remove any person's name from its answer before it is used. Re-testing Gemini 3 Flash with both would cost about $0.35. If it passes, it becomes the best value model in the study.</p>
+  </div>
+</section>
+
+<section class="stack" id="leaderboard">
+  <p class="eyebrow">Results</p>
+  <h2>Leaderboard</h2>
+  <p class="prose muted">Score out of 100 = 25% finds the items + 25% names the product type + 30% describes them (colour, pattern, fabric, fit and so on) + 20% writes a usable search phrase. Click a column to sort. Greyed rows can't ship.</p>
+  <div class="panel scroll"><table id="board"></table></div>
+  <p class="note">± is a 95% confidence interval across images. With 100 images, gaps under about 5 points are close to ties.</p>
+</section>
+
+<section class="stack" id="cost">
+  <h2>Cost against quality</h2>
+  <p class="prose muted">Price per 1,000 images on a log scale. Up and to the left is better. Hollow circles can't ship.</p>
+  <div class="panel"><svg id="scatter" class="chart" role="img" aria-label="Score against cost per 1,000 images for 11 models"></svg>
+    <div class="legend" id="vendors"></div>
+  </div>
+</section>
+
+<section class="stack" id="volume">
+  <h2>Which model as Discover grows</h2>
+  <p class="prose muted">At low volume the price difference is a few dollars a month, so we buy the best. As volume grows we accept a small drop in score to save most of the bill. A cascade sends every image to a cheap model and passes the ones it is unsure about to a stronger one.</p>
+  <div class="panel scroll"><table id="bands"></table></div>
+</section>
+
+<section class="stack" id="categories">
+  <h2>Score by type of outfit</h2>
+  <p class="prose muted">Women's ethnic wear is the weakest category for 6 of the 11 models, and accessories for most of the rest: anarkalis, lehengas and dupattas have more parts and more specific names, and jewellery is small. Celebrity photos score about the same as everyday ones, often slightly higher, because they tend to be clear, well-lit shots.</p>
+  <div class="panel scroll"><table id="slices" class="heat"></table></div>
+</section>
+
+<section class="stack" id="attributes">
+  <h2>Score by detail</h2>
+  <p class="prose muted">How often each model's answer matched the answer key on each detail. Fit is the hardest common detail. Visible brand is hard to judge because only 3 items in the key had a brand both key makers agreed on.</p>
+  <div class="panel scroll"><table id="fields" class="heat"></table></div>
+</section>
+
+<section class="stack" id="method">
+  <p class="eyebrow">How we did it</p>
+  <h2>The answer key, and how we checked it</h2>
+  <div class="two">
+    <div class="prose stack">
+      <p>Nobody labelled the images by hand. Two strong models from different companies, Gemini 3.1 Pro and Claude Sonnet 5.5, labelled every image on their own. An item counts only if both found it, and a detail counts only if both agreed. They agreed on 92% of items and 70% of details. Everything else is left unscored.</p>
+      <p>A third model from another company, GPT-5.6 Terra, then checked 20 random images against the key: 100% of the key's items were really in the image and 97.8% of its details were right.</p>
+      <p>Because Gemini 3.1 Pro helped write the key, Gemini models could have a small home advantage. The independent check makes a large one unlikely.</p>
+    </div>
+    <div class="prose stack">
+      <h3>The images</h3>
+      <p>100 screenshots, mostly from Pinterest, across 8 categories: accessories 16, women's ethnic 16, men's casual 14, women's western 13, footwear 12, men's formals 12, graphic tees 9, men's ethnic 8. We removed 5 exact duplicates from the original 120.</p>
+      <h3>Fair to every model</h3>
+      <p>Same prompt, same output format, images resized to 768 px, one run each. A failed or unreadable answer scores zero. Costs are what OpenRouter actually billed.</p>
+    </div>
+  </div>
+  <div class="panel stack">
+    <h3>Bugs we found and fixed during the study</h3>
+    <ol class="plain">
+      <li><b>Matching items by box position.</b> Each company's models mark item positions in a different coordinate format, so items never lined up and images dropped out of the key. Items are now matched by product type and name.</li>
+      <li><b>Counting watermarks as recognition.</b> Copying a name printed on the photo was scored as naming the person. Only names a model works out itself now count.</li>
+      <li><b>Answers the checker couldn't read.</b> These were counted as clean. They are now left out of the rate.</li>
+    </ol>
+  </div>
+</section>
+
+<footer>Run 20261005-110457-a010 · taxonomy 2026-10-01 · prompt look-v3 · 100 images, 1 run per model · scores against an AI-consensus answer key, not hand labels. This study covers image understanding only; finding the actual products is tested separately.</footer>
+</main>
+
+<script>
+const D={"rows":[{"id":"gemini-3.6-flash","label":"Gemini 3.6 Flash","vendor":"Google","tier":"mid-high","score":0.95,"ci":0.009,"parts":{"spots":0.948,"names":0.982,"describes":0.943,"search":0.921},"ok":1,"priv":0.065,"privStrict":0.087,"cost":5.01,"p50":6.8,"fields":{"category":0.984,"department":0.981,"pattern":0.968,"sleeve":0.971,"neckline":0.98,"occasion":0.905,"ethnic":0.984,"search":0.923,"colour":0.939,"fabric":0.953,"fit":0.761,"length":0.931,"brand_visible":0.333},"slices":{"celebrity":0.957,"accessories":0.941,"footwear":0.966,"mens-casual":0.975,"mens-ethnic":0.961,"mens-formals":0.961,"womens-ethnic":0.912,"womens-western":0.95,"everyday":0.944,"graphic-tees":0.947}},{"id":"gemini-3-flash","label":"Gemini 3 Flash","vendor":"Google","tier":"mid","score":0.947,"ci":0.02,"parts":{"spots":0.988,"names":0.984,"describes":0.935,"search":0.913},"ok":0.99,"priv":0.067,"privStrict":0.111,"cost":3.19,"p50":4.7,"fields":{"category":0.983,"department":0.981,"pattern":0.966,"ethnic":0.994,"search":0.916,"colour":0.978,"fabric":0.903,"occasion":0.873,"sleeve":0.99,"fit":0.796,"length":0.884,"neckline":0.91,"brand_visible":0},"slices":{"celebrity":0.938,"accessories":0.881,"footwear":0.964,"mens-casual":0.964,"mens-ethnic":0.972,"mens-formals":0.97,"womens-ethnic":0.93,"womens-western":0.962,"everyday":0.954,"graphic-tees":0.969}},{"id":"gemini-3.5-flash","label":"Gemini 3.5 Flash","vendor":"Google","tier":"mid-high","score":0.908,"ci":0.03,"parts":{"spots":0.881,"names":0.953,"describes":0.928,"search":0.865},"ok":1,"priv":0,"privStrict":0.022,"cost":11.05,"p50":5,"fields":{"category":0.977,"department":0.965,"pattern":0.974,"sleeve":1,"neckline":0.947,"occasion":0.897,"ethnic":0.986,"search":0.901,"colour":0.967,"fabric":0.944,"fit":0.85,"length":0.949,"brand_visible":0},"slices":{"celebrity":0.936,"accessories":0.905,"footwear":0.955,"mens-casual":0.979,"mens-ethnic":0.957,"mens-formals":0.883,"womens-ethnic":0.77,"womens-western":0.95,"everyday":0.885,"graphic-tees":0.919}},{"id":"gemini-3.1-flash-lite","label":"Gemini 3.1 Flash-Lite","vendor":"Google","tier":"cheap","score":0.893,"ci":0.038,"parts":{"spots":0.931,"names":0.981,"describes":0.919,"search":0.884},"ok":0.96,"priv":0,"privStrict":0.045,"cost":2.18,"p50":4.5,"fields":{"category":0.985,"department":0.972,"pattern":0.97,"sleeve":1,"neckline":0.935,"occasion":0.92,"ethnic":0.987,"search":0.887,"colour":0.966,"fabric":0.797,"fit":0.75,"length":0.839,"brand_visible":0.333},"slices":{"celebrity":0.897,"accessories":0.852,"footwear":0.954,"mens-casual":0.957,"mens-ethnic":0.837,"mens-formals":0.862,"womens-ethnic":0.877,"womens-western":0.944,"everyday":0.889,"graphic-tees":0.827}},{"id":"gpt-5.4-mini","label":"GPT-5.4 mini","vendor":"OpenAI","tier":"mid","score":0.881,"ci":0.015,"parts":{"spots":0.939,"names":0.95,"describes":0.827,"search":0.802},"ok":1,"priv":0,"privStrict":0.043,"cost":4.26,"p50":5.9,"fields":{"category":0.955,"department":0.954,"pattern":0.536,"sleeve":0.95,"neckline":0.888,"occasion":0.832,"ethnic":0.937,"search":0.812,"colour":0.923,"fabric":0.728,"fit":0.775,"length":0.879,"brand_visible":0.333},"slices":{"celebrity":0.89,"accessories":0.841,"footwear":0.901,"mens-casual":0.912,"mens-ethnic":0.884,"mens-formals":0.907,"womens-ethnic":0.841,"womens-western":0.882,"everyday":0.873,"graphic-tees":0.91}},{"id":"gpt-5.6-luna","label":"GPT-5.6 Luna","vendor":"OpenAI","tier":"mid","score":0.861,"ci":0.013,"parts":{"spots":0.973,"names":0.955,"describes":0.748,"search":0.773},"ok":1,"priv":0.022,"privStrict":0.022,"cost":1.19,"p50":8,"fields":{"category":0.953,"department":0.959,"colour":0.881,"pattern":0.139,"fabric":0.415,"ethnic":0.96,"search":0.774,"sleeve":0.856,"neckline":0.86,"occasion":0.865,"fit":0.739,"length":0.87,"brand_visible":0.333},"slices":{"celebrity":0.864,"accessories":0.848,"footwear":0.876,"mens-casual":0.868,"mens-ethnic":0.877,"mens-formals":0.885,"womens-ethnic":0.846,"womens-western":0.821,"everyday":0.858,"graphic-tees":0.892}},{"id":"claude-haiku-4.5","label":"Claude Haiku 4.5","vendor":"Anthropic","tier":"mid","score":0.847,"ci":0.017,"parts":{"spots":0.905,"names":0.945,"describes":0.802,"search":0.722},"ok":1,"priv":0,"privStrict":0.022,"cost":5.94,"p50":5.6,"fields":{"category":0.948,"department":0.869,"pattern":0.9,"sleeve":0.835,"neckline":0.86,"occasion":0.817,"ethnic":0.957,"search":0.727,"colour":0.808,"fabric":0.718,"fit":0.584,"length":0.497,"brand_visible":0.333},"slices":{"celebrity":0.828,"accessories":0.839,"footwear":0.857,"mens-casual":0.883,"mens-ethnic":0.806,"mens-formals":0.886,"womens-ethnic":0.787,"womens-western":0.84,"everyday":0.863,"graphic-tees":0.89}},{"id":"gpt-5.4-nano","label":"GPT-5.4 nano","vendor":"OpenAI","tier":"cheap","score":0.82,"ci":0.022,"parts":{"spots":0.944,"names":0.922,"describes":0.714,"search":0.739},"ok":0.99,"priv":0,"privStrict":0,"cost":1.32,"p50":6.2,"fields":{"category":0.926,"department":0.795,"colour":0.853,"pattern":0.491,"fabric":0.522,"ethnic":0.946,"search":0.746,"occasion":0.711,"sleeve":0.814,"neckline":0.779,"fit":0.6,"length":0.623,"brand_visible":0.333},"slices":{"celebrity":0.815,"accessories":0.729,"footwear":0.827,"mens-casual":0.869,"mens-ethnic":0.846,"mens-formals":0.892,"womens-ethnic":0.8,"womens-western":0.781,"everyday":0.825,"graphic-tees":0.872}},{"id":"gpt-5-nano","label":"GPT-5 nano","vendor":"OpenAI","tier":"very-cheap","score":0.792,"ci":0.032,"parts":{"spots":0.843,"names":0.895,"describes":0.73,"search":0.741},"ok":0.99,"priv":0,"privStrict":0,"cost":0.51,"p50":10.7,"fields":{"category":0.91,"department":0.581,"pattern":0.791,"ethnic":0.943,"search":0.75,"colour":0.917,"fabric":0.586,"occasion":0.758,"fit":0.542,"sleeve":0.853,"length":0.703,"neckline":0.628,"brand_visible":0},"slices":{"celebrity":0.78,"accessories":0.735,"footwear":0.843,"mens-casual":0.857,"mens-ethnic":0.804,"mens-formals":0.842,"womens-ethnic":0.641,"womens-western":0.813,"everyday":0.803,"graphic-tees":0.89}},{"id":"qwen3-vl-235b","label":"Qwen3-VL 235B-A22B","vendor":"Alibaba (open)","tier":"very-cheap","score":0.722,"ci":0.058,"parts":{"spots":0.714,"names":0.761,"describes":0.732,"search":0.708},"ok":0.99,"priv":0,"privStrict":0.022,"cost":1.64,"p50":22.2,"fields":{"category":0.882,"department":0.966,"pattern":0.909,"ethnic":0.955,"search":0.808,"colour":0.936,"fabric":0.713,"occasion":0.822,"fit":0.563,"sleeve":0.87,"length":0.741,"neckline":0.45,"brand_visible":0.333},"slices":{"celebrity":0.739,"accessories":0.625,"footwear":0.854,"mens-casual":0.887,"mens-ethnic":0.505,"mens-formals":0.768,"womens-ethnic":0.496,"womens-western":0.832,"everyday":0.708,"graphic-tees":0.837}},{"id":"qwen3-vl-30b","label":"Qwen3-VL 30B-A3B","vendor":"Alibaba (open)","tier":"very-cheap","score":0.665,"ci":0.055,"parts":{"spots":0.701,"names":0.705,"describes":0.66,"search":0.615},"ok":0.99,"priv":0.067,"privStrict":0.089,"cost":0.65,"p50":20.7,"fields":{"category":0.802,"department":0.923,"colour":0.892,"pattern":0.898,"fabric":0.47,"occasion":0.757,"ethnic":0.919,"search":0.708,"fit":0.434,"sleeve":0.789,"length":0.569,"neckline":0.347,"brand_visible":0.667},"slices":{"celebrity":0.697,"accessories":0.565,"footwear":0.835,"mens-casual":0.769,"mens-ethnic":0.613,"mens-formals":0.686,"womens-ethnic":0.395,"womens-western":0.772,"everyday":0.638,"graphic-tees":0.799}}],"cascades":[{"label":"GPT-5 nano → Gemini 3.5 Flash","rule":"escalate when unsure (confidence < 0.7)","score":0.884,"cost":9.68,"esc":0.84},{"label":"GPT-5 nano → Gemini 3.5 Flash","rule":"escalate celebrity and ethnic looks","score":0.844,"cost":3.75,"esc":0.33},{"label":"GPT-5 nano → GPT-5.4 mini","rule":"escalate when unsure (confidence < 0.7)","score":0.869,"cost":4.12,"esc":0.84},{"label":"GPT-5 nano → GPT-5.4 mini","rule":"escalate celebrity and ethnic looks","score":0.839,"cost":1.89,"esc":0.33},{"label":"GPT-5.4 nano → GPT-5.4 mini","rule":"escalate celebrity and ethnic looks","score":0.84,"cost":2.74,"esc":0.34}],"bands":[{"label":"Up to 1,000 image searches / month","why":"Cost is a few dollars either way: buy the best quality.","pick":"Gemini 3.5 Flash","score":0.908,"monthly":11,"best":"Gemini 3.5 Flash","bestScore":0.908,"bestMonthly":11},{"label":"1,000–10,000 / month","why":"Give up at most 3 points to save money.","pick":"GPT-5.4 mini","score":0.881,"monthly":43,"best":"Gemini 3.5 Flash","bestScore":0.908,"bestMonthly":111},{"label":"10,000–100,000 / month","why":"Cost dominates: give up at most 5 points.","pick":"GPT-5 nano → GPT-5.4 mini (escalate when unsure (confidence < 0.7))","score":0.869,"monthly":412,"best":"Gemini 3.5 Flash","bestScore":0.908,"bestMonthly":1105}],"hardest":[{"id":"accessories-103","score":0.394,"tags":["celebrity","accessories"]},{"id":"ethnic-womens-ethnic-079","score":0.6,"tags":["celebrity","womens-ethnic"]},{"id":"ethnic-womens-ethnic-081","score":0.616,"tags":["celebrity","womens-ethnic"]},{"id":"formals-mens-formals-039","score":0.646,"tags":["everyday","mens-formals"]},{"id":"ethnic-womens-ethnic-071","score":0.677,"tags":["everyday","womens-ethnic"]},{"id":"accessories-099","score":0.68,"tags":["everyday","accessories"]},{"id":"accessories-090","score":0.688,"tags":["everyday","accessories"]},{"id":"ethnic-womens-ethnic-066","score":0.7,"tags":["everyday","womens-ethnic"]}]};
+const pct=v=>(v*100).toFixed(1);
+const ship=r=>r.ok>=0.98&&r.priv<=0.02;
+const vendorColor={"Google":"var(--indigo)","OpenAI":"var(--marigold)","Anthropic":"var(--good)","Alibaba (open)":"var(--bad)"};
+const blockReason=r=>r.priv>0.02?"names people":r.ok<0.98?"fails too often":"";
+
+// Privacy table
+(()=>{const t=document.getElementById("privacy");
+ const rows=[...D.rows].sort((a,b)=>b.priv-a.priv||b.privStrict-a.privStrict);
+ t.innerHTML=`<thead><tr><th>Model</th><th class="r">From faces</th><th class="r">First check (incl. watermark)</th><th>Verdict</th></tr></thead><tbody>`+
+ rows.map(r=>`<tr><td>${r.label}</td><td class="r num">${pct(r.priv)}%</td><td class="r num muted">${pct(r.privStrict)}%</td><td>${r.priv>0.02?'<span class="chip no">Fails</span>':'<span class="chip ok">Passes</span>'}</td></tr>`).join("")+`</tbody>`;
+ t.querySelector("tbody").insertAdjacentHTML("beforeend",`<tr><td colspan="4" class="note" style="white-space:normal">GPT-5.6 Luna's one hit is real: it read the watermark and then wrote the actress's full name into its own guess, which would show up in Discover. That puts it at 2.2%, just over the bar.</td></tr>`);
+})();
+
+// Leaderboard
+(()=>{const t=document.getElementById("board");
+ const cols=[["label","Model",r=>`${r.label}<div class="note">${r.vendor}</div>`,"s"],["score","Score",r=>`<div class="bar ${ship(r)?"":"off"}"><i style="width:${Math.max(0,(r.score-0.5)*2)*110}px"></i><span class="num">${pct(r.score)} <span class="muted">±${(r.ci*100).toFixed(1)}</span></span></div>`],
+  ["spots","Finds",r=>pct(r.parts.spots)],["names","Names",r=>pct(r.parts.names)],["describes","Describes",r=>pct(r.parts.describes)],["search","Search",r=>pct(r.parts.search)],
+  ["cost","$ / 1k",r=>"$"+r.cost.toFixed(2)],["p50","Speed",r=>r.p50.toFixed(1)+" s"],["ok","Valid",r=>pct(r.ok)+"%"],["ship","Can ship",r=>ship(r)?'<span class="chip ok">Yes</span>':`<span class="chip no">No, ${blockReason(r)}</span>`]];
+ const val=(r,k)=>k==="label"?r.label:k==="ship"?(ship(r)?1:0):r.parts&&k in r.parts?r.parts[k]:r[k];
+ let key="score";
+ const draw=()=>{const asc=key==="cost"||key==="p50"||key==="label";const rows=[...D.rows].sort((a,b)=>{const x=val(a,key),y=val(b,key);return typeof x==="string"?x.localeCompare(y):asc?x-y:y-x;});
+  t.innerHTML=`<thead><tr>${cols.map(([k,h],i)=>`<th class="sort ${i>1&&i<9?"r":""}" tabindex="0" data-k="${k}" ${k===key?'aria-sort="descending"':""}>${h}</th>`).join("")}</tr></thead><tbody>`+
+  rows.map(r=>`<tr class="${ship(r)?"":"off"}">${cols.map(([k,,f],i)=>`<td class="${i>1&&i<9?"r num":""}">${f(r)}</td>`).join("")}</tr>`).join("")+`</tbody>`;
+  t.querySelectorAll("th.sort").forEach(th=>{const go=()=>{key=th.dataset.k;draw();};th.onclick=go;th.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();go();}};});};
+ draw();})();
+
+// Scatter: score vs log cost
+(()=>{const svg=document.getElementById("scatter"),W=900,H=440,m={l:56,r:24,t:20,b:52};svg.setAttribute("viewBox",`0 0 ${W} ${H}`);
+ const xmin=Math.log10(0.4),xmax=Math.log10(15),ymin=0.6,ymax=1;
+ const X=c=>m.l+(Math.log10(c)-xmin)/(xmax-xmin)*(W-m.l-m.r),Y=s=>H-m.b-(s-ymin)/(ymax-ymin)*(H-m.t-m.b);
+ let g="";
+ for(const s of [0.6,0.7,0.8,0.9,1])g+=`<line x1="${m.l}" x2="${W-m.r}" y1="${Y(s)}" y2="${Y(s)}" style="stroke:var(--rule)"/><text x="${m.l-8}" y="${Y(s)+4}" text-anchor="end" font-size="12" style="fill:var(--muted)">${s*100}</text>`;
+ for(const c of [0.5,1,2,5,10])g+=`<line y1="${m.t}" y2="${H-m.b}" x1="${X(c)}" x2="${X(c)}" style="stroke:var(--rule)"/><text x="${X(c)}" y="${H-m.b+20}" text-anchor="middle" font-size="12" style="fill:var(--muted)">$${c}</text>`;
+ g+=`<text x="${(W+m.l)/2}" y="${H-8}" text-anchor="middle" font-size="12" style="fill:var(--muted)">Cost per 1,000 images (log scale)</text><text transform="translate(14 ${(H-m.b+m.t)/2}) rotate(-90)" text-anchor="middle" font-size="12" style="fill:var(--muted)">Score</text>`;
+ const nudge={"Gemini 3 Flash":[-10,-12,"end"],"GPT-5.4 mini":[12,16,"start"],"Claude Haiku 4.5":[12,16,"start"],"GPT-5.4 nano":[12,14,"start"],"GPT-5.6 Luna":[-12,-8,"end"]};
+ for(const r of D.rows){const x=X(r.cost),y=Y(r.score),c=vendorColor[r.vendor],ok=ship(r);const [dx,dy,an]=nudge[r.label]||[12,4,"start"];
+  g+=`<circle cx="${x}" cy="${y}" r="8" style="fill:${ok?c:"var(--panel)"};stroke:${c};stroke-width:2.5"><title>${r.label}: ${pct(r.score)} at $${r.cost.toFixed(2)} per 1,000${ok?"":" (can't ship: "+blockReason(r)+")"}</title></circle><text x="${x+dx}" y="${y+dy}" text-anchor="${an}" font-size="12.5" font-weight="${ok?600:400}" style="fill:${ok?"var(--ink)":"var(--muted)"}">${r.label}</text>`;}
+ svg.innerHTML=g;
+ document.getElementById("vendors").innerHTML=Object.entries(vendorColor).map(([v,c])=>`<span><i class="dot" style="background:${c}"></i>${v}</span>`).join("")+`<span><i class="dot" style="border:2px solid var(--muted)"></i>Can't ship</span>`;
+})();
+
+// Volume bands
+(()=>{const t=document.getElementById("bands");
+ t.innerHTML=`<thead><tr><th>Searches a month</th><th>Use</th><th class="r">Score</th><th class="r">Monthly cost</th><th class="r">Best possible</th></tr></thead><tbody>`+
+ D.bands.map(b=>`<tr><td>${b.label.replace(" image searches","").replace(" / month","")}</td><td style="white-space:normal;min-width:220px"><b>${b.pick}</b><div class="note">${b.why}</div></td><td class="r num">${pct(b.score)}</td><td class="r num">$${b.monthly.toLocaleString("en-IN")}</td><td class="r num muted">${pct(b.bestScore)} for $${b.bestMonthly.toLocaleString("en-IN")}</td></tr>`).join("")+`</tbody>`;
+})();
+
+// Heatmaps
+const heat=(id,keys,labels,get)=>{const t=document.getElementById(id);const rows=D.rows;
+ const cell=v=>v==null?'<td class="h muted">–</td>':`<td class="h" style="background:color-mix(in srgb,var(--heat) ${Math.round(Math.max(0,Math.min(1,(v-0.4)/0.6))*55)}%,transparent)">${Math.round(v*100)}</td>`;
+ t.innerHTML=`<thead><tr><th>Model</th>${labels.map(l=>`<th class="r">${l}</th>`).join("")}</tr></thead><tbody>`+rows.map(r=>`<tr class="${ship(r)?"":"off"}"><td>${r.label}</td>${keys.map(k=>cell(get(r,k))).join("")}</tr>`).join("")+`</tbody>`;};
+heat("slices",["womens-ethnic","accessories","mens-ethnic","mens-formals","womens-western","footwear","graphic-tees","mens-casual","celebrity","everyday"],["Women's ethnic","Accessories","Men's ethnic","Men's formals","Women's western","Footwear","Graphic tees","Men's casual","Celebrity","Everyday"],(r,k)=>r.slices[k]);
+heat("fields",["category","colour","pattern","fabric","fit","length","sleeve","neckline","occasion","ethnic","department","brand_visible"],["Type","Colour","Pattern","Fabric","Fit","Length","Sleeve","Neckline","Occasion","Ethnic","Men/Women","Brand*"],(r,k)=>r.fields[k]);
+</script>
