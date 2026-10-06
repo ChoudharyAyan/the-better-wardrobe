@@ -71,3 +71,52 @@
    track never resolved, so tall photos rendered at natural size on top of the copy). */
 .dc-shell .dc-result-image{height:auto;aspect-ratio:4/5;position:relative;overflow:hidden}
 .dc-shell .dc-result-image img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:top center}
+/* ---- Discover v2: QA round 1 (7 Oct 2026) ---- */
+/* In-app model dropdown (replaces the phone's native select sheet) */
+.dc-model{position:relative}
+.dc-model-chip{border:1px solid var(--dc-line);background:#fbf5ec;border-radius:999px;padding:8px 14px;font:800 12px 'Montserrat','Montserrat Fallback',sans-serif;color:var(--dc-ink);min-height:36px;display:inline-flex;align-items:center;gap:6px;cursor:pointer}
+.dc-model-chip span{color:var(--dc-rose);font-size:10px}
+.dc-model-menu{position:absolute;bottom:calc(100% + 8px);left:0;z-index:30;list-style:none;margin:0;padding:6px;width:min(280px,78vw);background:#fff;border:1px solid var(--dc-line);border-radius:16px;box-shadow:0 18px 44px rgba(48,25,33,.16)}
+.dc-model-menu button{width:100%;display:flex;align-items:center;gap:10px;text-align:left;border:0;background:none;border-radius:11px;padding:10px 11px;color:var(--dc-ink);font-family:'Montserrat','Montserrat Fallback',sans-serif;cursor:pointer}
+.dc-model-menu button:hover,.dc-model-menu [aria-selected=true] button{background:#fdf6f8}
+.dc-model-menu span{flex:1;display:flex;flex-direction:column;gap:2px}.dc-model-menu b{font-size:14px}.dc-model-menu small{font-size:11px;color:var(--dc-muted)}
+.dc-model-menu em{font-style:normal;font-size:11px;font-weight:800;color:var(--dc-rose)}.dc-model-menu i{font-style:normal;color:var(--dc-rose);font-weight:800}
+/* Voice */
+.dc-mic{flex:none;width:42px;height:42px;border-radius:13px;border:1px solid var(--dc-line);background:#fff;font-size:18px;cursor:pointer}
+.dc-mic.on{background:var(--dc-rose);color:#fff;border-color:var(--dc-rose);animation:dc-pulse 1.2s ease-in-out infinite}
+@keyframes dc-pulse{0%,100%{box-shadow:0 0 0 0 #8e1b4d55}50%{box-shadow:0 0 0 8px #8e1b4d00}}
+/* Loading */
+.dc-loading{width:min(100%,770px);margin:0 auto;border:1px dashed var(--dc-line);border-radius:18px;background:#fffaf6;padding:22px;text-align:center;display:flex;flex-direction:column;align-items:center;gap:12px}
+.dc-loading p{margin:0;font-weight:700;font-size:14px;color:var(--dc-ink);min-height:20px}
+.dc-loading-orbit{position:relative;width:46px;height:46px}
+.dc-loading-orbit i{position:absolute;inset:0;border-radius:50%;border:3px solid transparent;border-top-color:var(--dc-rose);animation:dc-spin 1.1s linear infinite}
+.dc-loading-orbit i:nth-child(2){inset:7px;border-top-color:#c98aa5;animation-duration:1.6s}.dc-loading-orbit i:nth-child(3){inset:14px;border-top-color:#e7c8d4;animation-duration:2.2s}
+@keyframes dc-spin{to{transform:rotate(360deg)}}
+.dc-mall-hint{display:flex;flex-direction:column;gap:8px;align-items:center;font-size:12px;color:var(--dc-muted)}
+.dc-mall-hint button{border:0;background:var(--dc-rose);color:#fff;border-radius:999px;padding:9px 15px;font:800 12px 'Montserrat','Montserrat Fallback',sans-serif;cursor:pointer}
+.dc-cancel{border:0;background:none;color:var(--dc-muted);font:600 12px 'Montserrat','Montserrat Fallback',sans-serif;text-decoration:underline;cursor:pointer}
+/* "Searched for" chips with free refine */
+.dc-understood{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:16px}
+.dc-understood .dc-kicker{width:100%}
+.dc-edit{border:0;background:none;color:var(--dc-rose);font:800 12px 'Montserrat','Montserrat Fallback',sans-serif;cursor:pointer;padding:6px 4px}
+.dc-refine{margin-bottom:18px}
+/* Results: matches, then store searches */
+.dc-empty{margin:14px 0 0;font-size:13px;color:var(--dc-muted)}
+.dc-stores{margin-top:18px}
+.dc-store-row{display:flex;gap:8px;overflow-x:auto;padding:8px 0 4px;scrollbar-width:none}.dc-store-row::-webkit-scrollbar{display:none}
+.dc-store-row a{flex:none;border:1px solid var(--dc-line);background:#fff;border-radius:999px;padding:9px 14px;font-size:12px;font-weight:700;color:var(--dc-ink);text-decoration:none}
+.dc-store-row a:hover{border-color:var(--dc-rose);color:var(--dc-rose)}
+/* Saved chats */
+.dc-chats{display:flex;gap:8px;overflow-x:auto;margin:0 0 12px;padding-bottom:2px;scrollbar-width:none}.dc-chats::-webkit-scrollbar{display:none}
+.dc-chat{flex:none;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:1px solid var(--dc-line);background:#fff;border-radius:999px;padding:8px 13px;font:700 12px 'Montserrat','Montserrat Fallback',sans-serif;color:var(--dc-ink);cursor:pointer}
+.dc-chat.active{background:var(--dc-ink);color:#fff;border-color:var(--dc-ink)}
+.dc-chat.new{color:var(--dc-rose);border-style:dashed}
+.dc-chat-limit{border:1px solid var(--dc-line);background:#fffaf6;border-radius:16px;padding:16px;margin:0 0 12px}
+.dc-chat-limit strong{display:block;font-size:14px}.dc-chat-limit p{margin:4px 0 10px;font-size:12px;color:var(--dc-muted)}
+.dc-chat-limit ul{list-style:none;margin:0 0 8px;padding:0;display:grid;gap:6px}
+.dc-chat-limit li{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#fff;border:1px solid var(--dc-line);border-radius:12px;padding:8px 10px;font-size:13px}
+.dc-chat-limit li button{border:0;background:#fbe9ec;color:#b3261e;border-radius:999px;padding:6px 12px;font:800 11px 'Montserrat','Montserrat Fallback',sans-serif;cursor:pointer}
+/* Results-ready pill, visible from anywhere in the app */
+.dc-ready-pill{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:60;border:0;background:var(--dc-ink,#281b22);color:#fff;border-radius:999px;padding:12px 18px;font:800 13px 'Montserrat','Montserrat Fallback',sans-serif;box-shadow:0 12px 30px rgba(40,27,34,.28);cursor:pointer;animation:dc-rise .35s ease-out}
+@keyframes dc-rise{from{transform:translate(-50%,16px);opacity:0}to{transform:translateX(-50%);opacity:1}}
+@media(prefers-reduced-motion:reduce){.dc-loading-orbit i,.dc-mic.on,.dc-ready-pill{animation:none}}

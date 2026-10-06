@@ -103,3 +103,14 @@ test('the Postgres ledger increment runs on a real database',{skip:!process.env.
   assert.deepEqual([await add(15),await add(15),await add(100),await add(5)],[15,30,null,35]);
  }finally{await client.query('ROLLBACK');await client.end();}
 });
+
+test('a question with no fashion in it is free and unlocks no search',async()=>{
+ const discovery={status:()=>({shopping:true,models:[],defaultModel:'gemini-3-flash'}),interpret:async()=>({attributes:null,question:'What type of garment are you looking for?'})};
+ const server=createServer(discovery,undefined,undefined,undefined,undefined,createCredits({env:{},store:memory()}));await new Promise(r=>server.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+server.address().port;
+ try{
+  const first=await fetch(base+'/api/discover/credits');const cookie=first.headers.get('set-cookie').split(';')[0];
+  const r=await (await fetch(base+'/api/discover/interpret',{method:'POST',headers:{'Content-Type':'application/json',Cookie:cookie},body:JSON.stringify({text:"Let's solve a differential equation",model:'gpt-5-nano'})})).json();
+  assert.deepEqual(r.credits,{remaining:120,cost:0});assert.equal(r.turn,undefined);
+  assert.equal((await (await fetch(base+'/api/discover/credits',{headers:{Cookie:cookie}})).json()).remaining,120);
+ }finally{await new Promise(r=>server.close(r));}
+});
