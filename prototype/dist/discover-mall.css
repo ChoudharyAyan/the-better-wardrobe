@@ -177,3 +177,5 @@
 }
 @media (max-width: 390px) { .mall-roof small { font-size: 9px; } .mall-scene-top,.mall-scene-bottom { padding-left: 9px; padding-right: 9px; } }
 @media (prefers-reduced-motion: reduce) { .mall-avatar,.mall-district,.mall-store,.mall-store-peek { transition: none; } .mall-avatar.walking .mall-avatar-legs i,.mall-avatar.walking .mall-avatar-arm { animation: none; } }
+.mall-district.for-you { border-color: var(--rose); box-shadow: 0 0 0 3px #f3c9da, 5px 6px 0 #4f353888; }
+.mall-for-you { display: inline-block; margin-top: 4px; padding: 2px 7px; border-radius: 999px; background: var(--rose); color: #fff; font: 800 9px/1.4 'Montserrat','Montserrat Fallback',sans-serif; font-style: normal; letter-spacing: .06em; text-transform: uppercase; }

@@ -81,14 +81,24 @@
     ? `<span class="mall-logo ${className}"><img src="${escapeHtml(icons[brand.id])}" alt="" loading="lazy" decoding="async"><span class="mall-logo-fallback">${escapeHtml(brand.name[0])}</span></span>`
     : `<span class="mall-logo mall-logo-text ${className}" aria-hidden="true">${escapeHtml(brand.name[0])}</span>`;
   const avatar = (variant = '', style = '') => `<span class="mall-avatar ${variant}" ${style ? `style="${style}"` : ''} aria-hidden="true"><span class="mall-avatar-shadow"></span><span class="mall-avatar-legs"><i></i><i></i></span><span class="mall-avatar-arm mall-avatar-arm-left"></span><span class="mall-avatar-arm mall-avatar-arm-right"></span><span class="mall-avatar-body"></span><span class="mall-avatar-head"></span></span>`;
+  // Districts that match the signed-in person's onboarding answers get a "For you" sign (design QA #15).
+  const interestDistricts = {'mens-formal': ['Menswear and smart casual'], 'mens-casual': ['Menswear and smart casual', 'Broad retail'], 'womens-ethnic': ['Ethnic and craft'], 'womens-western': ['Contemporary and womenswear'], streetwear: ['Streetwear and denim'], athleisure: ['Activewear and inclusive fits'], sneakers: ['Activewear and inclusive fits', 'Streetwear and denim'], accessories: ['Curated multi-brand'], luxury: ['Curated multi-brand'], budget: ['Broad retail'], indie: ['Independent design']};
+  const forYou = () => {
+    const profile = window.TBWAccount?.profile;
+    if (!profile) return new Set();
+    const picked = (profile.interests || []).flatMap((id) => interestDistricts[id] || []);
+    if (!picked.length) picked.push(...(profile.gender === 'male' ? ['Menswear and smart casual'] : profile.gender === 'female' ? ['Contemporary and womenswear', 'Ethnic and craft'] : []));
+    return new Set(picked.filter((name) => categories.includes(name)));
+  };
   const district = (name, index) => {
     const count = brands.filter((brand) => brand.category === name).length;
-    return `<button type="button" class="mall-district district-${index + 1} ${progress.districts.has(name) ? 'visited' : ''}" data-mall="category" data-value="${escapeHtml(name)}" aria-label="Enter ${escapeHtml(name)}, ${count} stores">
-      <span class="mall-roof"><span class="mall-roof-mark" aria-hidden="true">${String(index + 1).padStart(2, '0')}</span><strong>${escapeHtml(shortNames[index] || name)}</strong><small>${count} stores</small></span><span class="mall-door" aria-hidden="true"></span>
+    const mine = forYou().has(name);
+    return `<button type="button" class="mall-district district-${index + 1} ${progress.districts.has(name) ? 'visited' : ''} ${mine ? 'for-you' : ''}" data-mall="category" data-value="${escapeHtml(name)}" aria-label="Enter ${escapeHtml(name)}, ${count} stores">
+      <span class="mall-roof"><span class="mall-roof-mark" aria-hidden="true">${String(index + 1).padStart(2, '0')}</span><strong>${escapeHtml(shortNames[index] || name)}</strong><small>${count} stores</small>${mine ? '<em class="mall-for-you">For you</em>' : ''}</span><span class="mall-door" aria-hidden="true"></span>
     </button>`;
   };
   const map = () => `<div class="mall-scene mall-overview">
-    <div class="mall-scene-top"><span><b class="mall-live-dot"></b> Mall map</span><span>Choose a district</span></div>
+    <div class="mall-scene-top"><span><b class="mall-live-dot"></b> Mall map</span><span>${forYou().size ? 'Picked for you ✦' : 'Choose a district'}</span></div>
     <div class="mall-map" role="group" aria-label="Nine shopping districts">${categories.map(district).join('')}${avatar('mall-avatar-map')}<span class="mall-crossing mall-crossing-one" aria-hidden="true"></span><span class="mall-crossing mall-crossing-two" aria-hidden="true"></span></div>
     <div class="mall-scene-bottom"><span>01 / Mall map</span><span>Tap a building ↗</span></div>
   </div>`;
@@ -209,5 +219,6 @@
     else if (action === 'next' || action === 'previous') { page = Math.max(0, Math.min(pages() - 1, page + (action === 'next' ? 1 : -1))); activeBrand = null; update(); }
   });
   document.addEventListener('error', (event) => { if (event.target.matches?.('.mall-logo img')) event.target.hidden = true; }, true);
+  window.addEventListener?.('account-change', () => update());
   window.DiscoverMall = {render, loadUpdates, getState: () => ({stage, category, lane, page, activeBrand, detailTab, feedPhase: updateFeed.phase, districts: [...progress.districts], stores: [...progress.stores]}), enterCategory, enterLane, selectBrand, back};
 })();

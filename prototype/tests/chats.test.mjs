@@ -26,16 +26,25 @@ test('chats reject bad ids, bad payloads and oversized saves',async()=>{
  assert.equal((await c.save('me',id(1),{title:'   ',data:{}})).title,'New search');
 });
 
-test('chat routes follow the guest cookie and return the 409 list',async()=>{
- const server=createServer({status:()=>({})},undefined,undefined,undefined,undefined,undefined,fresh());await new Promise(r=>server.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+server.address().port;
+test('chat routes need a profile, follow its owner and return the 409 list',async()=>{
+ const {createAccounts}=await import('../lib/accounts.mjs');
+ const server=createServer({status:()=>({})},undefined,undefined,undefined,undefined,undefined,fresh(),createAccounts({env:{}}));await new Promise(r=>server.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+server.address().port;
  try{
-  const first=await fetch(base+'/api/discover/chats');const cookie=first.headers.get('set-cookie').split(';')[0];assert.deepEqual(await first.json(),{chats:[]});
+  // Guests who explore freely don't get saved chats.
+  const guest=await fetch(base+'/api/discover/chats');assert.equal(guest.status,401);assert.equal((await guest.json()).signIn,true);
+  const me=await fetch(base+'/api/me');const guestCookie=me.headers.get('set-cookie').split(';')[0];
+  assert.deepEqual(Object.fromEntries(Object.entries(await me.json()).filter(([k])=>['google','signedIn','previewAvailable'].includes(k))),{google:false,signedIn:false,previewAvailable:true});
+  const preview=await fetch(base+'/api/auth/preview',{method:'POST',headers:{'Content-Type':'application/json',Cookie:guestCookie},body:'{}'});
+  assert.equal(preview.status,200);const cookie=guestCookie+'; '+preview.headers.get('set-cookie').split(';')[0];
+  assert.deepEqual(await (await fetch(base+'/api/discover/chats',{headers:{Cookie:cookie}})).json(),{chats:[]});
   const put=(n,title)=>fetch(base+'/api/discover/chats/'+id(n),{method:'PUT',headers:{'Content-Type':'application/json',Cookie:cookie},body:JSON.stringify({title,data:{messages:[]}})});
   for(let i=1;i<=3;i++)assert.equal((await put(i,'Chat '+i)).status,200);
   const full=await put(4,'Chat 4');assert.equal(full.status,409);assert.equal((await full.json()).chats.length,3);
   assert.equal((await (await fetch(base+'/api/discover/chats/'+id(2),{headers:{Cookie:cookie}})).json()).title,'Chat 2');
   assert.equal((await (await fetch(base+'/api/discover/chats/'+id(2),{method:'DELETE',headers:{Cookie:cookie}})).json()).chats.length,2);
   assert.equal((await fetch(base+'/api/discover/chats',{headers:{'Sec-Fetch-Site':'cross-site',Cookie:cookie}})).status,403);
+  // A forged session is a guest.
+  assert.equal((await fetch(base+'/api/discover/chats',{headers:{Cookie:guestCookie+'; tbw_session=cDpndWVzdA.9999999999999.forged'}})).status,401);
  }finally{await new Promise(r=>server.close(r));}
 });
 

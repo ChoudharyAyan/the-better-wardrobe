@@ -23,7 +23,7 @@ function harness(replies){
  const page={set outerHTML(value){latest=value;}};
  const context={window:{},document:{addEventListener:(event,fn)=>{listeners[event]=fn;},getElementById:id=>id==='discover-conversation'?page:null},AbortController,
   FormData:class{constructor(form){this.v=form.values;}get(k){return this.v[k];}},
-  fetch:async(url,options)=>{const action=url.split('/').pop();const body=JSON.parse(options.body);calls.push({action,body});const reply=typeof replies[action]==='function'?replies[action](body):replies[action];return {ok:reply?.status?reply.status<400:true,status:reply?.status||200,json:async()=>reply};}};
+  fetch:async(url,options={})=>{const action=url.split('/').pop();const body=options.body?JSON.parse(options.body):{};calls.push({action,body});const reply=typeof replies[action]==='function'?replies[action](body):replies[action];return {ok:reply?.status?reply.status<400:true,status:reply?.status||200,json:async()=>reply};}};
  vm.runInNewContext(script,context);
  const settle=()=>new Promise(r=>setImmediate(r));
  const click=(action,data={})=>listeners.click({target:{closest:sel=>sel==='[data-conversation]'?{dataset:{conversation:action,...data}}:null}});
@@ -98,7 +98,21 @@ test('the reply says whose styles are shown: both when unknown, one when asked',
  await womens.ask("black linen shirt for women");
  assert.match(womens.latest(),/Showing women&#39;s styles\. Say “men&#39;s” if you want the other\./);
 });
-test('saved chats stay visible as tabs, with an empty state before the first search',async()=>{
+test('saved chats stay visible as tabs for people with a profile; guests are invited to set one up',async()=>{
  const h=harness({});
+ assert.match(h.context.window.DiscoverConversation.render(),/Set up a profile to save and revisit chats.*data-ob="sign-in"/s);
+ h.context.window.TBWAccount={signedIn:true,profile:null};
  assert.match(h.context.window.DiscoverConversation.render(),/Your chats <em>0\/3<\/em>.*Your searches are saved here.*＋ New chat/s);
+});
+test('trending looks: three shown, shuffled, leaning to the profile, and a tap searches the look by id',async()=>{
+ const looks=[...Array(8)].map((_,i)=>({id:'l'+i,who:'Who '+i,label:'Look '+i,department:i<4?'menswear':'womenswear'}));
+ const h=harness({looks:{looks},interpret:body=>({attributes:{...shirt},query:'q',budget:null,credits:{remaining:105,cost:15},turn:'t',echo:body}),search:found});
+ h.context.window.TBWAccount={signedIn:true,profile:{gender:'female'}};h.context.window.fetch=(...a)=>h.context.fetch(...a);
+ h.context.window.DiscoverConversation.render();await h.settle();
+ const html=h.latest();const ids=[...html.matchAll(/data-conversation="look" data-index="\d">.*?Look (\d)/g)].map(m=>Number(m[1]));
+ assert.equal(ids.length,3);assert.ok(ids.filter(i=>i>=4).length>=2,'two of three are womenswear for a female profile');
+ assert.match(html,/Shuffle ↻/);
+ h.click('look',{index:'0'});for(let i=0;i<4;i++)await h.settle();
+ const asked=h.calls.find(c=>c.action==='interpret');assert.equal(asked.body.look,'l'+ids[0]);assert.equal(asked.body.image,undefined);
+ assert.equal(h.calls.filter(c=>c.action==='search').length,1);
 });

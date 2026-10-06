@@ -6,6 +6,8 @@ import path from 'node:path';
 import {createDiscovery,ApiError,modelKey} from './lib/discovery.mjs';
 import {createCredits} from './lib/credits.mjs';
 import {createChats} from './lib/chats.mjs';
+import {createAccounts,departmentFor} from './lib/accounts.mjs';
+import {lookCards} from './lib/looks.mjs';
 import {randomBytes} from 'node:crypto';
 import {createQaStore} from './lib/qa.mjs';
 import {createConnectorStore,STORES} from './lib/connectors.mjs';
@@ -16,7 +18,7 @@ try{process.loadEnvFile(fileURLToPath(new URL('./.env',import.meta.url)));}catch
 const root=fileURLToPath(new URL('./dist/',import.meta.url));
 const mime={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.svg':'image/svg+xml','.jpg':'image/jpeg','.png':'image/png','.webp':'image/webp','.woff2':'font/woff2','.ttf':'font/ttf'};
 // The bare (req,res) listener is what Vercel's Node runtime invokes; createServer wraps it for local runs.
-export function createHandler(discovery=createDiscovery(),qaStore=createQaStore(),photos=createPhotos(),connectors=createConnectorStore(),community=createCommunity(),credits=createCredits(),chats=createChats()){
+export function createHandler(discovery=createDiscovery(),qaStore=createQaStore(),photos=createPhotos(),connectors=createConnectorStore(),community=createCommunity(),credits=createCredits(),chats=createChats(),accounts=createAccounts()){
 return async(req,res)=>{
  const send=(status,data)=>{res.writeHead(status,{'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});res.end(JSON.stringify(data));};
  try{const pathname=decodeURIComponent(new URL(req.url,'http://localhost').pathname);
@@ -74,13 +76,36 @@ return async(req,res)=>{
  }
 
  // One anonymous guest identity for Community XP and Discover credits.
- const guest=()=>{const token=String(req.headers.cookie||'').match(/(?:^|;\s*)tbw_community=([a-f0-9]{48})(?:;|$)/)?.[1];if(token)return token;const fresh=randomBytes(24).toString('hex');res.setHeader('Set-Cookie',`tbw_community=${fresh}; Path=/; HttpOnly; SameSite=Lax; Max-Age=31536000${req.socket?.encrypted||req.headers['x-forwarded-proto']==='https'?'; Secure':''}`);return fresh;};
+ const secure=req.socket?.encrypted||req.headers['x-forwarded-proto']==='https'?'; Secure':'';
+ const cookies=[];const setCookie=c=>{cookies.push(c);res.setHeader('Set-Cookie',cookies);};
+ const cookie=name=>String(req.headers.cookie||'').match(new RegExp('(?:^|;\\s*)'+name+'=([^;]+)'))?.[1]||'';
+ let guestId='';const guest=()=>{if(guestId)return guestId;const token=cookie('tbw_community');if(/^[a-f0-9]{48}$/.test(token))return guestId=token;guestId=randomBytes(24).toString('hex');setCookie(`tbw_community=${guestId}; Path=/; HttpOnly; SameSite=Lax; Max-Age=31536000${secure}`);return guestId;};
+ // Signed-in account (Google, or a preview profile while Google isn't configured).
+ const accountId=accounts.readSession(cookie('tbw_session'));
+ const startSession=id=>setCookie(`tbw_session=${accounts.session(id)}; Path=/; HttpOnly; SameSite=Lax; Max-Age=${30*86400}${secure}`);
+ const sameSite=()=>req.headers['sec-fetch-site']!=='cross-site'&&(!req.headers.origin||(()=>{try{return new URL(req.headers.origin).host===req.headers.host;}catch{return false;}})());
+ const origin=()=>{const base=process.env.PUBLIC_BASE_URL;if(base)return base.replace(/\/$/,'');return `${secure?'https':'http'}://${req.headers.host}`;};
+ const redirect=(location)=>{res.writeHead(302,{Location:location,'Cache-Control':'no-store'});res.end();};
+ const readJson=async limit=>{if(!req.headers['content-type']?.startsWith('application/json'))throw new ApiError(415,'JSON required');let size=0,parts=[];for await(const part of req){size+=part.length;if(size>limit)throw new ApiError(413,'Request too large');parts.push(part);}let body;try{body=JSON.parse(Buffer.concat(parts).toString()||'{}');}catch{throw new ApiError(400,'Invalid JSON');}if(!body||typeof body!=='object'||Array.isArray(body))throw new ApiError(400,'Invalid request');return body;};
+ if(req.method==='GET'&&pathname==='/api/me'){guest();return send(200,await accounts.me(accountId));}
+ if(req.method==='PUT'&&pathname==='/api/me/profile'){if(!sameSite())return send(403,{error:'Forbidden'});return send(200,{profile:await accounts.saveProfile(accountId,await readJson(8192))});}
+ if(req.method==='POST'&&pathname==='/api/auth/preview'){if(!sameSite())return send(403,{error:'Forbidden'});const id=await accounts.preview(guest());startSession(id);return send(200,await accounts.me(id));}
+ if(req.method==='POST'&&pathname==='/api/auth/logout'){if(!sameSite())return send(403,{error:'Forbidden'});setCookie(`tbw_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${secure}`);return send(200,{ok:true});}
+ if(req.method==='GET'&&pathname==='/api/auth/google'){const {url,cookie:flow}=accounts.authStart(origin()+'/api/auth/google/callback');setCookie(`tbw_oauth=${flow}; Path=/api/auth; HttpOnly; SameSite=Lax; Max-Age=600${secure}`);return redirect(url);}
+ if(req.method==='GET'&&pathname==='/api/auth/google/callback'){
+  const q=new URL(req.url,'http://localhost').searchParams;setCookie(`tbw_oauth=; Path=/api/auth; HttpOnly; SameSite=Lax; Max-Age=0${secure}`);
+  if(q.get('error'))return redirect('/#welcome');
+  const {id,onboarded}=await accounts.authFinish({code:q.get('code'),state:q.get('state'),cookie:cookie('tbw_oauth'),redirectUri:origin()+'/api/auth/google/callback'});
+  startSession(id);return redirect(onboarded?'/#discover':'/#onboarding');
+ }
+ if(req.method==='GET'&&pathname==='/api/discover/looks')return send(200,{looks:lookCards()});
  const ip=()=>String(req.headers['x-forwarded-for']||'').split(',')[0].trim()||req.socket?.remoteAddress||'unknown';
  // Saved Discover chats (three per guest in the beta).
  const chatPath=pathname.match(/^\/api\/discover\/chats(?:\/([a-f0-9-]{36}))?$/);
  if(chatPath){
   if(req.headers['sec-fetch-site']==='cross-site')return send(403,{error:'Forbidden'});
-  const id=chatPath[1],who=guest();
+  if(!accountId)return send(401,{error:'Sign in to save and revisit chats.',signIn:true});
+  const id=chatPath[1],who=accounts.chatOwner(accountId,guest());
   if(req.method==='GET'&&!id)return send(200,{chats:await chats.list(who)});
   if(req.method==='GET')return send(200,await chats.get(who,id));
   if(req.method==='DELETE'&&id){await chats.remove(who,id);return send(200,{chats:await chats.list(who)});}
@@ -116,6 +141,8 @@ return async(req,res)=>{
  // Asking costs credits (the model call); the answer carries a ticket good for two shopping searches.
  // Wardrobe imports (detect, orders) stay outside the search allowance and keep the hourly limit.
  let charge=null;const who={guest:guest(),ip:ip(),model:modelKey(body.model)};body.model=who.model;
+ // The person's own profile sets Discover's default department; a client can't pick someone else's.
+ delete body.department;if(action==='interpret'&&accountId){const a=await accounts.get(accountId);body.department=departmentFor(a?.profile);}
  // Every AI call (search and wardrobe imports) stops before the prepaid balance runs out.
  if(['detect','orders','analyze','interpret'].includes(action))await credits.budgetOk?.();
  if(['interpret','analyze'].includes(action))charge=await credits.charge(who);
@@ -135,5 +162,5 @@ return async(req,res)=>{
  const content=await readFile(target);res.writeHead(200,{'Content-Type':mime[path.extname(target)]||'application/octet-stream','Cache-Control':'no-cache','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer'});res.end(req.method==='HEAD'?undefined:content);
  }catch(e){const status=e.status||(e.code==='ENOENT'?404:500);if(status>=500&&!e.status)console.error('Unhandled',req.method,String(req.url||'').split('?')[0],e?.code||'',String(e?.message||e).replace(/postgres(ql)?:\/\/\S+/gi,'<db-url>').slice(0,300));send(status,{error:e instanceof ApiError||e.status?e.message:'Unable to complete this request.'});}
 };}
-export function createServer(discovery,qaStore,photos,connectors,community,credits,chats){return http.createServer(createHandler(discovery,qaStore,photos,connectors,community,credits,chats));}
+export function createServer(discovery,qaStore,photos,connectors,community,credits,chats,accounts){return http.createServer(createHandler(discovery,qaStore,photos,connectors,community,credits,chats,accounts));}
 if(process.argv[1]&&import.meta.url===pathToFileURL(path.resolve(process.argv[1])).href){const port=Number(process.env.PORT||5173),host=process.env.HOST||'0.0.0.0';createServer().listen(port,host,()=>console.log(`The Better Wardrobe: http://127.0.0.1:${port} · network enabled`));}

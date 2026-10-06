@@ -141,3 +141,11 @@
 @keyframes dc-drop{from{opacity:0;transform:translateY(-24px)}to{opacity:1;transform:none}}
 .dc-refine select{width:100%;border:1px solid var(--dc-line);border-radius:12px;padding:10px;background:#fff;font:inherit}
 .dc-results{scroll-margin-top:96px}
+
+/* Design QA 6 Oct (v4): trending looks from real people, shuffled. */
+.dc-looks{display:flex;flex-direction:column;gap:10px}
+.dc-looks-head{display:flex;justify-content:space-between;align-items:center}
+.dc-shuffle{border:1px solid var(--dc-line);background:#fff;border-radius:999px;padding:7px 12px;font:800 12px 'Montserrat','Montserrat Fallback',sans-serif;color:var(--dc-rose);cursor:pointer}
+.dc-looks .dc-examples button{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 6px;text-align:left}
+.dc-looks .dc-examples button small{flex-basis:100%;font:700 10px 'Montserrat','Montserrat Fallback',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--dc-rose)}
+.dc-idea{border-style:dashed!important}
