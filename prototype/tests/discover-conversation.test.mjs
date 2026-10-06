@@ -116,3 +116,13 @@ test('trending looks: three shown, shuffled, leaning to the profile, and a tap s
  const asked=h.calls.find(c=>c.action==='interpret');assert.equal(asked.body.look,'l'+ids[0]);assert.equal(asked.body.image,undefined);
  assert.equal(h.calls.filter(c=>c.action==='search').length,1);
 });
+
+test('QA v5: loading never names stores, a look note is said out loud, and no browser permission is asked',async()=>{
+ const src=script;
+ assert.doesNotMatch(src,/Searching Myntra|Checking Flipkart|requestPermission|new Notification/);
+ const h=harness({interpret:{attributes:{...shirt,category:'Coat',subtype:'shearling collar leather coat',colour:''},query:'shearling collar leather coat men',budget:null,credits:{remaining:105,cost:15},turn:'t',look:{id:'blade-runner-k-coat',who:'Ryan Gosling · Blade Runner 2049',note:'In Blade Runner 2049, Ryan Gosling’s signature piece is a dark leather coat with a big shearling collar, not a suit.'}},search:found});
+ h.context.window.TBWAccount={signedIn:true,profile:{name:'Ayan Choudhary'}};
+ await h.ask('ryan gosling suit from blade runner');
+ assert.match(h.latest(),/signature piece is a dark leather coat with a big shearling collar, not a suit\. Looking for/);
+ const search=h.calls.find(c=>c.action==='search');assert.equal(search.body.look,'blade-runner-k-coat');
+});
