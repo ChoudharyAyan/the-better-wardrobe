@@ -91,3 +91,15 @@ test('the server checks the balance before every AI call, imports included',asyn
   blocked=false;assert.equal((await post('/api/discover/interpret')).status,200);assert.deepEqual(seen,['interpret']);
  }finally{await new Promise(r=>server.close(r));}
 });
+// Runs only when a throwaway Postgres is available (TEST_DATABASE_URL): the ledger's own statement, on a temp
+// table inside a transaction that is rolled back. The in-memory store can't catch Postgres typing rules.
+test('the Postgres ledger increment runs on a real database',{skip:!process.env.TEST_DATABASE_URL&&'set TEST_DATABASE_URL to run'},async()=>{
+ const {default:pg}=await import('pg');const {readFileSync}=await import('node:fs');
+ const sql=readFileSync(new URL('../lib/credits.mjs',import.meta.url),'utf8').match(/'(INSERT INTO tbw_discover_usage[^']+)'/)[1];
+ const client=new pg.Client({connectionString:process.env.TEST_DATABASE_URL});await client.connect();
+ try{
+  await client.query('BEGIN');await client.query('CREATE TEMP TABLE tbw_discover_usage (key text PRIMARY KEY, used integer NOT NULL DEFAULT 0, updated_at timestamptz NOT NULL DEFAULT now()) ON COMMIT DROP');
+  const add=async(a)=>(await client.query(sql,['k',a,120])).rows[0]?.used??null;
+  assert.deepEqual([await add(15),await add(15),await add(100),await add(5)],[15,30,null,35]);
+ }finally{await client.query('ROLLBACK');await client.end();}
+});
