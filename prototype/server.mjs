@@ -99,6 +99,8 @@ return async(req,res)=>{
  // Asking costs credits (the model call); the answer carries a ticket good for two shopping searches.
  // Wardrobe imports (detect, orders) stay outside the search allowance and keep the hourly limit.
  let charge=null;const who={guest:guest(),ip:ip(),model:modelKey(body.model)};body.model=who.model;
+ // Every AI call (search and wardrobe imports) stops before the prepaid balance runs out.
+ if(['detect','orders','analyze','interpret'].includes(action))await credits.budgetOk?.();
  if(['interpret','analyze'].includes(action))charge=await credits.charge(who);
  if(action==='search'&&discovery.status?.().shopping&&!await credits.useTurn(body.turn,who.guest))return send(403,{error:'Ask a new question to search again.'});
  const runAction=async progress=>{try{const result=await discovery[action](body,progress,cancelled.signal);return charge?{...result,credits:{remaining:charge.remaining,cost:charge.cost},turn:charge.turn}:result;}catch(e){if(charge)await credits.refund(who).catch(()=>{});throw e;}};

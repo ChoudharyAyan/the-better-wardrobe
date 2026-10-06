@@ -18,7 +18,9 @@
   ];
   const renderMessage = message => `<article class="dc-message ${message.role==='user'?'dc-user':'dc-assistant'}"><span class="dc-speaker">${message.role==='user'?'You':'The Better Wardrobe'}</span><div class="dc-bubble">${message.image?`<img src="${escape(message.image)}" alt="Uploaded fashion reference" class="dc-message-image">`:''}${message.text?`<p>${escape(message.text)}</p>`:''}${message.meta?`<small class="dc-meta">${escape(message.meta)}</small>`:''}</div></article>`;
   const renderChoices = () => state.stage!=='choose'?'':`<div class="dc-choice-panel"><p>Which piece should I look for?</p><div class="dc-choice-list">${state.choices.map((item,index)=>`<button type="button" data-conversation="choice" data-index="${index}">${escape(item.label)} <span aria-hidden="true">↗</span></button>`).join('')}</div></div>`;
-  const field = (label,name,value,placeholder='') => `<label><span>${label}</span><input name="${name}" value="${escape(value)}" placeholder="${escape(placeholder)}"></label>`;
+  // Model non-answers ("unknown") show as an empty field with its placeholder, not as a value to search.
+  const known = value => /^(unknown|n\/?a|none|not visible|unclear)$/i.test(String(value??'').trim())?'':value;
+  const field = (label,name,value,placeholder='') => `<label><span>${label}</span><input name="${name}" value="${escape(known(value))}" placeholder="${escape(placeholder)}"></label>`;
   const renderReview = () => {
     if(state.stage!=='review'||!state.review?.attributes)return '';
     const {attributes:a,query,budget,uncertainty}=state.review;
@@ -28,12 +30,15 @@
     const t=state.results?.trace;if(!t)return '';
     const a=state.review?.attributes||{},budget=state.review?.budget;
     const facts=[a.category,a.colour,a.fit,a.pattern,a.details,budget?`under ₹${Number(budget).toLocaleString('en-IN')}`:''].filter(v=>v&&v!=='unknown');
-    const queries=(t.queries||[]).slice(0,6),removed=(t.titleRejected||0)+(t.domesticRejected||0),shown=state.results.results?.length||0;
+    // Trace entries read "phrase · route"; show each phrase once with the routes it went to.
+    const routes=new Map();for(const entry of t.queries||[]){const [phrase,route]=String(entry).split(' · ');if(!routes.has(phrase))routes.set(phrase,[]);if(route)routes.get(phrase).push(route);}
+    const queries=[...routes].slice(0,4),removed=(t.titleRejected||0)+(t.domesticRejected||0),shown=Math.min(state.results.results?.length||0,6);
     const seconds=t.elapsedMs?` · ${(t.elapsedMs/1000).toFixed(1)}s`:'';
     const step=(n,title,body)=>`<li><span class="dc-step-n">${n}</span><div><strong>${title}</strong>${body}</div></li>`;
-    return `<details class="dc-retrieval" open><summary>How I searched · ${queries.length} ${queries.length===1?'query':'queries'}${seconds}</summary><ol>${
+    const routeCount=(t.queries||[]).length;
+    return `<details class="dc-retrieval" open><summary>How I searched · ${routeCount} ${routeCount===1?'search':'searches'}${seconds}</summary><ol>${
       step(1,'Understood',`<div class="dc-chips">${facts.map(f=>`<span>${escape(f)}</span>`).join('')}</div>`)}${
-      step(2,'Searched',`<div class="dc-queries">${queries.map(q=>`<code>${escape(q)}</code>`).join('')}</div>`)}${
+      step(2,'Searched',`<div class="dc-queries">${queries.map(([q,via])=>`<span class="dc-query"><code>${escape(q)}</code>${via.length?`<small>${escape(via.join(' · '))}</small>`:''}</span>`).join('')}</div>`)}${
       step(3,'Narrowed down',`<p>${t.retrieved||0} found${removed?` · ${removed} off-topic or outside India removed`:''}${t.visuallyAssessed?` · ${t.visuallyAssessed} compared against your piece`:''} · <b>${shown} shown</b></p>${t.providerFailures?.length?`<p class="dc-result-note">${t.providerFailures.length} source${t.providerFailures.length===1?' was':'s were'} slow and skipped.</p>`:''}`)}</ol></details>`;
   };
   const renderResults = () => {

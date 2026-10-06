@@ -62,3 +62,32 @@ test('the server charges on asking, hands back a ticket, gates shopping search o
   assert.equal((await (await fetch(base+'/api/discover/credits',{headers:{Cookie:cookie}})).json()).remaining,97,'the failed call was refunded');
  }finally{await new Promise(r=>server.close(r));}
 });
+
+test('AI pauses below the minimum OpenRouter balance, reading the real balance, not the key limit',async()=>{
+ let credits={total_credits:10,total_usage:7.06},calls=0,clock=0;
+ const fetcher=async url=>{calls++;assert.equal(url,'https://openrouter.ai/api/v1/credits');return {ok:true,json:async()=>({data:credits})};};
+ const c=createCredits({env:{OPENROUTER_API_KEY:'k'},store:memory(),fetcher,now:()=>clock});
+ assert.equal((await c.balance()).toFixed(2),'2.94');await c.budgetOk();
+ credits={total_credits:10,total_usage:9.7};await c.budgetOk();assert.equal(calls,1,'the balance is cached for a minute');
+ clock+=61000;await assert.rejects(c.budgetOk(),e=>e.status===503&&e.reason==='balance');
+ const unreachable=createCredits({env:{OPENROUTER_API_KEY:'k'},store:memory(),fetcher:async()=>{throw Error('offline');}});
+ await unreachable.budgetOk();
+ const pinnedGemini=createCredits({env:{OPENROUTER_API_KEY:'k',VISION_PROVIDER:'gemini'},store:memory(),fetcher:async()=>assert.fail('not checked')});await pinnedGemini.budgetOk();
+ assert.equal(createCredits({env:{},store:memory()}).allowance,120);
+});
+test('the default daily cap across everyone is about 40 Gemini searches',async()=>{
+ const c=createCredits({env:{},store:memory()});let n=0;
+ for(let i=0;i<60;i++){try{await c.charge({guest:'g'+i,ip:'10.0.'+i,model:'gemini-3-flash'});n++;}catch(e){assert.equal(e.reason,'global');break;}}
+ assert.equal(n,40);
+});
+test('the server checks the balance before every AI call, imports included',async()=>{
+ let blocked=true;const seen=[];
+ const discovery={status:()=>({shopping:false,models:[],defaultModel:'gemini-3-flash'}),detect:async()=>{seen.push('detect');return {items:[]};},interpret:async()=>{seen.push('interpret');return {attributes:null};}};
+ const credits=createCredits({env:{},store:memory()});credits.budgetOk=async()=>{if(blocked)throw Object.assign(new Error('paused'),{status:503});};
+ const server=createServer(discovery,undefined,undefined,undefined,undefined,credits);await new Promise(r=>server.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+server.address().port;
+ try{
+  const post=path=>fetch(base+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:'shirt',image:'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aXmQAAAAASUVORK5CYII='})});
+  assert.equal((await post('/api/discover/detect')).status,503);assert.equal((await post('/api/discover/interpret')).status,503);assert.deepEqual(seen,[],'no model call while paused');
+  blocked=false;assert.equal((await post('/api/discover/interpret')).status,200);assert.deepEqual(seen,['interpret']);
+ }finally{await new Promise(r=>server.close(r));}
+});
