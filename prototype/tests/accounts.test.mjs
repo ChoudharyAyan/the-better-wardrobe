@@ -113,3 +113,14 @@ test('QA v5: the colour gate runs for typed colours only, and teal is its own co
  const src=(await import('node:fs')).readFileSync(new URL('../lib/discovery.mjs',import.meta.url),'utf8');
  assert.match(src,/if\(known\(a\.colour\)&&!body\.image\)/,'photo-derived colours are judged by the visual comparison, not the pixel gate');
 });
+
+test('Google sign-in returns to the domain the person is on, and never to an untrusted host',async()=>{
+ const accounts=createAccounts({env:{GOOGLE_CLIENT_ID:'cid',GOOGLE_CLIENT_SECRET:'sec'}});
+ const server=createServer({status:()=>({})},undefined,undefined,undefined,undefined,undefined,undefined,accounts);await new Promise(r=>server.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+server.address().port;
+ const redirectFor=async host=>new URL((await fetch(base+'/api/auth/google',{redirect:'manual',headers:{'X-Forwarded-Host':host,'X-Forwarded-Proto':'https'}})).headers.get('location')).searchParams.get('redirect_uri');
+ try{
+  assert.equal(await redirectFor('thewardrobeos.com'),'https://thewardrobeos.com/api/auth/google/callback');
+  assert.equal(await redirectFor('the-better-wardrobe.vercel.app'),'https://the-better-wardrobe.vercel.app/api/auth/google/callback');
+  assert.doesNotMatch(await redirectFor('evil.example'),/evil/);
+ }finally{await new Promise(r=>server.close(r));}
+});

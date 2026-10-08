@@ -70,3 +70,11 @@
 .nav-link.soon{opacity:.62}
 .soon-tag{font-style:normal;font-size:9px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;background:var(--raised);color:var(--rose);border-radius:999px;padding:1px 6px;margin-left:4px}
 .bottom-nav .soon-tag{position:absolute;top:2px;right:50%;transform:translateX(150%);margin:0}
+
+/* The Wardrobe OS (8 Oct 2026): app-icon mark (a hanger on a plum tile, with a green "on" light) and wordmark. */
+.brand-mark{width:36px;height:36px;flex-shrink:0;fill:initial;stroke:none;border-radius:11px;box-shadow:0 6px 14px rgba(40,16,31,.22);transition:transform .2s}
+.brand:hover .brand-mark{transform:rotate(-6deg) scale(1.04)}
+.brand-word{font:800 21px/1 var(--sans);letter-spacing:-.02em;color:var(--text);display:inline-flex;align-items:center;gap:6px}
+.brand-word b{font-weight:800;font-size:.62em;letter-spacing:.08em;color:#fff;background:linear-gradient(135deg,#C2477F,#8e1b4d);border-radius:7px;padding:4px 7px 3px}
+@media(max-width:720px){.brand-mark{width:32px;height:32px}.brand-word{font-size:19px}}
+.desktop-nav .nav-link{white-space:nowrap}
