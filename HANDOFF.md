@@ -1,10 +1,97 @@
-> Claude continuation: read [CLAUDE_HANDOFF.md](CLAUDE_HANDOFF.md) first for the 2026-09-30 handoff and outstanding verification.
+# Current state — 8 October 2026
 
-> Current branch update: Style Me persona onboarding and Google Photos feasibility/adapter are documented in [prototype/PERSONA-HANDOFF.md](prototype/PERSONA-HANDOFF.md). Read that first for this PR; older walkthrough details below may describe the previous navigation.
+Read this section first. Everything below "Development Handoff (16 September
+2026)" is historical background: it predates OpenRouter, accounts, the
+rename and the domains, and its run instructions (Ollama default, the old
+project-mirror path, port 5173) are out of date. Trust `git log origin/main`
+over any roadmap here.
 
-# The Better Wardrobe — Development Handoff
+## Product and URLs
 
-Last updated: 16 September 2026 (Asia/Kolkata)
+- Product name: **The Wardrobe OS** (renamed from The Better Wardrobe in
+  #25). Repo, Vercel project and some code identifiers keep the old name.
+- App: https://app.thewardrobeos.com (also https://the-better-wardrobe.vercel.app).
+  Vercel project `the-better-wardrobe`, Root Directory `prototype`,
+  Git-connected: each PR gets a preview, merge to `main` deploys production.
+- Website: https://thewardrobeos.com (`www` redirects to it). Separate Vercel
+  project `better-wardrobe-site`; source in `~/better-wardrobe-site`, which is
+  not a git repo and deploys only via `vercel deploy --prod` from that folder.
+  Its `privacy.html` is the Google consent screen's privacy link.
+- DNS: Cloudflare, managed by the owner, records DNS-only (grey cloud).
+
+## What is live on main (04378d6, #26)
+
+- **Navigation:** Discover (default), My Wardrobe and Style Me (both show
+  Coming soon with a mascot, #23), My Profile.
+- **Onboarding:** welcome screen, Google sign-in (`lib/accounts.mjs`,
+  `tbw_accounts` table, signed `tbw_session` cookie), two-step preferences
+  (`dist/onboarding.js`). Sign-in returns to whichever allow-listed host the
+  person is on (`server.mjs` `origin()`).
+- **Discover:** conversational text and screenshot search. All model calls go
+  through OpenRouter: Gemini 3 Flash (Max) by default, GPT-5 nano (Lite) as
+  the cheaper option. Search credits (`lib/credits.mjs`): 120 per guest,
+  daily cap 600. A balance guard pauses AI calls when the prepaid OpenRouter
+  balance drops below `OPENROUTER_MIN_BALANCE_USD`. Retrieval is SerpApi
+  Google Shopping/Lens (~3–4 calls per search, free plan). Colour gate
+  (`lib/colour.mjs`) for typed colours, saved server chats (3 per signed-in
+  user, `lib/chats.mjs`), voice input, "Search it on" store links, 13
+  trending celebrity looks (`lib/looks.mjs`, no model call).
+- **Mall:** walkable storefronts fed by `dist/assets/mall-updates.json`,
+  refreshed by the scheduled `Refresh mall storefronts` workflow.
+- **Community:** shared Discover community on Neon Postgres (`lib/community.mjs`).
+- Database: Neon `tbw-db` (free, iad1) connected through Vercel Storage with
+  prefix `POSTGRES` (`POSTGRES_URL`), Production + Preview.
+
+## Production configuration
+
+Every variable the server reads is listed in `prototype/.env.example`.
+Production on Vercel sets: `VISION_PROVIDER`, `OPENROUTER_API_KEY`,
+`SERPAPI_API_KEY`, `GEMINI_API_KEY`/`GEMINI_MODEL` (legacy direct-Gemini
+path), `DISCOVER_TOKEN_SECRET`, `AUTH_SECRET`, `GOOGLE_CLIENT_ID`,
+`GOOGLE_CLIENT_SECRET`, `GOOGLE_PHOTOS_CLIENT_ID`, `POSTGRES_*`,
+`PUBLIC_BASE_URL`, `DEVELOPER_DASHBOARD`, `DISCOVERY_DATA_MODE`,
+`DISCOVERY_HOURLY_LIMIT`. Most are Sensitive and cannot be pulled; reproduce
+prod behaviour through the public API. Google OAuth client "TBW web" has the
+`app.thewardrobeos.com` redirect URI and authorized domain.
+
+## Open items
+
+- **Mall refresh fails at its last step** since 6 Oct 19:31 UTC: the scrape
+  works, but `peter-evans/create-pull-request` fails with "GitHub Actions is
+  not permitted to create or approve pull requests" (repo setting off). The
+  refreshed feed sits on branch `automation/mall-storefront-feed` with no PR.
+  Owner to decide: enable the setting (a bot PR up to 4×/day) or publish the
+  feed without a PR.
+- **`PUBLIC_BASE_URL` on prod is still `https://the-better-wardrobe.vercel.app`.**
+  It builds the image URL Google Lens fetches. It works while the vercel.app
+  host serves the app; switch it to `https://app.thewardrobeos.com` before
+  that host is ever retired.
+- Design QA teardown "The better wardrobe - discover module v2.0": notes
+  #1–#20 are implemented. #21 and #22 are screenshots with empty notes.
+- My Wardrobe and Style Me are parked behind Coming soon.
+
+## Session log
+
+Newest first. Add one entry per merged PR: date, PR, what changed, anything
+left half-done or waiting on the owner.
+
+- 2026-10-08 — Handoff refresh (this PR): added this Current state section,
+  marked `CLAUDE_HANDOFF.md` as historical, listed auth/database variables in
+  `.env.example`.
+- 2026-10-08 — #26 app served from app.thewardrobeos.com; #25 rename to The
+  Wardrobe OS with new app-icon logo. Website moved to the apex domain.
+- 2026-10-06 — #23/#24 Coming soon screens and mascots; #22 Discover QA v5;
+  #21 onboarding no-blink; #19/#20 trending-look precision; #17/#18
+  onboarding, Google sign-in, personalised mall, trending looks; #15/#16
+  Discover v2/v3 from design QA; #14 credits on Postgres; #13 OpenRouter,
+  model picker, credits; #12 shared Community; #10 conversational Discover.
+- 2026-10-01 and earlier — #1–#11: India Discover search, mobile QA capture,
+  Style Me persona onboarding, wardrobe import hub, walkable mall, sourced
+  mall drops. See `git log`.
+
+---
+
+# The Better Wardrobe — Development Handoff (16 September 2026, historical)
 
 This file is the continuation brief for another coding agent. Read it before changing the app. It describes the product intent, the current implementation, how to run it, what is real versus simulated, known problems, and the recommended next work.
 

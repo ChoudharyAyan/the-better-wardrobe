@@ -1,3 +1,5 @@
+> Historical (1 Oct 2026). Superseded by "Current state" at the top of [HANDOFF.md](HANDOFF.md).
+
 # Claude Code handoff — 2026-09-30
 
 ## Start here
