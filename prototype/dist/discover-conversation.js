@@ -208,7 +208,7 @@
   function stopListening(){try{recognition?.stop();}catch{}state.listening=false;}
 
   // ---- rendering ------------------------------------------------------------------------------
-  const renderMessage = message => `<article class="dc-message ${message.role==='user'?'dc-user':'dc-assistant'}"><span class="dc-speaker">${message.role==='user'?'You':'The Better Wardrobe'}</span><div class="dc-bubble">${message.image?`<img src="${escape(message.image)}" alt="Uploaded fashion reference" class="dc-message-image">`:''}${message.text?`<p>${escape(message.text)}</p>`:''}${message.meta?`<small class="dc-meta">${escape(message.meta)}</small>`:''}</div></article>`;
+  const renderMessage = message => `<article class="dc-message ${message.role==='user'?'dc-user':'dc-assistant'}"><span class="dc-speaker">${message.role==='user'?'You':'The Wardrobe OS'}</span><div class="dc-bubble">${message.image?`<img src="${escape(message.image)}" alt="Uploaded fashion reference" class="dc-message-image">`:''}${message.text?`<p>${escape(message.text)}</p>`:''}${message.meta?`<small class="dc-meta">${escape(message.meta)}</small>`:''}</div></article>`;
   const renderChoices = () => state.stage!=='choose'?'':`<div class="dc-choice-panel"><p>Which piece should I look for?</p><div class="dc-choice-list">${state.choices.map((item,index)=>`<button type="button" data-conversation="choice" data-index="${index}">${escape(item.label)} <span aria-hidden="true">↗</span></button>`).join('')}</div></div>`;
   // Loading mascot (owner, 6 Oct 2026): a different friendly face each search: panda, pug, cat or fox.
   // Inline SVG, no image requests; it bobs and blinks, and stays still for reduced motion.

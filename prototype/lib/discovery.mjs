@@ -149,7 +149,7 @@ export function createDiscovery({env=process.env,fetcher=fetch,pageFetcher=retai
   const m=MODELS[key];
   const parts=await Promise.all(content.map(async c=>{if(c.type==='input_text')return {type:'text',text:c.text};const r=await inlineImage(c.image_url);return {type:'image_url',image_url:{url:`data:${r.mimeType};base64,${r.data.toString('base64')}`}};}));
   const base={model:m.openrouter,temperature:0,max_tokens:name==='comparisons'?3000:4096,...(m.reasoning?{reasoning:{effort:m.reasoning}}:{}),messages:[{role:'system',content:SYSTEM},{role:'user',content:parts}]};
-  const send=body=>json('https://openrouter.ai/api/v1/chat/completions',{method:'POST',signal,headers:{Authorization:'Bearer '+env.OPENROUTER_API_KEY,'Content-Type':'application/json','X-Title':'The Better Wardrobe'},body:JSON.stringify(body)},timeout);
+  const send=body=>json('https://openrouter.ai/api/v1/chat/completions',{method:'POST',signal,headers:{Authorization:'Bearer '+env.OPENROUTER_API_KEY,'Content-Type':'application/json','X-Title':'The Wardrobe OS'},body:JSON.stringify(body)},timeout);
   let result;
   // A few routed providers reject strict JSON schemas; fall back to JSON mode with the schema in the prompt.
   try{result=await send({...base,response_format:{type:'json_schema',json_schema:{name,strict:true,schema}}});}

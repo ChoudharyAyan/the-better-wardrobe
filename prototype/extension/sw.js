@@ -29,7 +29,7 @@ async function run(id){
   if(result.error)return {ok:false,error:`${connector.label}'s order page looked different than expected. Nothing was imported.`};
   const response=await fetch(appUrl.replace(/\/$/,'')+'/api/connectors/import',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({store:id,data:result})});
   const body=await response.json().catch(()=>({}));
-  if(!response.ok)return {ok:false,error:body.error||`The Better Wardrobe at ${appUrl} did not accept the import. Is it running with ORDER_CONNECTORS=true?`};
+  if(!response.ok)return {ok:false,error:body.error||`The Wardrobe OS at ${appUrl} did not accept the import. Is it running with ORDER_CONNECTORS=true?`};
   return {ok:true,count:count(result)};
  }finally{if(!keepTab)chrome.tabs.remove(tab.id).catch(()=>{});}
 }

@@ -38,7 +38,7 @@
   const chip=(name,value,label,on,type='radio')=>`<button type="button" class="ob-chip ${on?'on':''}" role="${type}" aria-checked="${on}" data-ob="${name}" data-value="${esc(value)}">${esc(label)}</button>`;
   const steps=n=>`<div class="ob-steps" aria-label="Step ${n} of 2"><i class="${n>=1?'on':''}"></i><i class="${n>=2?'on':''}"></i></div>`;
   function welcome(){
-    return `<div class="ob-card ob-welcome"><span class="ob-mark ${window.TBWMascot?'ob-mascot':''}" aria-hidden="true">${window.TBWMascot?.svg()||'✳'}</span><span class="ob-kicker">The Better Wardrobe</span><h1>Your style, connected.</h1><p>Find the looks you love, style what you own, and keep your wardrobe in one place.</p>
+    return `<div class="ob-card ob-welcome"><span class="ob-mark ${window.TBWMascot?'ob-mascot':''}" aria-hidden="true">${window.TBWMascot?.svg()||'✳'}</span><span class="ob-kicker">The Wardrobe OS</span><h1>Your style, connected.</h1><p>Find the looks you love, style what you own, and keep your wardrobe in one place.</p>
       <div class="ob-actions">${me.google?`<a class="ob-google" href="/api/auth/google"><span class="ob-g" aria-hidden="true">G</span>Continue with Google</a>`:''}${me.previewAvailable?`<button type="button" class="ob-primary" data-ob="preview" ${ui.busy?'disabled':''}>Set up my profile <span aria-hidden="true">→</span></button><small class="ob-note">Google sign-in is coming soon. Your preview profile is kept for this browser.</small>`:''}</div>
       <button type="button" class="ob-free" data-ob="free">Explore freely</button><small class="ob-note">Without a profile: no saved chats and no personalised mall.</small>${ui.error?`<p class="ob-error" role="alert">${esc(ui.error)}</p>`:''}</div>`;
   }
