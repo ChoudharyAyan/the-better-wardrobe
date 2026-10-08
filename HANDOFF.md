@@ -54,6 +54,22 @@ path), `DISCOVER_TOKEN_SECRET`, `AUTH_SECRET`, `GOOGLE_CLIENT_ID`,
 prod behaviour through the public API. Google OAuth client "TBW web" has the
 `app.thewardrobeos.com` redirect URI and authorized domain.
 
+## Security baseline (8 Oct 2026)
+
+- `prototype/vercel.json` sends HSTS (includeSubDomains), a CSP, `X-Frame-Options:
+  DENY`, `nosniff`, `no-referrer`, a Permissions-Policy (microphone for voice
+  search only) and COOP `same-origin-allow-popups` (Google sign-in popup).
+  `tests/security-headers.test.mjs` guards them. The CSP allows scripts only
+  from the app and `accounts.google.com/gsi/client`; adding any other script
+  host (analytics, a widget) needs a CSP change or it will be blocked.
+- Already in place before this: HttpOnly/SameSite=Lax/Secure cookies, HMAC
+  session with timing-safe compare, OAuth state cookie, same-origin checks
+  on every state-changing API, body size caps, image magic-byte checks,
+  parameterised SQL with owner-scoped rows, `esc()` on user text, per-guest,
+  per-IP and global daily credit caps. Google sign-in only: no passwords.
+- The website (`~/better-wardrobe-site`) has its own headers in its
+  `vercel.json` and deploys only the files in its build `out/` folder.
+
 ## Open items
 
 - **Mall refresh fails at its last step** since 6 Oct 19:31 UTC: the scrape
