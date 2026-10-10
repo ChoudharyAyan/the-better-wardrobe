@@ -27,19 +27,26 @@ export const MODELS=[
  m('gemini-3-flash','Gemini 3 Flash','gemini','gemini-3-flash','mid',0.50,3.00,{options:{thinkingLevel:'low'},openrouter:'google/gemini-3-flash-preview'}),
  m('gpt-5.4-mini','GPT-5.4 mini','openai','gpt-5.4-mini','mid',0.75,4.50,{options:{reasoning:'low'},openrouter:'openai/gpt-5.4-mini'}),
  m('claude-haiku-4.5','Claude Haiku 4.5','anthropic','claude-haiku-4-5-20251001','mid',1.00,5.00,{openrouter:'anthropic/claude-haiku-4.5'}),
- m('gpt-5.6-luna','GPT-5.6 Luna','openai','gpt-5.6-luna','mid',1.00,6.00,{options:{reasoning:'low'},openrouter:'openai/gpt-5.6-luna'}),
+ m('gpt-5.6-luna','GPT-5.6 Luna','openai','gpt-5.6-luna','cheap',0.20,1.20,{options:{reasoning:'low'},openrouter:'openai/gpt-5.6-luna'}),
 
  m('gemini-3.5-flash','Gemini 3.5 Flash','gemini','gemini-3.5-flash','mid-high',1.50,9.00,{options:{thinkingLevel:'low'},note:'Current production model in .env.example.',openrouter:'google/gemini-3.5-flash'}),
  m('gemini-3.6-flash','Gemini 3.6 Flash','gemini','gemini-3.6-flash','mid-high',1.50,7.50,{options:{thinkingLevel:'low'},openrouter:'google/gemini-3.6-flash'}),
 
  m('gemini-3.1-pro','Gemini 3.1 Pro','gemini','gemini-3.1-pro','expensive',2.00,12.00,{options:{thinkingLevel:'low'},openrouter:'google/gemini-3.1-pro-preview'}),
- m('gpt-5.6-terra','GPT-5.6 Terra','openai','gpt-5.6-terra','expensive',2.50,15.00,{options:{reasoning:'low'},openrouter:'openai/gpt-5.6-terra'}),
+ m('gpt-5.6-terra','GPT-5.6 Terra','openai','gpt-5.6-terra','expensive',2.00,12.00,{options:{reasoning:'low'},openrouter:'openai/gpt-5.6-terra'}),
  m('claude-sonnet-5.5','Claude Sonnet 5.5','anthropic','claude-sonnet-5-5','expensive',3.00,15.00,{verified:false,openrouter:'anthropic/claude-sonnet-5.5'}),
 
  m('gpt-5.5','GPT-5.5','openai','gpt-5.5','very-expensive',5.00,30.00,{enabled:false,options:{reasoning:'low'},note:'Opt-in: same price as GPT-5.6 Sol, one generation older.',openrouter:'openai/gpt-5.5'}),
- m('gpt-5.6-sol','GPT-5.6 Sol','openai','gpt-5.6-sol','very-expensive',5.00,30.00,{options:{reasoning:'low'},openrouter:'openai/gpt-5.6-sol'}),
+ m('gpt-5.6-sol','GPT-5.6 Sol','openai','gpt-5.6-sol','very-expensive',4.00,20.00,{options:{reasoning:'low'},openrouter:'openai/gpt-5.6-sol'}),
  m('claude-opus-5.5','Claude Opus 5.5','anthropic','claude-opus-5-5','very-expensive',5.00,25.00,{verified:false,openrouter:'anthropic/claude-opus-5.5'}),
- m('claude-fable-5.1','Claude Fable 5.1','anthropic','claude-fable-5-1','very-expensive',10.00,50.00,{verified:false,enabled:false,note:'Opt-in: twice the Opus price; add only if Opus and Sol leave headroom.',openrouter:'anthropic/claude-fable-5.1'})
+ m('claude-fable-5.1','Claude Fable 5.1','anthropic','claude-fable-5-1','very-expensive',10.00,50.00,{verified:false,enabled:false,note:'Opt-in: twice the Opus price; add only if Opus and Sol leave headroom.',openrouter:'anthropic/claude-fable-5.1'}),
+ // OpenAI-only hackathon bench (2026-10-10, prices from developers.openai.com/api/docs/pricing).
+ m('gpt-6-luna','GPT-6 Luna','openai','gpt-6-luna','very-cheap',0.10,0.50,{options:{reasoning:'low'}}),
+ m('gpt-5-mini','GPT-5 mini','openai','gpt-5-mini','cheap',0.25,2.00,{options:{reasoning:'low'}}),
+ m('gpt-5.4','GPT-5.4','openai','gpt-5.4','expensive',2.50,15.00,{enabled:false,options:{reasoning:'low'}}),
+ m('gpt-6-sol','GPT-6 Sol','openai','gpt-6-sol','expensive',2.00,10.00,{enabled:false,options:{reasoning:'low'}}),
+ m('gpt-6.1-sol','GPT-6.1 Sol','openai','gpt-6.1-sol','expensive',2.00,10.00,{enabled:false,options:{reasoning:'low'}}),
+ m('gpt-6-astra','GPT-6 Astra','openai','gpt-6-astra','very-expensive',10.00,50.00,{enabled:false,options:{reasoning:'low'}}),
 ];
 export const PROVIDER_KEYS={gemini:'GEMINI_API_KEY',openai:'OPENAI_API_KEY',anthropic:'ANTHROPIC_API_KEY',openrouter:'OPENROUTER_API_KEY',ollama:null,mock:null};
 
@@ -50,6 +57,8 @@ export function selectModels(spec='all',models=MODELS){
  const picked=new Map();
  for(const p of parts){
   if(p==='all'||p==='pareto'){for(const x of models)if(x.enabled)picked.set(x.id,x);continue;}
+  // OpenAI-only bench: every GPT-6.x and GPT-5.x vision candidate, native OpenAI keys only.
+  if(p==='openai-bench'){for(const x of models)if(x.provider==='openai'&&/^gpt-(5|6)/.test(x.id))picked.set(x.id,x);continue;}
   if(p==='everything'){for(const x of models)picked.set(x.id,x);continue;}
   // The $10 pilot: the 11 enabled models up to mid-high. Gemini 3.1 Pro and Claude Sonnet 5.5 build the answer key instead.
   if(p==='pilot'){for(const x of models)if(x.enabled&&['very-cheap','cheap','mid','mid-high'].includes(x.tier))picked.set(x.id,x);continue;}
