@@ -1,0 +1,28 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import vm from 'node:vm';
+import {readFileSync} from 'node:fs';
+import {webcrypto} from 'node:crypto';
+import {createDraftEditor} from '../dist/style-me/draft-editor.js';
+import {wardrobeRecords} from '../dist/style-me/wardrobe-adapter.js';
+const source=readFileSync(new URL('../dist/style-me/style-me.js',import.meta.url),'utf8').replace(/^import .*;\n/gm,'').replace('export function createStyleUI','function createStyleUI');
+test('styling buddy can be changed without generating or changing a saved outfit',async()=>{
+ let init;const listeners={},calls=[];
+ const session={id:'test-session',canvas:{items:[],brief:{},revision:0},messages:[],looks:[],frozen:[],jobs:{}};
+ const context=vm.createContext({createDraftEditor,wardrobeRecords,crypto:webcrypto,console,setTimeout:fn=>{init=fn;},clearTimeout(){},localStorage:{getItem:()=>null,setItem(){}},document:{activeElement:null,querySelector:()=>null,addEventListener:(name,fn)=>{listeners[name]=fn;}},window:{addEventListener(){}},fetch:async(url)=>{calls.push(url);const data=url.endsWith('/status')?{essentials:[]}:url.endsWith('/preferences')?{preferences:{}}:url.endsWith('/sessions')&&calls.length===3?{sessions:[]}:session;return {ok:true,headers:{get:()=>null},json:async()=>data};}});
+ vm.runInContext(source+';var ui=createStyleUI({refresh(){}});',context);
+ await init();
+ const render=()=>vm.runInContext('ui.render()',context);
+ assert.match(render(),/Miso the cat, your styling buddy/);
+ assert.doesNotMatch(render(),/3\.1|3\.2/);
+ const count=calls.length;
+ listeners.click({target:{closest:()=>({dataset:{sm:'buddy'}})}});
+ assert.match(render(),/Kitsu the fox, your styling buddy/);
+ assert.equal(calls.length,count,'meeting a buddy makes no provider or save request');
+ session.messages=[{role:'assistant',text:'A look for your trip.'}];session.looks=[{id:'look',title:'Trip',rationale:'',items:[],gaps:[]}];session.canvas.items=[{id:'shirt'}];
+ assert.match(render(),/Pick a plan<span class="sr-only"> complete/);
+ assert.match(render(),/Play with pieces<span class="sr-only"> complete/);
+ assert.doesNotMatch(render(),/Freeze your favourite<span class="sr-only"> complete/);
+ session.frozen=[{id:'frozen'}];
+ assert.match(render(),/Freeze your favourite<span class="sr-only"> complete/);
+});

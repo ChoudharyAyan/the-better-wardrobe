@@ -1,5 +1,11 @@
 # Style Me P0 implementation and release checklist
 
+## Styling buddy UI follow-up — 14 October 2026
+
+Owner-facing navigation now says **Your stylist** and **Outfit canvas**; internal section numbers are removed from the UI. The empty conversation greets with the illustrated Discover characters, with a tappable buddy switch, bob/blink motion and reduced-motion support. Buddy avatars accompany replies and generation states. A three-step outfit journey reflects actual saved state: suggestions, Canvas pieces, and frozen designs. Changing the buddy makes no generation/save request. Mobile heading spacing and selected-tab hover contrast were corrected.
+
+Rendered and inspected at the normal desktop viewport and 390×844 phone width. Browser interaction covered changing the buddy, a curated Himachal prompt, selecting a look in Canvas and returning to see completed journey steps. Phone document width matched the 390px viewport. Check passed; full tests: 213 pass, 2 existing database skips. Screenshots: `screenshots/style-me-buddy-desktop.png` and `screenshots/style-me-buddy-mobile.png`. My Wardrobe and native mobile implementation files were not changed.
+
 ## Gemini Cloud access update — 14 October 2026
 
 The owner authorized using the existing Cloud trial project `fieldnotes-ayan-2026-1008` and creating a Cloud credential. A key restricted to the Agent Platform API was created and saved only in the gitignored local `prototype/.env` with owner-only file permissions. Billing was not upgraded and production configuration was not changed.
