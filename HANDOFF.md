@@ -105,6 +105,15 @@ left half-done or waiting on the owner.
   Pixel 10a with a real account: 111 lines, 73 pieces in the queue ~2 s after
   tapping Import (the mobile site needs its orders API; ?p=N repeats page 1).
   Other stores not yet tried on the phone.
+- 2026-10-14 — Sticker Studio UI from the ChatGPT hackathon repo (PR pending): new
+  welcome, Discover home with Home / Ask Bao / Mall / Community tabs, Bao the
+  panda guide, pill top bar with credits coin, streamed search progress, web
+  photo avatars for trending looks (`lib/look-photos.mjs`, Bing image results
+  with a Wikimedia fallback, no paid search). The hackathon's Mall redesign
+  (map, passport, characters) and its backend changes (OpenAI Responses
+  routing, credits/XP merge) were left out; main's Mall is unchanged. The
+  sticker cards and buttons now also cover My Wardrobe and Profile, and the
+  closed almirah's doors no longer collapse to 4px.
 - 2026-10-14 — My Wardrobe Phase 2 (PR pending review, stacked on Phase 1):
   Amazon and Meesho connectors (unverified until tried on real accounts);
   per-store last import; order-email forwarding (`lib/inbox.mjs`, off until

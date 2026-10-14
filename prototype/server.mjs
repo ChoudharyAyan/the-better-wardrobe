@@ -1,3 +1,4 @@
+import {createStyleMe} from './lib/style-me.mjs';
 import http from 'node:http';
 import {createPhotos} from './lib/photos.mjs';
 import {readFile} from 'node:fs/promises';
@@ -18,13 +19,14 @@ import {createCutout} from './lib/cutout.mjs';
 import {createInbox} from './lib/inbox.mjs';
 import {retailerPage} from './lib/discovery.mjs';
 import mallSnapshot from './dist/assets/mall-updates.json' with {type:'json'};
+import {createLookPhotos} from './lib/look-photos.mjs';
 // The phone app's id; its sign-in link is APP_SCHEME://auth (mobile/android AndroidManifest.xml).
 const APP_SCHEME='com.thewardrobeos.app';
 try{process.loadEnvFile(fileURLToPath(new URL('./.env',import.meta.url)));}catch(e){if(e.code!=='ENOENT')throw e;}
 const root=fileURLToPath(new URL('./dist/',import.meta.url));
 const mime={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.svg':'image/svg+xml','.jpg':'image/jpeg','.png':'image/png','.webp':'image/webp','.woff2':'font/woff2','.ttf':'font/ttf'};
 // The bare (req,res) listener is what Vercel's Node runtime invokes; createServer wraps it for local runs.
-export function createHandler(discovery=createDiscovery(),qaStore=createQaStore(),photos=createPhotos(),connectors=createConnectorStore(),community=createCommunity(),credits=createCredits(),chats=createChats(),accounts=createAccounts(),wardrobe=createWardrobe(),cutout=createCutout(),pageFetcher=retailerPage,inbox=createInbox()){
+export function createHandler(discovery=createDiscovery(),qaStore=createQaStore(),photos=createPhotos(),connectors=createConnectorStore(),community=createCommunity(),credits=createCredits(),chats=createChats(),accounts=createAccounts(),wardrobe=createWardrobe(),cutout=createCutout(),pageFetcher=retailerPage,inbox=createInbox(),styleMe=createStyleMe(),lookPhotos=createLookPhotos()){
 // Wardrobe AI (cutouts, link reading) per guest per hour: a backstop on a shared preview, generous
 // enough for a 100-piece first import. Per instance, like Discover's hourly cap.
 const wardrobeUse=new Map();
@@ -99,6 +101,43 @@ return async(req,res)=>{
  const origin=()=>{const host=String(req.headers['x-forwarded-host']||req.headers.host||'').split(',')[0].trim().toLowerCase();if(/^(app\.thewardrobeos\.com|thewardrobeos\.com|www\.thewardrobeos\.com|the-better-wardrobe\.vercel\.app|localhost(:\d+)?|127\.0\.0\.1(:\d+)?|192\.168\.\d+\.\d+(:\d+)?)$/.test(host))return `${secure||!/^(localhost|127|192)/.test(host)?'https':'http'}://${host}`;const base=process.env.PUBLIC_BASE_URL;return base?base.replace(/\/$/,''):`http://${req.headers.host}`;};
  const redirect=(location)=>{res.writeHead(302,{Location:location,'Cache-Control':'no-store'});res.end();};
  const readJson=async limit=>{if(!req.headers['content-type']?.startsWith('application/json'))throw new ApiError(415,'JSON required');let size=0,parts=[];for await(const part of req){size+=part.length;if(size>limit)throw new ApiError(413,'Request too large');parts.push(part);}let body;try{body=JSON.parse(Buffer.concat(parts).toString()||'{}');}catch{throw new ApiError(400,'Invalid JSON');}if(!body||typeof body!=='object'||Array.isArray(body))throw new ApiError(400,'Invalid request');return body;};
+ if(pathname.startsWith('/api/style/')){
+  if(!sameSite())return send(403,{error:'Open Style Me in the app.'});
+  const guestOwner='guest:'+guest(),who=accountId?'account:'+accountId:guestOwner;
+  if(accountId)await styleMe.migrate(guestOwner,who);
+  if(pathname==='/api/style/preferences'){if(req.method==='GET')return send(200,await styleMe.preferences(who));if(req.method==='POST')return send(200,await styleMe.preferences(who,await readJson(8192)));if(req.method==='DELETE')return send(200,await styleMe.clearPreferences(who));return send(405,{error:'Method not allowed.'});}
+  if(req.method==='GET'&&pathname==='/api/style/status')return send(200,styleMe.status());
+  if(req.method==='GET'&&pathname==='/api/style/sessions')return send(200,{sessions:await styleMe.list(who)});
+  if(req.method==='POST'&&pathname==='/api/style/sessions')return send(201,await styleMe.create(who,await readJson(16000)));
+  const match=pathname.match(/^\/api\/style\/sessions\/([a-f0-9-]{36})(?:\/(generate|edit|select|freeze|fork|feedback|reference|preview)(?:\/([a-f0-9-]{36}))?)?$/);
+  if(!match)return send(404,{error:'Styling operation not found.'});
+  const [,id,action,jobId]=match;
+  if(!action&&req.method==='GET')return send(200,await styleMe.get(who,id));
+  if(!action&&req.method==='DELETE')return send(200,await styleMe.remove(who,id));
+  if(action==='preview'&&jobId&&req.method==='DELETE')return send(200,await styleMe.deletePreview(who,id,jobId));
+  if(req.method!=='POST'||jobId)return send(405,{error:'Method not allowed.'});
+  const body=await readJson(['preview','reference','freeze'].includes(action)?4_400_000:150_000);
+  if(action==='generate'){const replay=await styleMe.replay(who,id,body);if(replay)return send(200,replay);await styleMe.reserve(who,id,body);}
+  const cancelled=new AbortController();res.on('close',()=>{if(!res.writableFinished)cancelled.abort();});
+  let charge;
+  const model='gpt-5-nano',spender={guest:guest(),ip:String(req.headers['x-forwarded-for']||'').split(',')[0].trim()||req.socket?.remoteAddress||'unknown',model};
+  try{
+   if(action==='generate'&&styleMe.status().ai){await credits.budgetOk?.();charge=await credits.charge(spender);}
+   if(action==='preview'&&styleMe.status().preview){
+    const session=await styleMe.get(who,id);
+    if(!session.jobs[body.jobId]){if(body.consent!==true||body.costAccepted!==true)throw new ApiError(400,'Confirm photo processing and credit cost.');charge=await credits.charge(spender);}
+   }
+   if(action==='reference'){if(body.consent!==true)throw new ApiError(400,'Confirm image processing before upload.');await credits.budgetOk?.();return send(200,await styleMe.reference(who,id,body,await discovery.detect({image:body.image},undefined,cancelled.signal)));}
+   if(action==='generate'&&req.headers.accept==='application/x-ndjson'){
+    res.writeHead(200,{'Content-Type':'application/x-ndjson','Cache-Control':'no-store','X-Accel-Buffering':'no'});
+    const emit=event=>{if(!res.destroyed)res.write(JSON.stringify(event)+'\n');};
+    try{const result=await styleMe.generate(who,id,body,cancelled.signal,emit);emit({type:'result',data:result});}catch(e){if(charge)await credits.refund(spender).catch(()=>{});charge=null;emit({type:'error',status:e.status||502,error:e.status?e.message:'The stylist could not answer. Your current design is safe.'});}res.end();return;
+   }
+   const result=action==='preview'?await styleMe.render(who,id,body,cancelled.signal):await styleMe[action](who,id,body,cancelled.signal);
+   if(action==='preview'&&result.replayed&&charge){await credits.refund(spender);charge=null;}
+   return send(200,{...result,...(charge?{credits:{cost:charge.cost,remaining:charge.remaining}}:{})});
+  }catch(e){if(charge)await credits.refund(spender).catch(()=>{});if(e.name==='CanvasError')return send(e.code==='STALE_REVISION'?409:400,{error:e.message,code:e.code});throw e;}finally{if(action==='generate')await styleMe.release(who,id,body.requestId).catch(()=>{});}
+ }
  if(req.method==='GET'&&pathname==='/api/me'){guest();return send(200,await accounts.me(accountId));}
  if(req.method==='PUT'&&pathname==='/api/me/profile'){if(!sameSite())return send(403,{error:'Forbidden'});return send(200,{profile:await accounts.saveProfile(accountId,await readJson(8192))});}
  if(req.method==='POST'&&pathname==='/api/auth/preview'){if(!sameSite())return send(403,{error:'Forbidden'});const id=await accounts.preview(guest());startSession(id);return send(200,await accounts.me(id));}
@@ -149,6 +188,8 @@ return async(req,res)=>{
   if(itemPath&&req.method==='DELETE'){await wardrobe.removeItem(accountId,itemPath[1]);return send(200,{ok:true});}
   return send(404,{error:'Not found'});
  }
+ // Public web photo for a trending look or a typed prompt (Bing image results, Wikimedia fallback), never the paid search.
+ if(req.method==='GET'&&pathname==='/api/discover/look-photo'){const q=new URL(req.url,'http://localhost').searchParams.get('q')||'';if(q.trim().length<3||q.length>300)return send(400,{error:'Use a photo query between 3 and 300 characters.'});return send(200,await lookPhotos.search(q));}
  if(req.method==='GET'&&pathname==='/api/discover/looks')return send(200,{looks:lookCards()});
  const ip=()=>String(req.headers['x-forwarded-for']||'').split(',')[0].trim()||req.socket?.remoteAddress||'unknown';
  // Saved Discover chats (three per guest in the beta).
@@ -213,5 +254,5 @@ return async(req,res)=>{
  const content=await readFile(target);res.writeHead(200,{'Content-Type':mime[path.extname(target)]||'application/octet-stream','Cache-Control':'no-cache','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer'});res.end(req.method==='HEAD'?undefined:content);
  }catch(e){const status=e.status||(e.code==='ENOENT'?404:500);if(status>=500&&!e.status)console.error('Unhandled',req.method,String(req.url||'').split('?')[0],e?.code||'',String(e?.message||e).replace(/postgres(ql)?:\/\/\S+/gi,'<db-url>').slice(0,300));send(status,{error:e instanceof ApiError||e.status?e.message:'Unable to complete this request.'});}
 };}
-export function createServer(discovery,qaStore,photos,connectors,community,credits,chats,accounts,wardrobe,cutout,pageFetcher,inbox){return http.createServer(createHandler(discovery,qaStore,photos,connectors,community,credits,chats,accounts,wardrobe,cutout,pageFetcher,inbox));}
+export function createServer(discovery,qaStore,photos,connectors,community,credits,chats,accounts,wardrobe,cutout,pageFetcher,inbox,styleMe){return http.createServer(createHandler(discovery,qaStore,photos,connectors,community,credits,chats,accounts,wardrobe,cutout,pageFetcher,inbox,styleMe));}
 if(process.argv[1]&&import.meta.url===pathToFileURL(path.resolve(process.argv[1])).href){const port=Number(process.env.PORT||5173),host=process.env.HOST||'0.0.0.0';createServer().listen(port,host,()=>console.log(`The Wardrobe OS: http://127.0.0.1:${port} · network enabled`));}

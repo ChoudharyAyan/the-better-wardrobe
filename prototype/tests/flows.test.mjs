@@ -4,14 +4,17 @@ import vm from 'node:vm';
 import {readFileSync,existsSync} from 'node:fs';
 import {webcrypto} from 'node:crypto';
 import path from 'node:path';
-const source=readFileSync(new URL('../dist/app.js',import.meta.url),'utf8');
+import {createDraftEditor} from '../dist/style-me/draft-editor.js';
+import {wardrobeRecords} from '../dist/style-me/wardrobe-adapter.js';
+const uiSource=readFileSync(new URL('../dist/style-me/style-me.js',import.meta.url),'utf8').replace(/^import .*;\n/gm,'').replace('export function createStyleUI','function createStyleUI');
+const source='const createStyleUI=(()=>{'+uiSource+';return createStyleUI;})();\n'+readFileSync(new URL('../dist/app.js',import.meta.url),'utf8').replace(/^import .*;\n/gm,'');
 const intake=readFileSync(new URL('../dist/wardrobe-intake.js',import.meta.url),'utf8')+readFileSync(new URL('../dist/wardrobe-insights.js',import.meta.url),'utf8');
 // Code-level flow checks. These do not launch or automate a browser.
 function app(discovery,{sample=true}={}){
   const nodes=new Map(),listeners={};
   function node(key){if(!nodes.has(key))nodes.set(key,{innerHTML:'',textContent:'',open:false,disabled:false,classList:{add(){},remove(){},toggle(){}},showModal(){this.open=true},close(){this.open=false},addEventListener(){},focus(){},click(){},setSelectionRange(){}});return nodes.get(key);}
   const storage=new Map();
-  const context=vm.createContext({console,crypto:webcrypto,Date,Intl,URL,Set,Map,Promise,setTimeout:()=>1,clearTimeout(){},localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)},location:{hash:''},history:{replaceState(){}},window:{Discovery:discovery,scrollY:0,scrollTo(){},addEventListener:(k,fn)=>listeners['window:'+k]=fn},document:{querySelector:node,activeElement:null,addEventListener:(k,fn)=>listeners[k]=fn},FormData:class{constructor(f){this.data=f.data}get(k){return this.data[k]??''}getAll(k){return Array.isArray(this.data[k])?this.data[k]:[this.data[k]].filter(Boolean)}}});
+  const context=vm.createContext({console,createDraftEditor,wardrobeRecords,crypto:webcrypto,Date,Intl,URL,Set,Map,Promise,setTimeout:()=>1,clearTimeout(){},localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)},location:{hash:''},history:{replaceState(){}},window:{Discovery:discovery,scrollY:0,scrollTo(){},addEventListener:(k,fn)=>listeners['window:'+k]=fn},document:{querySelector:key=>key==='.sm-canvas'?null:node(key),activeElement:null,addEventListener:(k,fn)=>listeners[k]=fn},FormData:class{constructor(f){this.data=f.data}get(k){return this.data[k]??''}getAll(k){return Array.isArray(this.data[k])?this.data[k]:[this.data[k]].filter(Boolean)}}});
   vm.runInContext(intake,context);
   vm.runInContext(source,context);
   // New people start empty; these walkthrough checks run on the five-piece sample wardrobe.
@@ -21,7 +24,7 @@ function app(discovery,{sample=true}={}){
 test('all seven screens render with existing local media',()=>{
   const a=app();a.run('startDemoImport()');
   for(const route of ['discover','discover/select','discover/results','wardrobe','wardrobe/import','style','insights']){
-    a.visit(route);const html=a.nodes.get('main').innerHTML;assert.ok(html.length>(route==='insights'?80:500),route);assert.ok(!html.includes('undefined'),route);
+    a.visit(route);const html=a.nodes.get('main').innerHTML;assert.ok(html.length>(['insights','style'].includes(route)?80:500),route);assert.ok(!html.includes('undefined'),route);
     for(const m of html.matchAll(/src="(assets\/[^\"]+)"/g))assert.ok(existsSync(path.resolve('dist',m[1])),m[1]);
   }
 });
@@ -93,7 +96,7 @@ test('My Wardrobe is open to everyone and a new person starts with an empty almi
   assert.doesNotMatch(html,/Coming soon/);assert.match(html,/Import your wardrobe/);assert.match(html,/data-action="basics"/);assert.match(html,/data-action="link-paste"/);
   assert.doesNotMatch(a.nodes.get('#desktop-nav').innerHTML,/My Wardrobe<em class="soon-tag"/);
   assert.match(html,/data-id="myntra"[^>]*>(<img class="store-logo"[^>]*>)?<span>Myntra<\/span><\/button>[\s\S]*data-id="flipkart"/,'Myntra leads the store row');
-  a.visit('style');assert.match(a.nodes.get('main').innerHTML,/Coming soon/,'Style Me stays behind its card');
+  a.visit('style');assert.doesNotMatch(a.nodes.get('main').innerHTML,/soon-card/,'Style Me opens its first-draft studio');assert.match(a.nodes.get('main').innerHTML,/Style Me/);
 });
 test('earlier visitors lose only the untouched sample pieces',()=>{
   const a=app();
