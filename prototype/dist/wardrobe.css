@@ -126,3 +126,15 @@
 .new-banner{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 14px;padding:12px 14px;border:2px solid #2E8B57;border-radius:18px;background:#EAF6EF;box-shadow:0 4px 0 #BFE3CC;color:#1F4D33;font-size:14px}
 .new-banner span{flex:1;min-width:180px}.new-banner .link-btn{color:#1F4D33;font-weight:800}
 .is-new .well{box-shadow:0 0 0 3px #7BE0A6,0 6px 16px rgba(46,139,87,.25)}
+/* Your photos: selfie + gallery, the recommended way in (owner's priority, 14 Oct 2026). */
+.photos-card{display:flex;flex-direction:column;gap:12px;padding:16px;border:2px solid #8E1B4D;border-radius:24px;background:#fff;box-shadow:0 4px 0 #5E1133}
+.photos-head em{display:block;font-style:normal;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#8E1B4D}
+.photos-head strong{display:block;font-size:18px}.photos-head small{color:#6B5A60}
+.selfie-row{display:flex;align-items:center;gap:12px;padding:10px;border-radius:16px;background:#FBF5EC}
+.selfie-row>span:not(.selfie-empty){flex:1;min-width:0;display:flex;flex-direction:column}.selfie-row small{color:#6B5A60;font-size:12px}
+.selfie-thumb,.selfie-empty{width:48px;height:48px;border-radius:50%;object-fit:cover;flex:none;border:2px solid #fff;box-shadow:0 0 0 2px #F7A8CB}
+.selfie-empty{display:grid;place-items:center;background:#F6DDE8;color:#8E1B4D}.selfie-empty svg{width:22px;height:22px}
+.photos-pick{width:100%}
+.more-ways{border-top:1px solid #EADFD3;padding-top:6px}.more-ways summary{cursor:pointer;padding:10px 2px;font-weight:700;color:#8E1B4D;list-style:none}
+.more-ways summary::-webkit-details-marker{display:none}.more-ways summary:after{content:' ▾'}.more-ways[open] summary:after{content:' ▴'}
+.more-ways>button{width:100%}
