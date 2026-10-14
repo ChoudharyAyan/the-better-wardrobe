@@ -84,7 +84,9 @@ export function normalizeFlipkart(orders){
    const category=classify(p.vertical,p.category,p.title);
    if(!category)continue;
    const url=typeof p.url==='string'&&p.url.startsWith('/')?'https://www.flipkart.com'+p.url:p.url;
-   out.push(toItem({retailer:'flipkart',productId:p.id,name:p.title,brand:p.brand,type:p.vertical,size:p.size==='Free'?'':p.size,color:p.color,image:p.image,productUrl:url,orderedAt:isoDate(order.orderDate),category}));
+   // Flipkart image URLs are templates: /image/{@width}/{@height}/…?q={@quality}.
+   const image=String(p.image||'').replace('{@width}','480').replace('{@height}','480').replace('{@quality}','80');
+   out.push(toItem({retailer:'flipkart',productId:p.id,name:p.title,brand:p.brand,type:p.vertical,size:p.size==='Free'?'':p.size,color:p.color,image,productUrl:url,orderedAt:isoDate(order.orderDate),category}));
   }
  }
  return dedupe(out);

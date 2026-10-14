@@ -66,3 +66,9 @@ test('Flipkart orders keep one copy per product and skip returned orders',()=>{
  assert.deepEqual(items.map(i=>i.category),['Footwear','Trousers'],'the refunded saree is gone');
  assert.equal(items[0].productUrl,'https://www.flipkart.com/p/itmSHOABC');assert.equal(items[0].image,'https://rukminim1.flixcart.com/x.jpeg');
 });
+
+test('Flipkart image templates are filled in with a tile size',async()=>{
+ const {normalizeFlipkart}=await import('../dist/order-import.js');
+ const [item]=normalizeFlipkart([{orderDate:1495106562753,returned:false,products:[{id:'SRTX',title:'FiTZ Solid Men Grey Sports Shorts',vertical:'MensShortUnbranded',category:'MensBottomwearUB',image:'https://rukminim1.flixcart.com/image/{@width}/{@height}/j2ggpe80/short/x.jpeg?q={@quality}'}]}]);
+ assert.equal(item.image,'https://rukminim1.flixcart.com/image/480/480/j2ggpe80/short/x.jpeg?q=80');assert.equal(item.category,'Trousers');
+});
