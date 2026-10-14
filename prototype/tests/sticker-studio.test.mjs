@@ -26,3 +26,20 @@ test('welcome wordmark reuses the top bar app icon and reads as one word',()=>{
  let html=ui.welcome({google:false,preview:true,busy:false,error:''});
  assert.match(html,/<span>The Wardrobe<b>OS<\/b><\/span>/);
 });
+
+test('Bao\'s friends carry his moving parts, so they blink, follow the pointer and get booped',()=>{
+ const {ui}=studio();
+ for(const who of ['kitsu','miso','momo']){const html=ui.friend(who,84);
+  for(const part of ['class="eye"','class="pupil"','ear ear-l','ear ear-r','eyes-happy','data-studio="boop"'])assert.ok(html.includes(part),who+' '+part);}
+ assert.match(ui.guide('Hi',84,'kitsu'),/KITSU SAYS/);assert.match(ui.mallIntro(),/KITSU SAYS/);assert.match(ui.communityIntro(),/MISO SAYS/);assert.match(ui.styleIntro(),/MOMO SAYS/);
+ assert.doesNotMatch(ui.friend('miso',56,'span'),/<button|data-studio/,'inside a tile link it is a plain span');
+});
+
+test('Mall shoppers dress for their district',()=>{
+ const ctx={window:{}};vm.runInNewContext(readFileSync(new URL('../dist/mall-folk.js',import.meta.url),'utf8'),ctx);const F=ctx.window.MallFolk;
+ const outfits=html=>[...html.matchAll(/data-outfit="([a-z]+)"/g)].map(m=>m[1]);
+ assert.deepEqual(outfits(F.district('Ethnic')),['kurta','saree'],'kurta pajama and saree');
+ assert.deepEqual(outfits(F.district('Menswear')),['suit','suit']);assert.deepEqual(outfits(F.district('Streetwear')),['hoodie','hoodie']);
+ assert.deepEqual(outfits(F.district('Women')),['dress','dress']);assert.deepEqual(outfits(F.lane('Sarees','Ethnic')),['saree','saree']);
+ assert.match(F.district('Everyday'),/aria-hidden="true"/);
+});

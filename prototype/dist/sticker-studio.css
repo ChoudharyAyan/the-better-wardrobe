@@ -66,3 +66,63 @@ body{background:var(--ss-bg)}em{font-style:normal}[hidden]{display:none!importan
 @media(prefers-reduced-motion:reduce){.store-card,.unlock-card,.wear-prompt,.snapshot-link,.item-detail{animation:none}}
 /* Welcome wordmark matches the top bar: the hanger app icon and one word, WardrobeOS. */
 .ss-wordmark>svg.brand-mark{background:none;padding:0;border-radius:11px;box-shadow:0 3px 0 var(--ss-line)}.ss-wordmark b{background:none;color:var(--ss-plum);font-size:inherit;padding:0;border-radius:0}
+/* One type scale for every module (owner, 14 Oct 2026: "the same font size as My Wardrobe").
+   Page title 30px, its line under it 15px, the small label above it 11px, at every width. */
+:root{--t-title:30px;--t-sub:15px;--t-eyebrow:11px}
+main .ss-hero h1,main .dc-intro h1,main .mall-heading h2,main .community-intro h2,main .wardrobe-head h1,main .page-head h1,main .wardrobe-screen>h1{font-size:var(--t-title)!important;line-height:1.15!important;letter-spacing:-.03em!important;margin:4px 0 8px!important;font-weight:800!important}
+main .ss-hero .ss-lead,main .dc-intro p,main .mall-heading p:not(.hub-eyebrow),main .community-intro p:not(.hub-eyebrow),main .page-head p{font-size:var(--t-sub)!important;line-height:1.5!important;max-width:560px}
+main .ss-eyebrow,main .dc-kicker,main .hub-eyebrow,main .ob-kicker,main .wardrobe-label{font-size:var(--t-eyebrow)!important;letter-spacing:.14em!important;font-weight:800!important}
+main .ss-hero{gap:16px;align-items:center}.ss-hero h1 .ss-highlight{padding:0 8px 2px;border-radius:10px}
+main .ss-hero h1 br{display:none}
+/* Every guide sits at the same size and spacing, whoever is speaking. */
+.ss-guide .ss-bao{width:var(--bao-size,84px)!important;height:var(--bao-size,84px)!important}
+.ss-community-guide{margin:4px 0 14px}
+/* Characters peeking out of the Discover tiles. */
+.ss-tile-friend{display:block;width:56px;height:56px}.ss-tile-friend .ss-bao{width:56px;height:56px;animation-duration:3.4s}
+.ss-tile:hover .ss-tile-friend .ss-bao{animation:ss-wiggle .6s var(--ss-pop)}
+@keyframes ss-wiggle{0%,100%{transform:rotate(0)}30%{transform:rotate(-8deg) scale(1.06)}60%{transform:rotate(6deg)}}
+.ss-char .eyes-happy{display:none}.ss-char.happy .eyes-open{display:none}.ss-char.happy .eyes-happy{display:inline}
+@media(prefers-reduced-motion:reduce){.ss-tile:hover .ss-tile-friend .ss-bao{animation:none}}
+/* The Mall, tidied (owner, 14 Oct 2026): every district, lane and storefront box the same size, with a pair of
+   little shoppers dressed for that district (dist/mall-folk.js). */
+.mall-map{grid-auto-rows:1fr}
+.mall-district{height:100%;min-height:128px;transform:none}
+.mall-district:hover{transform:translateY(-3px)}
+.mall-roof{position:relative;overflow:hidden;justify-content:flex-start;padding-right:8px}
+.mall-roof strong,.mall-roof small,.mall-roof-mark,.mall-for-you{position:relative;z-index:1}
+.mall-folk{position:absolute;right:4px;bottom:2px;display:flex;align-items:flex-end;height:64%;max-height:84px;pointer-events:none;z-index:0}
+.mall-folk svg{height:100%;width:auto;overflow:visible;filter:drop-shadow(1px 2px 0 #fff8eb)}
+.mall-folk svg+svg{margin-left:-14px}
+.mall-folk svg:first-child{transform:rotate(-4deg)}.mall-folk svg:last-child{transform:rotate(4deg)}
+.mall-district:hover .mall-folk svg,.mall-lane-room:hover .mall-folk svg{animation:folk-hop .5s var(--ss-pop)}
+.mall-district:hover .mall-folk svg+svg,.mall-lane-room:hover .mall-folk svg+svg{animation-delay:.08s}
+@keyframes folk-hop{0%,100%{translate:0 0}45%{translate:0 -6px}}
+.folk-eyes{animation:folk-blink 4.2s infinite;transform-box:fill-box;transform-origin:center}
+@keyframes folk-blink{0%,94%,100%{transform:scaleY(1)}96%{transform:scaleY(.15)}}
+.mall-lane-floor{grid-auto-rows:1fr}
+.mall-lane-room{height:100%;min-height:132px;overflow:hidden;justify-content:flex-start}
+.mall-lane-room strong,.mall-lane-room small,.mall-lane-number{position:relative;z-index:1;max-width:62%}
+.mall-lane-room .mall-folk{height:70%}
+/* Storefronts: one height for all, whether or not a store has product photos. */
+.mall-store{height:208px;min-height:0;display:flex;flex-direction:column}
+.mall-store-front{flex:1;min-height:0;grid-template-rows:auto auto 1fr;align-content:start}
+.mall-store-front small{-webkit-line-clamp:2}
+.mall-store-art{height:56px;margin-top:auto;align-self:end}
+@media(max-width:700px){.mall-district{min-height:112px}.mall-folk{height:58%}.mall-store{height:196px}.mall-lane-room{min-height:120px}}
+@media(prefers-reduced-motion:reduce){.folk-eyes,.mall-district:hover .mall-folk svg,.mall-lane-room:hover .mall-folk svg{animation:none}}
+.mall-lane-room{justify-content:center;padding-top:22px}
+.mall-lane-room .mall-lane-number{position:static;display:block;margin:0 0 4px;font-size:10px}
+.mall-lane-room{padding-top:14px}
+@media(max-width:700px){
+ .mall-roof{justify-content:flex-start}
+ .mall-folk{height:48%;right:2px;bottom:3px}
+ .mall-folk svg+svg{display:none}
+ .mall-lane-room .mall-folk{height:52%}
+}
+@media(max-width:700px){.mall-roof-mark{margin-bottom:6px!important}.mall-folk{height:42%}.mall-roof strong{font-size:12px}}
+/* The Mall tile shows three of the Mall's shoppers instead of coloured squares. */
+.ss-tile-folk{display:flex;gap:6px;margin-top:auto;height:70px}
+.ss-tile-folk .mall-folk{position:static;height:100%;max-height:none}
+.ss-tile-folk .mall-folk svg+svg{display:none}
+.ss-tile:hover .ss-tile-folk svg{animation:folk-hop .5s var(--ss-pop)}
+.ss-tile h2{font-size:26px!important}

@@ -122,3 +122,38 @@
 .store-logo{width:20px;height:20px;border-radius:6px;object-fit:cover;flex:none;background:#fff;box-shadow:0 0 0 1px rgba(43,22,32,.08)}
 .store-sync{display:flex;align-items:center;gap:10px}.store-sync>span{flex:1;min-width:0}.store-sync .store-logo{width:28px;height:28px;border-radius:8px}
 .shop-picks .check-row{display:flex;align-items:center;gap:10px}
+/* Just imported: a banner with Undo and a soft glow on the new pieces in the almirah. */
+.new-banner{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin:0 0 14px;padding:12px 14px;border:2px solid #2E8B57;border-radius:18px;background:#EAF6EF;box-shadow:0 4px 0 #BFE3CC;color:#1F4D33;font-size:14px}
+.new-banner span{flex:1;min-width:180px}.new-banner .link-btn{color:#1F4D33;font-weight:800}
+.is-new .well{box-shadow:0 0 0 3px #7BE0A6,0 6px 16px rgba(46,139,87,.25)}
+/* Your photos: selfie + gallery, the recommended way in (owner's priority, 14 Oct 2026). */
+.photos-card{display:flex;flex-direction:column;gap:12px;padding:16px;border:2px solid #8E1B4D;border-radius:24px;background:#fff;box-shadow:0 4px 0 #5E1133}
+.photos-head em{display:block;font-style:normal;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#8E1B4D}
+.photos-head strong{display:block;font-size:18px}.photos-head small{color:#6B5A60}
+.selfie-row{display:flex;align-items:center;gap:12px;padding:10px;border-radius:16px;background:#FBF5EC}
+.selfie-row>span:not(.selfie-empty){flex:1;min-width:0;display:flex;flex-direction:column}.selfie-row small{color:#6B5A60;font-size:12px}
+.selfie-thumb,.selfie-empty{width:48px;height:48px;border-radius:50%;object-fit:cover;flex:none;border:2px solid #fff;box-shadow:0 0 0 2px #F7A8CB}
+.selfie-empty{display:grid;place-items:center;background:#F6DDE8;color:#8E1B4D}.selfie-empty svg{width:22px;height:22px}
+.photos-pick{width:100%}
+.more-ways{border-top:1px solid #EADFD3;padding-top:6px}.more-ways summary{cursor:pointer;padding:10px 2px;font-weight:700;color:#8E1B4D;list-style:none}
+.more-ways summary::-webkit-details-marker{display:none}.more-ways summary:after{content:' ▾'}.more-ways[open] summary:after{content:' ▴'}
+.more-ways>button{width:100%}
+/* Your progress on Profile: level, XP bar and badges. */
+.progress-card{margin:0 0 16px;padding:18px;border:2px solid #EADFD3;border-radius:24px;background:#fff;box-shadow:0 4px 0 #EADFD3}
+.progress-top{display:flex;align-items:center;gap:14px}.progress-top>span:last-child{display:flex;flex-direction:column}
+.progress-top em{font-style:normal;font-size:11px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:#8E1B4D}.progress-top strong{font-size:20px}.progress-top small{color:#6B5A60}
+.progress-level{display:grid;place-items:center;width:52px;height:52px;border-radius:16px;background:#8E1B4D;color:#fff;font-size:22px;font-weight:900;box-shadow:0 4px 0 #5E1133;animation:level-glow 3s ease-in-out infinite}
+@keyframes level-glow{0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg) scale(1.04)}}
+.progress-bar{height:10px;margin:14px 0 6px;border-radius:99px;background:#F3E8E0;overflow:hidden}.progress-bar i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#C2477F,#8E1B4D);transition:width .6s cubic-bezier(.22,1,.36,1)}
+.badge-head{display:flex;justify-content:space-between;align-items:baseline;margin:14px 0 8px}.badge-head small{color:#6B5A60}
+.badge-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.badge{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px 4px;border-radius:16px;background:#FBF5EC;text-align:center;opacity:.55;filter:grayscale(1)}
+.badge strong{font-size:11px;line-height:1.2}.badge small{font-size:9px;color:#6B5A60;line-height:1.2}
+.badge-mark{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:#EADFD3;color:#5E4B52;font-weight:900;font-size:14px}
+.badge.won{opacity:1;filter:none;background:#FFF6E0;box-shadow:0 3px 0 #EBD6A8}.badge.won .badge-mark{background:#F2C14E;color:#5E1133;animation:badge-pop .6s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes badge-pop{from{transform:scale(.4) rotate(-20deg)}to{transform:none}}
+@media(max-width:420px){.badge-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.badge small{display:none}}
+@media(prefers-reduced-motion:reduce){.progress-level,.badge.won .badge-mark{animation:none}}
+/* Import landed: the banner pops in. */
+.new-banner{animation:banner-pop .5s cubic-bezier(.34,1.56,.64,1) both}@keyframes banner-pop{from{transform:scale(.92);opacity:0}to{transform:none;opacity:1}}
+@media(prefers-reduced-motion:reduce){.new-banner{animation:none}}

@@ -23,7 +23,7 @@ const plain=o=>JSON.parse(JSON.stringify(o));
 
 test('every connector is injectable as a standalone function',()=>{
  for(const c of connectors){assert.equal(typeof c.extract,'function',c.id);assert.doesNotThrow(()=>new Function('return ('+c.extract.toString()+')'),c.id);}
- assert.deepEqual(connectors.map(c=>c.id),['myntra','flipkart','slikk','ajio','tatacliq','nykaafashion','amazon','meesho']);
+ assert.deepEqual(connectors.map(c=>c.id),['myntra','flipkart','slikk','ajio','instagram','tatacliq','nykaafashion','amazon','meesho']);
 });
 
 test('Myntra extractor falls back to ?p=N pages and keeps only product fields',async()=>{
