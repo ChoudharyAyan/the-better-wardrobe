@@ -23,7 +23,7 @@ const plain=o=>JSON.parse(JSON.stringify(o));
 
 test('every connector is injectable as a standalone function',()=>{
  for(const c of connectors){assert.equal(typeof c.extract,'function',c.id);assert.doesNotThrow(()=>new Function('return ('+c.extract.toString()+')'),c.id);}
- assert.deepEqual(connectors.map(c=>c.id),['myntra','flipkart','slikk','ajio','tatacliq','nykaafashion']);
+ assert.deepEqual(connectors.map(c=>c.id),['myntra','flipkart','slikk','ajio','tatacliq','nykaafashion','amazon','meesho']);
 });
 
 test('Myntra extractor pages with ?p=N and keeps only product fields',async()=>{
@@ -119,4 +119,29 @@ test('connector routes accept the extension, refuse web pages, and serve batches
   assert.equal((await fetch(base+'/api/connectors/batch/myntra',{method:'DELETE'})).status,200);
   assert.equal((await fetch(base+'/api/connectors/batch/myntra')).status,404);
  });
+});
+
+// A small DOMParser over cheerio, enough for the Amazon extractor's selectors.
+import * as cheerio from 'cheerio';
+const wrap=($,el)=>({get textContent(){return $(el).text();},getAttribute:n=>$(el).attr(n)??null,get value(){return $(el).attr('value')||'';},
+ querySelector:s=>{const f=$(el).find(s).first();return f.length?wrap($,f[0]):null;},querySelectorAll:s=>$(el).find(s).toArray().map(e=>wrap($,e))});
+class DOMParser{parseFromString(html){const $=cheerio.load(html);return wrap($,$.root()[0]);}}
+
+test('Amazon extractor walks each year of order history and keeps product links only',async()=>{
+ const year=new Date().getFullYear();
+ const card=(date,asin,title,status='Delivered')=>`<div class="order-card"><div class="order-header">ORDER PLACED ${date} TOTAL ₹999 SHIP TO Secret Road</div><div class="delivery-box">${status}</div><a href="/dp/${asin}?ref=x"><img src="https://m.media-amazon.com/images/I/${asin}._SS142_.jpg"></a><a href="/gp/product/${asin}/ref=y">${title}</a></div>`;
+ const pages={[`year-${year}|0`]:`<select name="timeFilter"><option value="last30">x</option><option value="year-${year}">${year}</option><option value="year-${year-1}">${year-1}</option></select>`+card('3 March '+year,'B0AAAAAAAA','Levi\'s Men Slim Fit Jeans')+card('1 March '+year,'B0BBBBBBBB','Boat Wireless Earbuds'),
+  [`year-${year-1}|0`]:card('9 June '+(year-1),'B0CCCCCCCC','Men Cotton Kurta','Return complete. Refund issued')+card('8 June '+(year-1),'B0DDDDDDDD','Campus Running Shoes')};
+ const emitted=[];
+ const result=plain(await inject(connector('amazon'),{DOMParser,location:{pathname:'/gp/css/order-history'},__tbwEmit:(d,p)=>emitted.push(p),fetch:async url=>{const u=new URL(url,'https://www.amazon.in');return {url:u.href,text:async()=>pages[u.searchParams.get('timeFilter')+'|'+u.searchParams.get('startIndex')]||''};}}));
+ assert.equal(result.orders.length,4);assert.equal(emitted.length,2,'one message per page read');
+ assert.doesNotMatch(JSON.stringify(result),/Secret Road|999/);
+ const items=connectorNormalizers.amazon(result);
+ assert.deepEqual(items.map(i=>[i.id,i.category]),[['order-amazon-B0AAAAAAAA','Trousers'],['order-amazon-B0DDDDDDDD','Footwear']],'earbuds and the returned kurta are dropped');
+ assert.equal(items[0].image,'https://m.media-amazon.com/images/I/B0AAAAAAAA._AC_UL480_.jpg');assert.equal(items[0].productUrl,'https://www.amazon.in/dp/B0AAAAAAAA');
+});
+
+test('Amazon extractor reports the sign-in page instead of an empty import',async()=>{
+ const result=plain(await inject(connector('amazon'),{DOMParser,location:{pathname:'/ap/signin'},fetch:async()=>({url:'https://www.amazon.in/ap/signin?x',text:async()=>''})}));
+ assert.equal(result.error,'login');
 });

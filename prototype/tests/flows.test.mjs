@@ -5,7 +5,7 @@ import {readFileSync,existsSync} from 'node:fs';
 import {webcrypto} from 'node:crypto';
 import path from 'node:path';
 const source=readFileSync(new URL('../dist/app.js',import.meta.url),'utf8');
-const intake=readFileSync(new URL('../dist/wardrobe-intake.js',import.meta.url),'utf8');
+const intake=readFileSync(new URL('../dist/wardrobe-intake.js',import.meta.url),'utf8')+readFileSync(new URL('../dist/wardrobe-insights.js',import.meta.url),'utf8');
 // Code-level flow checks. These do not launch or automate a browser.
 function app(discovery,{sample=true}={}){
   const nodes=new Map(),listeners={};
@@ -133,4 +133,40 @@ test('levels, XP and streaks come from what was recorded',()=>{
   a.run(`addBasics(window.WardrobeIntake.BASICS.slice(0,6));const t=new Date().toISOString().slice(0,10);state.wears.push({id:'w',date:t,items:[state.items[0].id]});route='wardrobe';render()`);
   const html=a.nodes.get('main').innerHTML;
   assert.match(html,/Level 1 · Collector/);assert.match(html,/1-day streak/);assert.match(html,/75 XP/);assert.match(html,/6 pieces/);
+});
+test('the item page shows wears, cost per wear and completes a look from the wardrobe',()=>{
+  const a=app();
+  a.action('item',{id:'black'});assert.equal(a.run('location.hash'),'wardrobe/item/black','owned pieces open their own page');
+  a.visit('wardrobe/item/black');let html=a.nodes.get('main').innerHTML;
+  assert.match(html,/Complete this look/);assert.match(html,/20<\/strong><span>wears/);assert.match(html,/Mark as worn today/);assert.match(html,/id="item-form"/);
+  a.action('worn-today',{id:'black'});assert.equal(a.run('itemStats("black").logs.length'),21);
+  a.visit('wardrobe/item/black');assert.match(a.nodes.get('main').innerHTML,/Worn today ✓/);
+  a.action('worn-today',{id:'black'});assert.equal(a.run('itemStats("black").logs.length'),21,'the same wear is not logged twice in a day');
+  a.submit('item-form',{name:'Black chinos',category:'Trousers',brand:'Uniqlo',colour:'black',size:'32',price:'2500',purchased:'2026-02-14',status:'laundry'},{id:'black'});
+  assert.equal(a.run('item("black").brand'),'Uniqlo');assert.equal(a.run('item("black").status'),'laundry');assert.equal(a.run('item("black").price'),2500);
+  a.action('archive-item',{id:'tee'});a.visit('wardrobe/open');html=a.nodes.get('main').innerHTML;assert.match(html,/Archived 1/);assert.doesNotMatch(html,/aria-label="Open White tee"/);
+  a.action('duplicate-item',{id:'shoes'});assert.equal(a.run('state.items.filter(p=>p.id.startsWith("shoes-copy-")).length'),1);
+  a.visit('wardrobe/item/missing');assert.match(a.nodes.get('main').innerHTML,/not in your wardrobe/);
+});
+test('the snapshot is never empty, keeps gaps for 20 pieces, and recaps the season',()=>{
+  const a=app();
+  a.visit('wardrobe/snapshot');let html=a.nodes.get('main').innerHTML;
+  assert.match(html,/Your colours/);assert.match(html,/What it is made of/);assert.match(html,/Add 15 more pieces/);assert.match(html,/recap/);
+  a.run(`addBasics(window.WardrobeIntake.BASICS.slice(0,16));render()`);html=a.nodes.get('main').innerHTML;
+  assert.match(html,/Nothing for a wedding|No formal shoes/);assert.match(html,/data-action="discover-search"/);
+});
+test('the same piece from an email and a store import is listed once',()=>{
+  const a=app(undefined,{sample:false});
+  a.run(`addDraft([{id:'order-myntra-9',name:'Roadster Men Navy Checked Casual Shirt',retailer:'myntra',orderedAt:'2026-10-01',category:'Shirts',selected:true}],'Myntra','Myntra orders')`);
+  a.run(`addDraft([{id:'email-abc',name:'Roadster Men Navy Checked Casual Shirt',retailer:'Myntra',orderedAt:'2026-10-02',category:'Shirts',selected:true}],'Email','Email receipts')`);
+  assert.equal(a.run('importDraft.length'),1);
+  a.action('save-import');
+  a.run(`addDraft([{id:'shot-1',name:'Roadster Navy Checked Casual Shirt',retailer:'myntra',orderedAt:'2026-10-03',category:'Shirts',selected:true}],'screenshots','Order screenshot')`);
+  assert.equal(a.run('importDraft[0].duplicate'),'order-myntra-9');assert.equal(a.run('importDraft[0].selected'),false);
+});
+test('store imports remember when they ran and suggest the next store',()=>{
+  const a=app(undefined,{sample:false});
+  a.run(`noteSync('myntra',42);route='wardrobe/add';render()`);
+  const html=a.nodes.get('main').innerHTML;assert.match(html,/42 pieces found · today/);assert.match(html,/Import again/);
+  assert.equal(a.run('nextStore()'),'Amazon','on the web the next importable store is Amazon\'s order file');
 });

@@ -12,6 +12,8 @@
     "https://www.ajio.com/*",
     "https://www.tatacliq.com/*",
     "https://www.nykaafashion.com/*",
+    "https://www.amazon.in/*",
+    "https://www.meesho.com/*",
     "http://127.0.0.1/*",
     "http://localhost/*"
   ],
@@ -19,7 +21,7 @@
   "action": {"default_popup": "popup.html", "default_title": "Import orders to The Wardrobe OS"},
   "content_scripts": [
     {
-      "matches": ["https://www.slikk.club/*", "https://www.tatacliq.com/*", "https://www.nykaafashion.com/*"],
+      "matches": ["https://www.slikk.club/*", "https://www.tatacliq.com/*", "https://www.nykaafashion.com/*", "https://www.meesho.com/*"],
       "js": ["observer.js"],
       "run_at": "document_start",
       "world": "MAIN"
