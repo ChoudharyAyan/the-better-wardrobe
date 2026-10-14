@@ -18,6 +18,8 @@ import {createCutout} from './lib/cutout.mjs';
 import {createInbox} from './lib/inbox.mjs';
 import {retailerPage} from './lib/discovery.mjs';
 import mallSnapshot from './dist/assets/mall-updates.json' with {type:'json'};
+// The phone app's id; its sign-in link is APP_SCHEME://auth (mobile/android AndroidManifest.xml).
+const APP_SCHEME='com.thewardrobeos.app';
 try{process.loadEnvFile(fileURLToPath(new URL('./.env',import.meta.url)));}catch(e){if(e.code!=='ENOENT')throw e;}
 const root=fileURLToPath(new URL('./dist/',import.meta.url));
 const mime={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.svg':'image/svg+xml','.jpg':'image/jpeg','.png':'image/png','.webp':'image/webp','.woff2':'font/woff2','.ttf':'font/ttf'};
@@ -100,12 +102,15 @@ return async(req,res)=>{
  if(req.method==='GET'&&pathname==='/api/me'){guest();return send(200,await accounts.me(accountId));}
  if(req.method==='PUT'&&pathname==='/api/me/profile'){if(!sameSite())return send(403,{error:'Forbidden'});return send(200,{profile:await accounts.saveProfile(accountId,await readJson(8192))});}
  if(req.method==='POST'&&pathname==='/api/auth/preview'){if(!sameSite())return send(403,{error:'Forbidden'});const id=await accounts.preview(guest());startSession(id);return send(200,await accounts.me(id));}
+ if(req.method==='POST'&&pathname==='/api/auth/app-exchange'){if(!sameSite())return send(403,{error:'Forbidden'});const id=accounts.appExchange(await readJson(4096));startSession(id);return send(200,await accounts.me(id));}
  if(req.method==='POST'&&pathname==='/api/auth/logout'){if(!sameSite())return send(403,{error:'Forbidden'});setCookie(`tbw_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${secure}`);return send(200,{ok:true});}
- if(req.method==='GET'&&pathname==='/api/auth/google'){const {url,cookie:flow}=accounts.authStart(origin()+'/api/auth/google/callback');setCookie(`tbw_oauth=${flow}; Path=/api/auth; HttpOnly; SameSite=Lax; Max-Age=600${secure}`);return redirect(url);}
+ if(req.method==='GET'&&pathname==='/api/auth/google'){const {url,cookie:flow}=accounts.authStart(origin()+'/api/auth/google/callback',{app:new URL(req.url,'http://localhost').searchParams.get('app')});setCookie(`tbw_oauth=${flow}; Path=/api/auth; HttpOnly; SameSite=Lax; Max-Age=600${secure}`);return redirect(url);}
  if(req.method==='GET'&&pathname==='/api/auth/google/callback'){
   const q=new URL(req.url,'http://localhost').searchParams;setCookie(`tbw_oauth=; Path=/api/auth; HttpOnly; SameSite=Lax; Max-Age=0${secure}`);
   if(q.get('error'))return redirect('/#welcome');
-  const {id,onboarded}=await accounts.authFinish({code:q.get('code'),state:q.get('state'),cookie:cookie('tbw_oauth'),redirectUri:origin()+'/api/auth/google/callback'});
+  const {id,onboarded,app}=await accounts.authFinish({code:q.get('code'),state:q.get('state'),cookie:cookie('tbw_oauth'),redirectUri:origin()+'/api/auth/google/callback'});
+  // Started from the phone app: hand the app a one-time code through its own link; the session is made inside the app.
+  if(app)return redirect(`intent://auth?code=${encodeURIComponent(accounts.appCode(id,app))}#Intent;scheme=${APP_SCHEME};package=${APP_SCHEME};end`);
   startSession(id);return redirect(onboarded?'/#discover':'/#onboarding');
  }
  // My Wardrobe (PRD NFR#2): the signed-in person's pieces, wear log and picks, kept on the server.

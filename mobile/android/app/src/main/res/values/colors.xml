@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="tbw_cream">#FBF5EC</color>
+    <color name="tbw_ink">#28101F</color>
+    <color name="colorPrimary">#8E1B4D</color>
+    <color name="colorPrimaryDark">#28101F</color>
+    <color name="colorAccent">#C2477F</color>
+</resources>

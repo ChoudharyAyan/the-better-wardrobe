@@ -98,6 +98,11 @@ prod behaviour through the public API. Google OAuth client "TBW web" has the
 Newest first. Add one entry per merged PR: date, PR, what changed, anything
 left half-done or waiting on the owner.
 
+- 2026-10-14 — Android app (PR pending): `mobile/android` generated and building
+  with the command-line SDK (no Android Studio); brand icon and splash; Google
+  sign-in through a Chrome Custom Tab and a one-time code
+  (`dist/native-auth.js`, `POST /api/auth/app-exchange`). Store imports still
+  need a run on a real phone with real store accounts.
 - 2026-10-14 — My Wardrobe Phase 2 (PR pending review, stacked on Phase 1):
   Amazon and Meesho connectors (unverified until tried on real accounts);
   per-store last import; order-email forwarding (`lib/inbox.mjs`, off until
