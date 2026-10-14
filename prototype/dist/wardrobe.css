@@ -106,3 +106,12 @@
 .copy-row{display:flex;gap:8px;align-items:center;margin-top:6px}
 .copy-row code{flex:1;min-width:0;overflow-wrap:anywhere;padding:8px 10px;border-radius:10px;background:var(--neutral);font:600 12px var(--sans)}
 .step-tag{margin:0 0 8px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--rose)}
+/* Import progress (PRD NFR#1): a real bar with the share done, or a moving one while the total is unknown. */
+.job .job-body{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
+.job-pct{font-weight:800;color:#8E1B4D;margin-left:4px}
+.job-bar{display:block;height:6px;margin-top:6px;border-radius:99px;background:#EFE3DC;overflow:hidden;position:relative}
+.job-bar i{display:block;height:100%;border-radius:inherit;background:#8E1B4D;transition:width .35s ease}
+.job.done .job-bar i{background:#2E8B57}
+.job-bar.indeterminate i{position:absolute;left:0;width:35%!important;animation:job-slide 1.2s ease-in-out infinite}
+@keyframes job-slide{from{transform:translateX(-100%)}to{transform:translateX(290%)}}
+@media(prefers-reduced-motion:reduce){.job-bar.indeterminate i{animation:none;width:100%!important;opacity:.35}}

@@ -186,13 +186,31 @@ test('phone app: Myntra orders stream from the in-app browser into the app',asyn
   listeners.browserPageLoaded();assert.match(scripts.at(-1),/Import my orders/);
   listeners.messageFromWebview({detail:{tbw:'go'}});assert.match(scripts.at(-1),/__tbwEmit/);assert.match(scripts.at(-1),/my\/orders\?p=/);
   listeners.messageFromWebview({detail:{tbw:'part',data:{lines:[{product:{id:1}}]},progress:{page:1,pages:2}}});
-  listeners.messageFromWebview({detail:{tbw:'part',data:{lines:[{product:{id:2}}]},progress:{page:2,pages:2}}});assert.match(scripts.at(-1),/Read 2 of 2 pages · 2 pieces/);
+  listeners.messageFromWebview({detail:{tbw:'part',data:{lines:[{product:{id:2}}]},progress:{page:2,pages:2}}});assert.match(scripts.at(-1),/100% · 2 items read/);assert.match(scripts.at(-1),/firstChild\.style\.width=p\+'%'/);
   listeners.messageFromWebview({detail:{tbw:'done',result:{lines:[{product:{id:1}},{product:{id:2}}]}}});
-  assert.deepEqual(await done,{count:2});assert.equal(opened[0],'https://www.myntra.com/my/orders');assert.equal(chunks.length,2,'the final result is not added twice');assert.equal(closed,true);
+  assert.deepEqual(await done,{count:2});assert.equal(opened[0],'https://www.myntra.com/my/orders');assert.equal(chunks.length,2,'the final result is not added twice');
+  assert.match(scripts.at(-1),/Done · 2 items read/);assert.match(scripts.at(-1),/Done ✓/);assert.equal(closed,false,'the finished bar shows for a moment');await new Promise(r=>setTimeout(r,950));assert.equal(closed,true);
   const login=run('flipkart',{onStatus:s=>states.push(s)});await new Promise(r=>setTimeout(r,0));
   listeners.messageFromWebview({detail:{tbw:'done',result:{error:'login'}}});assert.equal(states.at(-1),'login');
   listeners.closeEvent();assert.deepEqual(await login,{count:0,closed:true});
  }finally{delete globalThis.Capacitor;globalThis.fetch=realFetch;}
+});
+
+test('phone app: only Flipkart, and only when asked, opens identifying as Chrome',async()=>{
+ const opens=[];const listeners={};
+ globalThis.Capacitor={isNativePlatform:()=>true,Plugins:{InAppBrowser:{addListener:async(name,fn)=>{listeners[name]=fn;return {remove(){}};},openWebView:async opts=>{opens.push(opts);return {id:'w'};},executeScript:async()=>{},close:async()=>{}}}};
+ const realFetch=globalThis.fetch;globalThis.fetch=async()=>({text:async()=>''});
+ const realNav=Object.getOwnPropertyDescriptor(globalThis,'navigator');
+ Object.defineProperty(globalThis,'navigator',{value:{userAgent:'Mozilla/5.0 (Linux; Android 17; Pixel 10a Build/X; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/154.0.1.2 Mobile Safari/537.36'},configurable:true});
+ try{
+  const {run,needsChrome,chromeAgent}=await import('../dist/native-import.js');
+  assert.equal(needsChrome('flipkart'),true);assert.equal(needsChrome('myntra'),false);
+  assert.equal(chromeAgent(),'Mozilla/5.0 (Linux; Android 17; Pixel 10a Build/X) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.1.2 Mobile Safari/537.36');
+  for(const [id,asChrome] of [['flipkart',false],['flipkart',true],['myntra',true]]){const p=run(id,{asChrome});await new Promise(r=>setTimeout(r,0));listeners.closeEvent();await p;}
+  assert.equal(opens[0].headers,undefined,'Flipkart without consent opens as it is');
+  assert.doesNotMatch(opens[1].headers['User-Agent'],/; wv|Version\/4\.0/);
+  assert.equal(opens[2].headers,undefined,'other stores never change identity');
+ }finally{delete globalThis.Capacitor;globalThis.fetch=realFetch;if(realNav)Object.defineProperty(globalThis,'navigator',realNav);}
 });
 
 test('insights: palette, gaps by profile, recap and complete-this-look',()=>{
@@ -208,4 +226,13 @@ test('insights: palette, gaps by profile, recap and complete-this-look',()=>{
  assert.deepEqual([...I.complete(items[4],state).picks.map(p=>p.id)],['b','c'],'a kurta is not paired with another kurta');
  assert.equal(I.similar({name:'Roadster Men Navy Checked Shirt',retailer:'myntra',orderedAt:'2026-10-01'},{name:'Roadster Navy Checked Shirt',retailer:'Myntra',orderedAt:'2026-10-20'}),true);
  assert.equal(I.similar({name:'Navy Shirt',retailer:'zara'},{name:'Navy Trousers',retailer:'zara'}),false);
+});
+
+test('import progress: share done and a rough time left once a little is done',()=>{
+ const {WardrobeIntake:W}=load('dist/wardrobe-intake.js');
+ assert.deepEqual({...W.importProgress(3,0,0)},{pct:null,left:''},'unknown total: a moving bar, no guess');
+ assert.deepEqual({...W.importProgress(1,4,1000,11000)},{pct:25,left:'about 30 s left'});
+ assert.deepEqual({...W.importProgress(1,2,1000,181000)},{pct:50,left:'about 3 min left'});
+ assert.equal(W.importProgress(4,4,1000,9000).left,'','nothing left to estimate when done');
+ assert.equal(W.importProgress(1,50,1000,2000).left,'','too early to guess');
 });

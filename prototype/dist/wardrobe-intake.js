@@ -75,5 +75,15 @@ function basicImage(shape,colour){
  return 'data:image/svg+xml,'+encodeURIComponent(svg);
 }
 
-window.WardrobeIntake={pool,screen,progress,notWornSince,BASICS,basicImage};
+// Progress for an import (PRD NFR#1: show progress, never a bare spinner): the share done and, once a
+// little is done, a rough time left from the pace so far. total 0 means the total isn't known yet.
+function importProgress(done,total,startedAt,now=Date.now()){
+ if(!total)return {pct:null,left:''};
+ const f=Math.max(0,Math.min(1,done/total)),pct=Math.round(f*100);
+ if(f<0.05||f>=1||!startedAt)return {pct,left:''};
+ const s=Math.ceil((now-startedAt)*(1-f)/f/1000);
+ return {pct,left:s<60?`about ${Math.max(1,s)} s left`:`about ${Math.ceil(s/60)} min left`};
+}
+
+window.WardrobeIntake={pool,screen,progress,importProgress,notWornSince,BASICS,basicImage};
 })();

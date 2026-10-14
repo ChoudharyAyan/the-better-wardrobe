@@ -70,13 +70,16 @@ export const connectors=[
     return {orderDate:o.orderMetaData?.orderDate||null,returned,products};
    };
    try{
+    const emit=typeof globalThis.__tbwEmit==='function'?globalThis.__tbwEmit:()=>{};
     const orders=[];let query=new URLSearchParams({page:'1',filterType:'PREORDER_UNITS'});
     for(let n=1;n<=60;n++){
      const r=await fetch(base+'?'+query,{credentials:'include',headers});
      if(r.status===401||r.status===403)return {error:'login'};
      const view=(await r.json())?.RESPONSE?.multipleOrderDetailsView;
      if(!view)return orders.length?{orders}:{error:'layout'};
-     orders.push(...(view.orders||[]).map(pick));
+     const got=(view.orders||[]).map(pick);orders.push(...got);
+     // The total isn't known until the last page, so progress counts up until then.
+     emit({orders:got},{page:n,pages:view.moreOrder?0:n});
      if(!view.moreOrder)break;
      query=new URLSearchParams({page:String(n+1),filterType:'PREORDER_UNITS'});
      for(const p of view.nextCallParams||[])if(p?.key)query.set(p.key,p.value);
@@ -212,7 +215,8 @@ export const connectors=[
     const STATUS=/, (Order placed|Return complete|Returned|Refund|Exchanged|Cancell?ed|Delivered|Arriving|Shipped|Out for delivery)\b/;
     const orders=[],seen=new Set();let page=0;
     // Year views leave out orders still on their way, so the recent view goes first; repeats are skipped.
-    for(const filter of ['months-3',...years.map(y=>'year-'+y)]){
+    const filters=['months-3',...years.map(y=>'year-'+y)];
+    for(const [step,filter] of filters.entries()){
      for(let n=1;n<=50;n++){
       const r=await fetch(`/your-orders/orders?timeFilter=${filter}&page=${n}`,{credentials:'include'});
       if(/\/ap\/signin/.test(r.url||''))throw login();
@@ -227,9 +231,11 @@ export const connectors=[
         products:[{id:hash(title),title,image:String(img?.getAttribute('src')||'').replace(/\._[A-Z]{2}\d+_\./,'._SL500_.')}]});
       }
       if(!got.length)break;
-      orders.push(...got);page++;emit({orders:got},{page,pages:0});
+      orders.push(...got);emit({orders:got},{page:step+1,pages:filters.length,unit:'period'});
       await wait(300);
      }
+     // Empty years still move the bar.
+     emit({orders:[]},{page:step+1,pages:filters.length,unit:'period'});
     }
     return {orders};
    };
