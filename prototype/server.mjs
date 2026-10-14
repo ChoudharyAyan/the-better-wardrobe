@@ -19,11 +19,12 @@ import {createCutout} from './lib/cutout.mjs';
 import {createInbox} from './lib/inbox.mjs';
 import {retailerPage} from './lib/discovery.mjs';
 import mallSnapshot from './dist/assets/mall-updates.json' with {type:'json'};
+import {createLookPhotos} from './lib/look-photos.mjs';
 try{process.loadEnvFile(fileURLToPath(new URL('./.env',import.meta.url)));}catch(e){if(e.code!=='ENOENT')throw e;}
 const root=fileURLToPath(new URL('./dist/',import.meta.url));
 const mime={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.svg':'image/svg+xml','.jpg':'image/jpeg','.png':'image/png','.webp':'image/webp','.woff2':'font/woff2','.ttf':'font/ttf'};
 // The bare (req,res) listener is what Vercel's Node runtime invokes; createServer wraps it for local runs.
-export function createHandler(discovery=createDiscovery(),qaStore=createQaStore(),photos=createPhotos(),connectors=createConnectorStore(),community=createCommunity(),credits=createCredits(),chats=createChats(),accounts=createAccounts(),wardrobe=createWardrobe(),cutout=createCutout(),pageFetcher=retailerPage,inbox=createInbox(),styleMe=createStyleMe()){
+export function createHandler(discovery=createDiscovery(),qaStore=createQaStore(),photos=createPhotos(),connectors=createConnectorStore(),community=createCommunity(),credits=createCredits(),chats=createChats(),accounts=createAccounts(),wardrobe=createWardrobe(),cutout=createCutout(),pageFetcher=retailerPage,inbox=createInbox(),styleMe=createStyleMe(),lookPhotos=createLookPhotos()){
 // Wardrobe AI (cutouts, link reading) per guest per hour: a backstop on a shared preview, generous
 // enough for a 100-piece first import. Per instance, like Discover's hourly cap.
 const wardrobeUse=new Map();
@@ -182,6 +183,8 @@ return async(req,res)=>{
   if(itemPath&&req.method==='DELETE'){await wardrobe.removeItem(accountId,itemPath[1]);return send(200,{ok:true});}
   return send(404,{error:'Not found'});
  }
+ // Public web photo for a trending look or a typed prompt (Bing image results, Wikimedia fallback), never the paid search.
+ if(req.method==='GET'&&pathname==='/api/discover/look-photo'){const q=new URL(req.url,'http://localhost').searchParams.get('q')||'';if(q.trim().length<3||q.length>300)return send(400,{error:'Use a photo query between 3 and 300 characters.'});return send(200,await lookPhotos.search(q));}
  if(req.method==='GET'&&pathname==='/api/discover/looks')return send(200,{looks:lookCards()});
  const ip=()=>String(req.headers['x-forwarded-for']||'').split(',')[0].trim()||req.socket?.remoteAddress||'unknown';
  // Saved Discover chats (three per guest in the beta).

@@ -36,7 +36,7 @@ export const LOOKS=[
  {id:'drive-scorpion-jacket',aliases:/scorpion jacket|(gosling|ryan).*\bdrive\b|\bdrive\b.*(gosling|jacket)/i,must:/scorpion|bomber/i,who:'Ryan Gosling · Drive',label:'Ryan Gosling’s scorpion jacket from Drive',department:'menswear',
   attributes:{category:'Jacket',subtype:'satin bomber jacket',colour:'white',fit:'regular',pattern:'',details:'gold scorpion embroidered on the back',features:'scorpion embroidery'},
   query:'white satin bomber jacket scorpion embroidery',source:'The film’s costume: off-white quilted satin jacket with a gold scorpion'},
- {id:'thomas-shelby-cap',aliases:/thomas shelby|tommy shelby|peaky blinders|shelby.*cap/i,must:/newsboy|flat cap|baker boy|gatsby/i,who:'Thomas Shelby · Peaky Blinders',label:'Thomas Shelby’s newsboy cap',department:'menswear',
+ {id:'thomas-shelby-cap',aliases:/cillian murphy|cilian murphy|thomas shelby|tommy shelby|peaky blinders|shelby.*cap/i,must:/newsboy|flat cap|baker boy|gatsby/i,who:'Cillian Murphy · Peaky Blinders',label:'Cillian Murphy’s newsboy cap',department:'menswear',
   attributes:{category:'Cap',subtype:'newsboy cap',colour:'grey',fit:'',pattern:'herringbone',details:'wool tweed',features:'herringbone tweed'},
   query:'grey herringbone tweed newsboy cap',source:'The series’ costume: herringbone tweed newsboy cap with a wool overcoat'},
  {id:'blade-runner-k-coat',iconic:true,aliases:/blade ?runner|officer k\b/i,must:/shearling|sherpa|fur collar|aviator jacket|b-?3|leather coat|leather jacket/i,who:'Ryan Gosling · Blade Runner 2049',label:'Ryan Gosling’s shearling-collar coat from Blade Runner 2049',department:'menswear',

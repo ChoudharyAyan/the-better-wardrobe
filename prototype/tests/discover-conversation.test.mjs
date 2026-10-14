@@ -9,8 +9,8 @@ test('Discover opens as a prompt-first conversation, not an image-only upload',(
  const listeners={};const context={window:{},document:{addEventListener:(event,fn)=>{listeners[event]=fn;},getElementById:()=>null}};
  vm.runInNewContext(script,context);
  const html=context.window.DiscoverConversation.render();
- assert.match(html,/Tell me what you’re looking for/);
- assert.match(html,/Describe a piece, add a screenshot, or use both/);
+ assert.match(html,/Describe a garment you want to find/);
+ assert.match(html,/Add details, a screenshot, or both/);
  assert.match(html,/dc-image-input/);
  assert.match(html,/dc-text/);
  assert.ok(listeners.submit&&listeners.change&&listeners.click);
@@ -19,15 +19,16 @@ test('Discover opens as a prompt-first conversation, not an image-only upload',(
 
 // A tiny DOM-less harness: the script only needs document listeners and a node to paint into.
 function harness(replies){
- const listeners={},calls=[];let latest='';
- const page={set outerHTML(value){latest=value;}};
- const context={window:{},document:{addEventListener:(event,fn)=>{listeners[event]=fn;},getElementById:id=>id==='discover-conversation'?page:null},AbortController,
+ const listeners={},calls=[],renders=[],windowListeners={};let latest='';
+ const page={set outerHTML(value){latest=value;renders.push(value);}};
+ const context={window:{addEventListener:(event,fn)=>{(windowListeners[event]??=[]).push(fn);}},document:{addEventListener:(event,fn)=>{listeners[event]=fn;},getElementById:id=>id==='discover-conversation'?page:null},AbortController,clearTimeout,clearInterval,TextDecoder,Uint8Array,
   FormData:class{constructor(form){this.v=form.values;}get(k){return this.v[k];}},
-  fetch:async(url,options={})=>{const action=url.split('/').pop();const body=options.body?JSON.parse(options.body):{};calls.push({action,body});const reply=typeof replies[action]==='function'?replies[action](body):replies[action];return {ok:reply?.status?reply.status<400:true,status:reply?.status||200,json:async()=>reply};}};
+  fetch:async(url,options={})=>{const action=url.split('/').pop();const body=options.body?JSON.parse(options.body):{};calls.push({action,body,headers:options.headers});const reply=typeof replies[action]==='function'?replies[action](body):replies[action];if(reply?.events){const chunks=reply.events.map(event=>new TextEncoder().encode(JSON.stringify(event)+'\n'));let i=0;return {ok:true,status:200,headers:{get:()=> 'application/x-ndjson'},body:{getReader:()=>({read:async()=>i<chunks.length?{done:false,value:chunks[i++]}:{done:true}})}};}return {ok:reply?.status?reply.status<400:true,status:reply?.status||200,json:async()=>reply};}};
+ context.TextEncoder=TextEncoder;
  vm.runInNewContext(script,context);
  const settle=()=>new Promise(r=>setImmediate(r));
  const click=(action,data={})=>listeners.click({target:{closest:sel=>sel==='[data-conversation]'?{dataset:{conversation:action,...data}}:null}});
- return {context,listeners,calls,latest:()=>latest,settle,click,ask:async text=>{listeners.input({target:{id:'dc-text',value:text}});listeners.submit({target:{id:'dc-compose'},preventDefault(){}});for(let i=0;i<4;i++)await settle();}};
+ return {context,listeners,calls,renders,windowListeners,latest:()=>latest,settle,click,ask:async text=>{listeners.input({target:{id:'dc-text',value:text}});listeners.submit({target:{id:'dc-compose'},preventDefault(){}});for(let i=0;i<4;i++)await settle();}};
 }
 const shirt={category:'shirt',colour:'black',fit:'relaxed',pattern:'',details:'linen',subtype:'',features:'',department:'menswear'};
 const found={results:[{title:'Black linen shirt',url:'https://www.snitch.com/p',merchant:'Snitch',priceText:'₹1,499',image:'https://img.example/p.jpg'}],warnings:[],
@@ -49,6 +50,15 @@ test('asking goes straight to results: one interpret, one search, no confirmatio
  assert.match(html,/How I searched · 3 searches · 4\.2s/);
  assert.equal((html.match(/<code>black linen shirt men<\/code>/g)||[]).length,1,'a phrase sent to two routes is listed once');
  assert.match(html,/24 found · 8 off-topic, wrong colour or outside India removed · 6 compared against your piece · <b>1 shown<\/b>/);
+});
+
+test('Discover uses server progress instead of cycling through pretend search stages',async()=>{
+ const h=harness({interpret:{events:[{type:'progress',percent:10,label:'Understanding your request'},{type:'progress',percent:100,label:'Search details ready'},{type:'result',data:{attributes:shirt,query:'black linen shirt',budget:null,credits:{remaining:105,cost:15},turn:'t'}}]},search:{events:[{type:'progress',percent:35,label:'1 of 2 search routes completed'},{type:'progress',percent:100,label:'Your matches are ready'},{type:'result',data:found}]}});
+ await h.ask('black linen shirt');
+ assert.ok(h.calls.every(call=>call.headers?.Accept==='application/x-ndjson'));
+ assert.ok(h.renders.some(html=>html.includes('Understanding your request')&&html.includes('aria-valuenow="10"')));
+ assert.ok(h.renders.some(html=>html.includes('1 of 2 search routes completed')&&html.includes('aria-valuenow="35"')));
+ assert.match(h.latest(),/Black linen shirt/);
 });
 
 test('the in-app model dropdown offers Max and Lite and the choice travels with the request',async()=>{
@@ -139,4 +149,83 @@ test('design QA #20: an empty Discover greets with a mascot instead of the star,
  assert.doesNotMatch(html,/dc-spark|✳/);
  const who=html.match(/aria-label="(\w+) the \w+ says hi/)[1];
  h.click('mascot');assert.notEqual(h.latest().match(/aria-label="(\w+) the \w+ says hi/)[1],who,'tapping meets a different friend');
+});
+
+test('Sticker Studio trending cards fill the draft and only search on explicit submission',async()=>{
+ const look={id:'don-draper-aviators',who:'Don Draper · Mad Men',label:'Don Draper’s gold aviators',department:'menswear'};
+ const h=harness({credits:{remaining:120},looks:{looks:[look]},interpret:{attributes:shirt,query:'gold aviator sunglasses',turn:'look-ticket'},search:found});
+ h.context.window.fetch=h.context.fetch;
+ h.context.window.dispatchEvent=()=>{};h.context.Event=class {};
+ h.context.window.StickerStudio={guide:()=>'',lookArt:()=>'',modelModes:()=>'',promptChips:()=>'',modelModes:()=>'',skeletons:()=>'',lookSource:()=>'',skeletons:()=>''};
+ h.context.window.DiscoverConversation.render();for(let i=0;i<4;i++)await h.settle();
+ await h.click('look',{index:'0'});
+ assert.match(h.latest(),/Don Draper’s gold aviators<\/textarea>/);
+ assert.equal(h.calls.filter(c=>['interpret','search'].includes(c.action)).length,0,'card selection must not spend search credits');
+ await h.ask(look.label);
+ const interpret=h.calls.find(c=>c.action==='interpret');assert.equal(interpret.body.look,look.id,'researched look identity is preserved');
+ assert.equal(h.calls.filter(c=>c.action==='search').length,1);
+});
+
+
+test('Mall invitation appears immediately and browsing keeps the search running',async()=>{
+ let finish;const pending=new Promise(resolve=>{finish=resolve;});
+ const h=harness({interpret:pending,search:found});
+ h.context.window.StickerStudio={guide:()=>'',subnav:()=>'',promptChips:()=>'',modelModes:()=>'',skeletons:()=>'',lookSource:()=>''};
+ h.context.location={hash:'#discover/ask'};h.context.Event=Event;h.context.window.dispatchEvent=()=>{};
+ h.context.window.DiscoverConversation.render();
+ await h.ask('black linen shirt');
+ assert.match(h.latest(),/Explore The Mall while I search for you/);
+ assert.match(h.latest(),/data-conversation="explore-mall"/);
+ assert.match(h.latest(),/We’ll let you know when your results are ready/);
+ h.click('explore-mall');await h.settle();
+ assert.equal(h.context.location.hash,'discover/mall');
+ assert.deepEqual(h.calls.map(c=>c.action),['interpret']);
+ finish({attributes:shirt,query:'black linen shirt',question:'',turn:'ticket'});
+ for(let i=0;i<6;i++)await h.settle();
+ assert.deepEqual(h.calls.map(c=>c.action),['interpret','search']);
+ assert.match(h.context.window.DiscoverConversation.render(),/Black linen shirt/);
+ assert.doesNotMatch(h.context.window.DiscoverConversation.render(),/data-conversation="explore-mall"/);
+});
+
+
+test('unmounted mobile search retains its ticket, prompt, progress and ready notification',async()=>{
+ let interpretDone,searchDone;const interpret=new Promise(r=>interpretDone=r),search=new Promise(r=>searchDone=r);
+ const h=harness({interpret,search});
+ h.context.window.StickerStudio={guide:()=>'',promptChips:()=>'',modelModes:()=>'',skeletons:()=>''};
+ h.context.Event=Event;h.context.window.dispatchEvent=()=>{};h.context.setTimeout=fn=>fn();
+ h.context.location={hash:'#discover/ask'};
+ let mounted=true,pill=null;const original=h.context.document.getElementById;
+ h.context.document.getElementById=id=>id==='dc-ready-pill'?pill:mounted?original(id):null;
+ h.context.document.createElement=()=>({innerHTML:'',setAttribute(){},remove(){pill=null;}});
+ h.context.document.body={append(node){pill=node;}};
+ h.context.document.querySelector=()=>null;
+ await h.ask('black linen shirt');
+ h.click('explore-mall');h.context.location.hash='#discover/mall';mounted=false;
+ for(const fn of h.windowListeners.hashchange||[])fn();
+ assert.match(pill.innerHTML,/Search continues/);assert.match(pill.innerHTML,/black linen shirt/);
+ interpretDone({attributes:shirt,query:'black linen shirt',turn:'same-ticket'});
+ for(let i=0;i<4;i++)await h.settle();
+ assert.equal(h.calls.find(c=>c.action==='search').body.turn,'same-ticket');
+ assert.match(pill.innerHTML,/Back to my search/);
+ h.click('show-results');mounted=true;h.context.location.hash='#discover/ask';
+ for(const fn of h.windowListeners.hashchange||[])fn();
+ assert.equal(pill,null);assert.match(h.context.window.DiscoverConversation.render(),/dc-loading/);
+ h.click('explore-mall');mounted=false;h.context.location.hash='#discover/mall';
+ for(const fn of h.windowListeners.hashchange||[])fn();
+ searchDone(found);for(let i=0;i<6;i++)await h.settle();
+ assert.match(pill.innerHTML,/Your picks are ready/);assert.match(pill.innerHTML,/See results/);
+ h.click('show-results');assert.equal(h.context.location.hash,'discover/ask');mounted=true;
+ const html=h.context.window.DiscoverConversation.render();assert.match(html,/Black linen shirt/);assert.match(html,/black linen shirt/);
+ assert.equal(h.calls.filter(c=>c.action==='interpret').length,1);assert.equal(h.calls.filter(c=>c.action==='search').length,1);
+});
+
+test('screenshot choices render with Sticker Studio and browser timers',async()=>{
+ const h=harness({detect:{items:[{label:'Jacket'},{label:'Trousers'}]}});
+ h.context.window.StickerStudio={guide:()=>'',promptChips:()=>'',modelModes:()=>'',skeletons:()=>''};
+ h.context.Event=Event;h.context.window.dispatchEvent=()=>{};
+ h.context.createImageBitmap=async()=>({width:20,height:20,close(){}});
+ h.context.document.createElement=()=>({getContext:()=>({drawImage(){}}),toDataURL:()=> 'data:image/jpeg;base64,test'});
+ await h.listeners.change({target:{id:'dc-image-input',files:[{type:'image/jpeg',size:10}]}});
+ h.listeners.submit({target:{id:'dc-compose'},preventDefault(){}});for(let i=0;i<4;i++)await h.settle();
+ assert.match(h.latest(),/Which piece should I look for/);assert.match(h.latest(),/Jacket/);assert.match(h.latest(),/Trousers/);
 });

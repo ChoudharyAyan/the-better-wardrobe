@@ -106,3 +106,5 @@
 .copy-row{display:flex;gap:8px;align-items:center;margin-top:6px}
 .copy-row code{flex:1;min-width:0;overflow-wrap:anywhere;padding:8px 10px;border-radius:10px;background:var(--neutral);font:600 12px var(--sans)}
 .step-tag{margin:0 0 8px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--rose)}
+/* Closed almirah: the doors fill the cabinet. Their old height:calc(100% - 46px) resolved against a min-height parent and collapsed to the 4px seam. */
+.almirah.closed{display:flex;flex-direction:column}.almirah.closed .doors{flex:1;height:auto;min-height:300px}
