@@ -14,7 +14,7 @@ export const available=id=>Boolean(plugin())&&connectors.some(c=>c.id===id);
 // bar (the in-app browser draws under it and store pages rarely set viewport-fit). Re-added on every page load
 // because the person may sign in or navigate first.
 const banner=label=>`(()=>{if(document.getElementById('tbw-bar'))return;const bar=document.createElement('div');bar.id='tbw-bar';
-bar.setAttribute('style','position:fixed;left:12px;right:12px;bottom:max(56px,calc(16px + env(safe-area-inset-bottom,0px)));z-index:2147483647;display:flex;gap:10px;align-items:center;padding:12px 14px;border-radius:16px;background:#28101F;color:#FBF5EC;font:600 14px/1.3 Montserrat,system-ui,sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.25)');
+bar.setAttribute('style','position:fixed;left:12px;right:12px;bottom:max(72px,calc(24px + env(safe-area-inset-bottom,0px)));z-index:2147483647;display:flex;gap:10px;align-items:center;padding:12px 14px;border-radius:16px;background:#28101F;color:#FBF5EC;font:600 14px/1.3 Montserrat,system-ui,sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.25)');
 const text=document.createElement('span');text.id='tbw-bar-text';text.style.flex='1';text.textContent=${JSON.stringify('Signed in to '+label+'? Bring your orders into your wardrobe.')};
 const go=document.createElement('button');go.id='tbw-bar-go';go.textContent='Import my orders';go.setAttribute('style','border:0;border-radius:999px;padding:10px 14px;background:#C2477F;color:#fff;font:700 13px Montserrat,system-ui,sans-serif');
 go.onclick=()=>{go.disabled=true;go.textContent='Reading…';window.mobileApp.postMessage({detail:{tbw:'go'}});};
