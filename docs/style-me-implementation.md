@@ -2,6 +2,8 @@
 
 ## Styling buddy UI follow-up — 14 October 2026
 
+Before merging PR #34, integrated main `fc93b54` (Sticker Studio #32 and Android #33). Browser inspection found global Discover styles hiding the Style Me greeting and flattening its prompts; scoped Style Me overrides restore the reviewed greeting and two-column prompt buttons. Updated desktop/390px screenshots confirm the integration; phone page width remains 390px. Integrated checks: 238 pass, 2 existing database skips, 0 fail. My Wardrobe and native mobile files match main.
+
 Owner-facing navigation now says **Your stylist** and **Outfit canvas**; internal section numbers are removed from the UI. The empty conversation greets with the illustrated Discover characters, with a tappable buddy switch, bob/blink motion and reduced-motion support. Buddy avatars accompany replies and generation states. A three-step outfit journey reflects actual saved state: suggestions, Canvas pieces, and frozen designs. Changing the buddy makes no generation/save request. Mobile heading spacing and selected-tab hover contrast were corrected.
 
 Rendered and inspected at the normal desktop viewport and 390×844 phone width. Browser interaction covered changing the buddy, a curated Himachal prompt, selecting a look in Canvas and returning to see completed journey steps. Phone document width matched the 390px viewport. Check passed; full tests: 213 pass, 2 existing database skips. Screenshots: `screenshots/style-me-buddy-desktop.png` and `screenshots/style-me-buddy-mobile.png`. My Wardrobe and native mobile implementation files were not changed.
