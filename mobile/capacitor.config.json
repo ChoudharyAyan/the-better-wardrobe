@@ -5,12 +5,18 @@
   "server": {
     "url": "https://app.thewardrobeos.com",
     "cleartext": false,
-    "allowNavigation": ["app.thewardrobeos.com"]
+    "allowNavigation": [
+      "app.thewardrobeos.com"
+    ]
   },
   "android": {
     "allowMixedContent": false
   },
   "plugins": {
-    "InAppBrowser": {}
-  }
+    "InAppBrowser": {},
+    "SystemBars": {
+      "style": "LIGHT"
+    }
+  },
+  "backgroundColor": "#FBF5EC"
 }

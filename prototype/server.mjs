@@ -19,11 +19,14 @@ import {createCutout} from './lib/cutout.mjs';
 import {createInbox} from './lib/inbox.mjs';
 import {retailerPage} from './lib/discovery.mjs';
 import mallSnapshot from './dist/assets/mall-updates.json' with {type:'json'};
+import {createLookPhotos} from './lib/look-photos.mjs';
+// The phone app's id; its sign-in link is APP_SCHEME://auth (mobile/android AndroidManifest.xml).
+const APP_SCHEME='com.thewardrobeos.app';
 try{process.loadEnvFile(fileURLToPath(new URL('./.env',import.meta.url)));}catch(e){if(e.code!=='ENOENT')throw e;}
 const root=fileURLToPath(new URL('./dist/',import.meta.url));
 const mime={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.svg':'image/svg+xml','.jpg':'image/jpeg','.png':'image/png','.webp':'image/webp','.woff2':'font/woff2','.ttf':'font/ttf'};
 // The bare (req,res) listener is what Vercel's Node runtime invokes; createServer wraps it for local runs.
-export function createHandler(discovery=createDiscovery(),qaStore=createQaStore(),photos=createPhotos(),connectors=createConnectorStore(),community=createCommunity(),credits=createCredits(),chats=createChats(),accounts=createAccounts(),wardrobe=createWardrobe(),cutout=createCutout(),pageFetcher=retailerPage,inbox=createInbox(),styleMe=createStyleMe()){
+export function createHandler(discovery=createDiscovery(),qaStore=createQaStore(),photos=createPhotos(),connectors=createConnectorStore(),community=createCommunity(),credits=createCredits(),chats=createChats(),accounts=createAccounts(),wardrobe=createWardrobe(),cutout=createCutout(),pageFetcher=retailerPage,inbox=createInbox(),styleMe=createStyleMe(),lookPhotos=createLookPhotos()){
 // Wardrobe AI (cutouts, link reading) per guest per hour: a backstop on a shared preview, generous
 // enough for a 100-piece first import. Per instance, like Discover's hourly cap.
 const wardrobeUse=new Map();
@@ -138,12 +141,15 @@ return async(req,res)=>{
  if(req.method==='GET'&&pathname==='/api/me'){guest();return send(200,await accounts.me(accountId));}
  if(req.method==='PUT'&&pathname==='/api/me/profile'){if(!sameSite())return send(403,{error:'Forbidden'});return send(200,{profile:await accounts.saveProfile(accountId,await readJson(8192))});}
  if(req.method==='POST'&&pathname==='/api/auth/preview'){if(!sameSite())return send(403,{error:'Forbidden'});const id=await accounts.preview(guest());startSession(id);return send(200,await accounts.me(id));}
+ if(req.method==='POST'&&pathname==='/api/auth/app-exchange'){if(!sameSite())return send(403,{error:'Forbidden'});const id=accounts.appExchange(await readJson(4096));startSession(id);return send(200,await accounts.me(id));}
  if(req.method==='POST'&&pathname==='/api/auth/logout'){if(!sameSite())return send(403,{error:'Forbidden'});setCookie(`tbw_session=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0${secure}`);return send(200,{ok:true});}
- if(req.method==='GET'&&pathname==='/api/auth/google'){const {url,cookie:flow}=accounts.authStart(origin()+'/api/auth/google/callback');setCookie(`tbw_oauth=${flow}; Path=/api/auth; HttpOnly; SameSite=Lax; Max-Age=600${secure}`);return redirect(url);}
+ if(req.method==='GET'&&pathname==='/api/auth/google'){const {url,cookie:flow}=accounts.authStart(origin()+'/api/auth/google/callback',{app:new URL(req.url,'http://localhost').searchParams.get('app')});setCookie(`tbw_oauth=${flow}; Path=/api/auth; HttpOnly; SameSite=Lax; Max-Age=600${secure}`);return redirect(url);}
  if(req.method==='GET'&&pathname==='/api/auth/google/callback'){
   const q=new URL(req.url,'http://localhost').searchParams;setCookie(`tbw_oauth=; Path=/api/auth; HttpOnly; SameSite=Lax; Max-Age=0${secure}`);
   if(q.get('error'))return redirect('/#welcome');
-  const {id,onboarded}=await accounts.authFinish({code:q.get('code'),state:q.get('state'),cookie:cookie('tbw_oauth'),redirectUri:origin()+'/api/auth/google/callback'});
+  const {id,onboarded,app}=await accounts.authFinish({code:q.get('code'),state:q.get('state'),cookie:cookie('tbw_oauth'),redirectUri:origin()+'/api/auth/google/callback'});
+  // Started from the phone app: hand the app a one-time code through its own link; the session is made inside the app.
+  if(app)return redirect(`intent://auth?code=${encodeURIComponent(accounts.appCode(id,app))}#Intent;scheme=${APP_SCHEME};package=${APP_SCHEME};end`);
   startSession(id);return redirect(onboarded?'/#discover':'/#onboarding');
  }
  // My Wardrobe (PRD NFR#2): the signed-in person's pieces, wear log and picks, kept on the server.
@@ -182,6 +188,8 @@ return async(req,res)=>{
   if(itemPath&&req.method==='DELETE'){await wardrobe.removeItem(accountId,itemPath[1]);return send(200,{ok:true});}
   return send(404,{error:'Not found'});
  }
+ // Public web photo for a trending look or a typed prompt (Bing image results, Wikimedia fallback), never the paid search.
+ if(req.method==='GET'&&pathname==='/api/discover/look-photo'){const q=new URL(req.url,'http://localhost').searchParams.get('q')||'';if(q.trim().length<3||q.length>300)return send(400,{error:'Use a photo query between 3 and 300 characters.'});return send(200,await lookPhotos.search(q));}
  if(req.method==='GET'&&pathname==='/api/discover/looks')return send(200,{looks:lookCards()});
  const ip=()=>String(req.headers['x-forwarded-for']||'').split(',')[0].trim()||req.socket?.remoteAddress||'unknown';
  // Saved Discover chats (three per guest in the beta).

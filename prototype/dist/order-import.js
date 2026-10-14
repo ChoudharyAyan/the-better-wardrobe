@@ -7,7 +7,7 @@ export const CATEGORIES=['Shirts','Trousers','Ethnic wear','Footwear','Accessori
 
 // Order matters: the first rule that matches wins, so specific types sit above generic ones.
 const RULES=[
- [/perfume|deodorant|fragrance|serum|shampoo|lipstick|makeup|skin ?care|personal care|grooming|blanket|quilt|dohar|bedsheet|cushion|towel|free ?gift|voucher|gift ?card|protection ?plan|charger|handset|mobile|book|suitcase|trolley|luggage|playgym|baby/i,null],
+ [/perfume|deodorant|fragrance|serum|shampoo|lipstick|makeup|skin ?care|personal care|grooming|blanket|quilt|dohar|bedsheet|cushion|towel|free ?gift|voucher|gift ?card|protection ?plan|charger|handset|mobile|book|suitcase|trolley|luggage|playgym|baby|microwave|\bovens?\b|appliance|refrigerator|fridge|washing ?machine|television|\btv\b|laptop|\btablet\b|earphone|headphone|earbud|speaker|power ?bank|adapt[eo]r|\bcable\b|trust ?shield|warranty|insurance|digital ?(combo|voucher|code)|grocery|curtains?|drapes?|carbon filter|drying clips?|cloth(es)? clips?|pay balance|\boats\b/i,null],
  [/trunk|brief|boxer|bra\b|panty|panties|innerwear|vest|socks?\b|thermal|camisole|shapewear/i,'innerwear'],
  [/kurta|kurti|salwar|churidar|sherwani|nehru|bandhgala|sari\b|saree|lehenga|anarkali|dhoti|ethnic|achkan|ghagra|patiala/i,'Ethnic wear'],
  [/co-?ords?|\bsuits?\b/i,'Suits'],
@@ -84,7 +84,9 @@ export function normalizeFlipkart(orders){
    const category=classify(p.vertical,p.category,p.title);
    if(!category)continue;
    const url=typeof p.url==='string'&&p.url.startsWith('/')?'https://www.flipkart.com'+p.url:p.url;
-   out.push(toItem({retailer:'flipkart',productId:p.id,name:p.title,brand:p.brand,type:p.vertical,size:p.size==='Free'?'':p.size,color:p.color,image:p.image,productUrl:url,orderedAt:isoDate(order.orderDate),category}));
+   // Flipkart image URLs are templates: /image/{@width}/{@height}/…?q={@quality}.
+   const image=String(p.image||'').replace('{@width}','480').replace('{@height}','480').replace('{@quality}','80');
+   out.push(toItem({retailer:'flipkart',productId:p.id,name:p.title,brand:p.brand,type:p.vertical,size:p.size==='Free'?'':p.size,color:p.color,image,productUrl:url,orderedAt:isoDate(order.orderDate),category}));
   }
  }
  return dedupe(out);
@@ -97,11 +99,12 @@ export function normalizeAmazonOrders(orders){
  for(const order of Array.isArray(orders)?orders:[]){
   if(order?.returned||order?.cancelled)continue;
   for(const p of Array.isArray(order?.products)?order.products:[]){
-   if(!/^[A-Z0-9]{10}$/.test(String(p?.id||'')))continue;
+   // An ASIN from the desktop site, or m-<hash of the title> from the mobile site (no ASIN there).
+   const asin=/^[A-Z0-9]{10}$/.test(String(p?.id||''));if(!asin&&!/^m-[a-z0-9]+$/.test(String(p?.id||'')))continue;
    const category=classify(p.title);if(!category||category==='unknown')continue;
    // Amazon image URLs take a size token before the extension; ask for a tile-sized one.
    const image=String(p.image||'').replace(/\._[^/]*_\.(jpg|png)$/i,'._AC_UL480_.$1');
-   out.push({...toItem({retailer:'amazon',productId:p.id,name:p.title,image,productUrl:'https://www.amazon.in/dp/'+p.id,orderedAt:isoDate(order.orderDate),category}),unverified:true});
+   out.push({...toItem({retailer:'amazon',productId:p.id,name:p.title,image,productUrl:asin?'https://www.amazon.in/dp/'+p.id:'',orderedAt:isoDate(order.orderDate),category}),unverified:true});
   }
  }
  return dedupe(out).map(i=>({...i,warning:i.warning||'Read with a new connector · check the name and category.'}));
@@ -160,7 +163,9 @@ export function normalizeSlikk(orders){
   const flag=o?.returned?'This order had a return · tick it only if you kept this piece.':'';
   for(const i of Array.isArray(o?.items)?o.items:[]){
    const category=classify(i?.name);if(!i?.name||!category)continue;
-   out.push(toItem({retailer:'slikk',productId:hashId(i.name+'|'+(i.image||'')),name:i.name,image:i.image,orderedAt:isoDate(o.date),category,price:priceOf(i.price),flag}));
+   // Slikk sends every photo of the item as one comma-separated string; the first is the main one.
+   const image=String(i.image||'').split(',')[0].trim();
+   out.push(toItem({retailer:'slikk',productId:hashId(i.name+'|'+(i.image||'')),name:i.name,image,orderedAt:isoDate(o.date),category,price:priceOf(i.price),flag}));
   }
  }
  return dedupe(out);

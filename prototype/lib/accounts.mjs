@@ -3,6 +3,7 @@ import {mkdir,readFile,rename,writeFile} from 'node:fs/promises';
 import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {ApiError} from './discovery.mjs';
+const APP_CHALLENGE=/^[A-Za-z0-9_-]{43}$/;
 
 // Accounts and onboarding (design QA #15, 6 Oct 2026).
 // Google sign-in is the real account. Until the owner adds GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET, a
@@ -58,6 +59,7 @@ export function createAccounts({env=process.env,store,fetcher=fetch,now=Date.now
  // Session cookie: account id + expiry, signed. Nothing else about the person lives in the cookie.
  const session=id=>{const body=b64(id)+'.'+(now()+SESSION_DAYS*864e5);return body+'.'+sign(body);};
  const readSession=value=>{const [id,exp,mac]=String(value||'').split('.');if(!id||!exp||!mac)return null;const body=id+'.'+exp;if(!equal(mac,sign(body))||Number(exp)<now())return null;try{return Buffer.from(id,'base64url').toString();}catch{return null;}};
+ const spent=new Map();
  const publicAccount=a=>a&&{kind:a.kind,name:a.name,email:a.email,picture:a.picture};
  return {
   google,session,readSession,
@@ -69,13 +71,15 @@ export function createAccounts({env=process.env,store,fetcher=fetch,now=Date.now
   // Whose chats these are: preview accounts keep the guest's existing chats.
   chatOwner:(id,guest)=>id?.startsWith('p:')?guest:id,
   // Google OAuth (authorization code + PKCE). The verifier and state ride in a short-lived signed cookie.
-  authStart(redirectUri){
+  // app: the phone app's PKCE-style challenge (sha256 of a verifier only the app holds). Sign-in then
+  // finishes in a Chrome Custom Tab and hands the app a one-time code instead of a session cookie.
+  authStart(redirectUri,{app}={}){
    if(!google)throw new ApiError(404,'Google sign-in is not configured yet.');
    const state=randomBytes(16).toString('base64url'),verifier=randomBytes(32).toString('base64url');
    const challenge=createHash('sha256').update(verifier).digest('base64url');
    const url=new URL('https://accounts.google.com/o/oauth2/v2/auth');
    Object.entries({client_id:env.GOOGLE_CLIENT_ID,redirect_uri:redirectUri,response_type:'code',scope:'openid email profile',state,code_challenge:challenge,code_challenge_method:'S256',prompt:'select_account'}).forEach(([k,v])=>url.searchParams.set(k,v));
-   const body=b64(JSON.stringify({state,verifier,exp:now()+10*60000}));
+   const body=b64(JSON.stringify({state,verifier,exp:now()+10*60000,...(APP_CHALLENGE.test(app||'')?{app}:{})}));
    return {url:url.href,cookie:body+'.'+sign(body)};
   },
   async authFinish({code,state,cookie,redirectUri}){
@@ -91,7 +95,23 @@ export function createAccounts({env=process.env,store,fetcher=fetch,now=Date.now
    const user=await info.json();if(!user.sub||user.email_verified===false)throw new ApiError(403,'Use a verified Google account.');
    const id='g:'+user.sub,existing=await store.get(id);
    await store.put({id,kind:'google',email:String(user.email||'').slice(0,200),name:String(user.name||'').slice(0,80),picture:String(user.picture||'').startsWith('https://')?String(user.picture).slice(0,500):'',profile:existing?.profile||null});
-   return {id,onboarded:Boolean(existing?.profile?.completedAt)};
+   return {id,onboarded:Boolean(existing?.profile?.completedAt),...(saved.app?{app:saved.app}:{})};
+  },
+  // One-time code for the phone app: signed, two minutes and bound to the app's challenge, so a code read off the
+  // deep link is useless without the verifier. Spent codes are also remembered per server instance.
+  appCode(id,challenge){
+   if(!APP_CHALLENGE.test(challenge||''))throw new ApiError(400,'Sign-in expired. Please try again.');
+   const body=b64(JSON.stringify({id,c:challenge,n:randomBytes(9).toString('base64url'),exp:now()+120000}));
+   return body+'.'+sign(body);
+  },
+  appExchange({code,verifier}){
+   const [body,mac]=String(code||'').split('.');
+   if(!body||!mac||!equal(mac,sign(body)))throw new ApiError(400,'Sign-in expired. Please try again.');
+   let saved;try{saved=JSON.parse(Buffer.from(body,'base64url').toString());}catch{throw new ApiError(400,'Sign-in expired. Please try again.');}
+   const challenge=createHash('sha256').update(String(verifier||'')).digest('base64url');
+   if(saved.exp<now()||!equal(challenge,saved.c)||spent.has(saved.n))throw new ApiError(400,'Sign-in expired. Please try again.');
+   spent.set(saved.n,saved.exp);for(const [n,exp] of spent)if(exp<now())spent.delete(n);
+   return saved.id;
   }
  };
 }

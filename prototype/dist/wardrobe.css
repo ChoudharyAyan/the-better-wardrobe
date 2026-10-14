@@ -106,3 +106,19 @@
 .copy-row{display:flex;gap:8px;align-items:center;margin-top:6px}
 .copy-row code{flex:1;min-width:0;overflow-wrap:anywhere;padding:8px 10px;border-radius:10px;background:var(--neutral);font:600 12px var(--sans)}
 .step-tag{margin:0 0 8px;font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--rose)}
+/* Closed almirah: the doors fill the cabinet. Their old height:calc(100% - 46px) resolved against a min-height parent and collapsed to the 4px seam. */
+.almirah.closed{display:flex;flex-direction:column}.almirah.closed .doors{flex:1;height:auto;min-height:300px}
+/* Import progress (PRD NFR#1): a real bar with the share done, or a moving one while the total is unknown. */
+.job .job-body{display:flex;flex-direction:column;gap:2px;flex:1;min-width:0}
+.job-pct{font-weight:800;color:#8E1B4D;margin-left:4px}
+.job-bar{display:block;height:6px;margin-top:6px;border-radius:99px;background:#EFE3DC;overflow:hidden;position:relative}
+.job-bar i{display:block;height:100%;border-radius:inherit;background:#8E1B4D;transition:width .35s ease}
+.job.done .job-bar i{background:#2E8B57}
+.job-bar.indeterminate i{position:absolute;left:0;width:35%!important;animation:job-slide 1.2s ease-in-out infinite}
+@keyframes job-slide{from{transform:translateX(-100%)}to{transform:translateX(290%)}}
+@media(prefers-reduced-motion:reduce){.job-bar.indeterminate i{animation:none;width:100%!important;opacity:.35}}
+/* Store app icons beside each store's name (import chips, "Where do you shop?", per-store import rows). */
+.store-chip{display:inline-flex;align-items:center;gap:8px;padding-left:8px}
+.store-logo{width:20px;height:20px;border-radius:6px;object-fit:cover;flex:none;background:#fff;box-shadow:0 0 0 1px rgba(43,22,32,.08)}
+.store-sync{display:flex;align-items:center;gap:10px}.store-sync>span{flex:1;min-width:0}.store-sync .store-logo{width:28px;height:28px;border-radius:8px}
+.shop-picks .check-row{display:flex;align-items:center;gap:10px}

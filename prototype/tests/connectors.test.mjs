@@ -26,17 +26,39 @@ test('every connector is injectable as a standalone function',()=>{
  assert.deepEqual(connectors.map(c=>c.id),['myntra','flipkart','slikk','ajio','tatacliq','nykaafashion','amazon','meesho']);
 });
 
-test('Myntra extractor pages with ?p=N and keeps only product fields',async()=>{
+test('Myntra extractor falls back to ?p=N pages and keeps only product fields',async()=>{
  const line=(id,extra={})=>({id,createdOn:'1781524960000',status:{code:'C'},...PII,unifiedAddressId:'431988586:4',chargesPaymentsData:{card:'4111'},product:{id,name:'Shirt '+id,brand:{name:'Roadster'},articleType:'Shirts',masterCategory:'Apparel',gender:'Men',skuId:7,sizes:[{skuId:7,label:'M'}],images:[{view:'default',secureSrc:'https://assets.myntassets.com/'+id+'.jpg'}]},...extra});
  const pages={1:{totalPages:2,totalOrders:3,items:[line(1),line(2,{return:{status:{code:'RRC'},address:PII.address}})]},2:{totalPages:2,items:[line(3)]}};
  const requested=[];
  const result=plain(await inject(connector('myntra'),{location:{pathname:'/my/orders'},fetch:async url=>{requested.push(url);const n=Number(new URL(url,'https://x').searchParams.get('p'));return {text:async()=>html({omsServiceResponse:{orderResponse:pages[n]}})};}}));
- assert.deepEqual(requested,['/my/orders?p=1','/my/orders?p=2']);
+ assert.deepEqual(requested.filter(u=>u.startsWith('/my/orders')),['/my/orders?p=1','/my/orders?p=2'],'the orders API failed, so the rendered pages are read');
  assert.equal(result.lines.length,3);
  assert.deepEqual(result.lines[0].product,{id:1,name:'Shirt 1',brand:'Roadster',articleType:'Shirts',masterCategory:'Apparel',gender:'Men',images:[{view:'default',src:'https://assets.myntassets.com/1.jpg'}],size:'M'});
  assert.equal(result.lines[1].returned,true);
  assert.doesNotMatch(JSON.stringify(result),/Secret Road|99999|ABCDE|4111|431988586/);
  assert.equal(connectorNormalizers.myntra(result).length,2,'returned line is dropped in the app');
+});
+
+test('Myntra extractor reads the site orders API 50 at a time, with cookies and no token',async()=>{
+ const line=id=>({id,createdOn:'1781524960000',status:{code:'C'},...PII,product:{id,name:'Shirt '+id,brand:{name:'Roadster'},articleType:'Shirts',masterCategory:'Apparel',gender:'Men',images:[]}});
+ const pages={1:{totalPages:3,items:Array.from({length:50},(_,i)=>line(i+1))},2:{totalPages:3,items:Array.from({length:50},(_,i)=>line(i+51))},3:{totalPages:3,items:[line(101)]}};
+ const calls=[],streamed=[];
+ const result=plain(await inject(connector('myntra'),{location:{pathname:'/my/orders'},__tbwEmit:(d,p)=>streamed.push(p.page),fetch:async(url,opts={})=>{
+  calls.push({url,credentials:opts.credentials,headers:opts.headers});const body=JSON.parse(opts.body);assert.equal(body.size,50);
+  return {ok:true,json:async()=>pages[body.page]};}}));
+ assert.equal(result.lines.length,101);
+ assert.ok(calls.every(c=>c.url==='/my/ss-api/fetchOrdersApi/getOrders'&&c.credentials==='include'));
+ assert.ok(calls.every(c=>!Object.keys(c.headers).some(k=>/authorization|token|cookie/i.test(k))),'never sends a token of its own');
+ assert.deepEqual(streamed.sort(),[1,2,3]);
+ assert.doesNotMatch(JSON.stringify(result),/Secret Road|99999|ABCDE/);
+});
+
+test('Myntra extractor stops when a page repeats lines instead of multiplying them',async()=>{
+ // The mobile site serves page 1 again for every ?p=N: 10 orders came back 12 times on a Pixel.
+ const line=id=>({id,createdOn:'1781524960000',status:{code:'C'},product:{id,name:'Shirt '+id,brand:{name:'Roadster'},articleType:'Shirts',masterCategory:'Apparel',gender:'Men',images:[]}});
+ const same={totalPages:12,items:[line(1),line(2)]};
+ const result=plain(await inject(connector('myntra'),{location:{pathname:'/my/orders'},fetch:async url=>url.startsWith('/my/orders')?{text:async()=>html({omsServiceResponse:{orderResponse:same}})}:{ok:false}}));
+ assert.deepEqual(result.lines.map(l=>l.product.id),[1,2]);
 });
 
 test('Myntra extractor reports a login page instead of partial data',async()=>{
@@ -124,7 +146,8 @@ test('connector routes accept the extension, refuse web pages, and serve batches
 // A small DOMParser over cheerio, enough for the Amazon extractor's selectors.
 import * as cheerio from 'cheerio';
 const wrap=($,el)=>({get textContent(){return $(el).text();},getAttribute:n=>$(el).attr(n)??null,get value(){return $(el).attr('value')||'';},
- querySelector:s=>{const f=$(el).find(s).first();return f.length?wrap($,f[0]):null;},querySelectorAll:s=>$(el).find(s).toArray().map(e=>wrap($,e))});
+ querySelector:s=>{const f=$(el).find(s).first();return f.length?wrap($,f[0]):null;},querySelectorAll:s=>$(el).find(s).toArray().map(e=>wrap($,e)),
+ closest:s=>{const f=$(el).closest(s);return f.length?wrap($,f[0]):null;},get parentElement(){const f=$(el).parent();return f.length?wrap($,f[0]):null;}});
 class DOMParser{parseFromString(html){const $=cheerio.load(html);return wrap($,$.root()[0]);}}
 
 test('Amazon extractor walks each year of order history and keeps product links only',async()=>{
@@ -139,6 +162,27 @@ test('Amazon extractor walks each year of order history and keeps product links 
  const items=connectorNormalizers.amazon(result);
  assert.deepEqual(items.map(i=>[i.id,i.category]),[['order-amazon-B0AAAAAAAA','Trousers'],['order-amazon-B0DDDDDDDD','Footwear']],'earbuds and the returned kurta are dropped');
  assert.equal(items[0].image,'https://m.media-amazon.com/images/I/B0AAAAAAAA._AC_UL480_.jpg');assert.equal(items[0].productUrl,'https://www.amazon.in/dp/B0AAAAAAAA');
+});
+
+test('Amazon extractor reads the mobile site: item cards per year, statuses from the label',async()=>{
+ // What a Pixel's in-app browser gets: no order cards or /dp/ links, one item card per item.
+ const year=new Date().getFullYear();
+ const item=(title,rest)=>`<li><div class="a-box past-purchase-tile"><div class="a-box-inner"><a class="item-card__link" href="/progress-tracker/package?orderId=403-1&shipmentId=S" aria-label="${title}, ${rest}"></a><img src="https://m.media-amazon.com/images/I/x${title.length}._SS142_.jpg"></div></div></li>`;
+ const radios=`<form class="order-filter-view__hidden-form"></form><input name="timeFilterGroup" value="months-3"><input name="timeFilterGroup" value="year-${year}"><input name="timeFilterGroup" value="year-${year-1}"><div class="js-yo-main-content"></div>`;
+ const pages={'months-3|1':item('Allen Solly Men Polo T-shirt',`Order placed 14 October ${year}, Arriving Friday`)+item("Levi's Men Slim Fit Jeans, Blue",`Order placed 3 March ${year}, Delivered 5 March, Package was handed to resident`),
+  [`year-${year}|1`]:item("Levi's Men Slim Fit Jeans, Blue",`Order placed 3 March ${year}, Delivered 5 March, Package was handed to resident`)+item('Story@Home Blackout Door Curtains',`Order placed 1 March ${year}, Delivered 2 March`),
+  [`year-${year-1}|1`]:item('Men Cotton Kurta','Return complete, Return complete, Your return is complete.')+item('Campus Running Shoes',`Order placed 8 June ${year-1}, Delivered 9 June`)+item('Amazon Pay balance: Credits',`Order placed 8 June ${year-1}, Cancelled, If you were charged, a refund will be processed`)};
+ const asked=[];
+ const result=plain(await inject(connector('amazon'),{DOMParser,location:{pathname:'/gp/css/order-history'},fetch:async url=>{const u=new URL(url,'https://www.amazon.in');asked.push(u.pathname);
+  return {url:u.href,text:async()=>u.pathname==='/gp/css/order-history'?radios:pages[u.searchParams.get('timeFilter')+'|'+u.searchParams.get('page')]||radios};}}));
+ assert.ok(asked.includes('/your-orders/orders'));
+ assert.equal(result.orders.length,6,'the in-transit polo from the recent view is added once, the jeans are not repeated');
+ assert.doesNotMatch(JSON.stringify(result),/403-1|progress-tracker/,'order ids stay in the page');
+ const kurta=result.orders.find(o=>o.products[0].title==='Men Cotton Kurta');assert.equal(kurta.returned,true);
+ const items=connectorNormalizers.amazon(result);
+ assert.deepEqual(items.map(i=>[i.name,i.category,i.orderedAt]),[['Allen Solly Men Polo T-shirt','Shirts',`${year}-10-14`],["Levi's Men Slim Fit Jeans, Blue",'Trousers',`${year}-03-03`],['Campus Running Shoes','Footwear',`${year-1}-06-08`]],'curtains, the returned kurta and Pay credits are dropped');
+ assert.match(items[0].id,/^order-amazon-m-[a-z0-9]+$/);assert.equal(items[0].productUrl,'','no ASIN on mobile, so no product link');
+ assert.match(items[0].image,/_AC_UL480_\.jpg$/);
 });
 
 test('Amazon extractor reads encrypted order cards from a frame, with the date as written',async()=>{

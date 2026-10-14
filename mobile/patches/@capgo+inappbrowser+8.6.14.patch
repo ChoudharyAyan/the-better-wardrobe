@@ -1,0 +1,55 @@
+diff --git a/node_modules/@capgo/inappbrowser/android/src/main/java/ee/forgr/capacitor_inappbrowser/WebViewDialog.java b/node_modules/@capgo/inappbrowser/android/src/main/java/ee/forgr/capacitor_inappbrowser/WebViewDialog.java
+index 9ecd245..8c019be 100644
+--- a/node_modules/@capgo/inappbrowser/android/src/main/java/ee/forgr/capacitor_inappbrowser/WebViewDialog.java
++++ b/node_modules/@capgo/inappbrowser/android/src/main/java/ee/forgr/capacitor_inappbrowser/WebViewDialog.java
+@@ -1343,6 +1343,20 @@ public class WebViewDialog extends Dialog implements ProxyResponseRouting.ProxyR
+         return _options != null ? _options.getUrl() : null;
+     }
+ 
++    // The Wardrobe OS: true when the caller passed a User-Agent header to openWebView.
++    private boolean hasRequestedUserAgent() {
++        if (_options == null || _options.getHeaders() == null) {
++            return false;
++        }
++        Iterator<String> keys = _options.getHeaders().keys();
++        while (keys.hasNext()) {
++            if (TextUtils.equals(keys.next().toLowerCase(), "user-agent")) {
++                return true;
++            }
++        }
++        return false;
++    }
++
+     private HttpURLConnection openManagedDownloadConnection(String url, String userAgent, String pageUrl) throws Exception {
+         URL downloadUrl = new URL(url);
+         HttpURLConnection connection = (HttpURLConnection) downloadUrl.openConnection();
+@@ -1834,6 +1848,29 @@ public class WebViewDialog extends Dialog implements ProxyResponseRouting.ProxyR
+         _webView.getSettings().setMediaPlaybackRequiresUserGesture(false);
+         injectDocumentStartJavaScriptInterface();
+ 
++        // The Wardrobe OS: when the app passes a User-Agent (only for stores that refuse in-app browsers, and
++        // only after the person agrees in the app), report Chrome's brand in the client hints too. Flipkart
++        // refuses pages that report "Android WebView" (prototype/dist/native-import.js CHROME_STORES).
++        if (hasRequestedUserAgent() && WebViewFeature.isFeatureSupported(WebViewFeature.USER_AGENT_METADATA)) {
++            androidx.webkit.UserAgentMetadata current = WebSettingsCompat.getUserAgentMetadata(_webView.getSettings());
++            java.util.List<androidx.webkit.UserAgentMetadata.BrandVersion> brands = new java.util.ArrayList<>();
++            for (androidx.webkit.UserAgentMetadata.BrandVersion b : current.getBrandVersionList()) {
++                brands.add(
++                    "Android WebView".equals(b.getBrand())
++                        ? new androidx.webkit.UserAgentMetadata.BrandVersion.Builder()
++                            .setBrand("Google Chrome")
++                            .setMajorVersion(b.getMajorVersion())
++                            .setFullVersion(b.getFullVersion())
++                            .build()
++                        : b
++                );
++            }
++            WebSettingsCompat.setUserAgentMetadata(
++                _webView.getSettings(),
++                new androidx.webkit.UserAgentMetadata.Builder(current).setBrandVersionList(brands).build()
++            );
++        }
++
+         _webView.getSettings().setSupportMultipleWindows(true);
+         if (_options.getEnableZoom()) {
+             _webView.getSettings().setSupportZoom(true);

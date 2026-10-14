@@ -38,6 +38,7 @@
   const chip=(name,value,label,on,type='radio')=>`<button type="button" class="ob-chip ${on?'on':''}" role="${type}" aria-checked="${on}" data-ob="${name}" data-value="${esc(value)}">${esc(label)}</button>`;
   const steps=n=>`<div class="ob-steps" aria-label="Step ${n} of 2"><i class="${n>=1?'on':''}"></i><i class="${n>=2?'on':''}"></i></div>`;
   function welcome(){
+    if(window.StickerStudio)return window.StickerStudio.welcome({google:me.google,preview:me.previewAvailable,busy:ui.busy,error:ui.error});
     return `<div class="ob-card ob-welcome"><span class="ob-mark ${window.TBWMascot?'ob-mascot':''}" aria-hidden="true">${window.TBWMascot?.svg()||'✳'}</span><span class="ob-kicker">The Wardrobe OS</span><h1>Your style, connected.</h1><p>Find the looks you love, style what you own, and keep your wardrobe in one place.</p>
       <div class="ob-actions">${me.google?`<a class="ob-google" href="/api/auth/google"><span class="ob-g" aria-hidden="true">G</span>Continue with Google</a>`:''}${me.previewAvailable?`<button type="button" class="ob-primary" data-ob="preview" ${ui.busy?'disabled':''}>Set up my profile <span aria-hidden="true">→</span></button><small class="ob-note">Google sign-in is coming soon. Your preview profile is kept for this browser.</small>`:''}</div>
       <button type="button" class="ob-free" data-ob="free">Explore freely</button><small class="ob-note">Without a profile: no saved chats and no personalised mall.</small>${ui.error?`<p class="ob-error" role="alert">${esc(ui.error)}</p>`:''}</div>`;
@@ -65,10 +66,11 @@
   let lastStep=null;
   function paint(){
     let host=document.getElementById('tbw-onboarding');const fresh=ui.step!==lastStep;lastStep=ui.step;
-    if(!ui.step){host?.remove();document.body.classList.remove('ob-open');return;}
+    if(!ui.step){host?.remove();document.body.classList.remove('ob-open');document.querySelectorAll('.topbar,main,.bottom-nav').forEach(node=>node.inert=false);return;}
     if(!host){host=document.createElement('div');host.id='tbw-onboarding';host.className='ob-overlay';host.setAttribute('role','dialog');host.setAttribute('aria-modal','true');host.setAttribute('aria-label','Welcome');document.body.append(host);}
     document.body.classList.add('ob-open');
     const keep=host.scrollTop;
+    document.querySelectorAll('.topbar,main,.bottom-nav').forEach(node=>node.inert=true);
     if(fresh)host.dataset.enter='';else delete host.dataset.enter;
     host.innerHTML=ui.step==='welcome'?welcome():ui.step==='about'?about():vibe();
     host.scrollTop=fresh?0:keep;

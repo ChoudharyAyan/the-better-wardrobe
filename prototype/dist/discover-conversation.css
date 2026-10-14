@@ -13,7 +13,7 @@
 .dc-spark{display:inline-grid;place-items:center;width:43px;height:43px;background:#f5e2ea;color:var(--dc-rose);border-radius:13px;font-size:27px}
 .dc-welcome h2{font-size:27px;font-weight:800;line-height:1.15;letter-spacing:-.045em;margin:16px 0 8px}
 .dc-welcome p{margin:0;color:var(--dc-muted);font-size:14px;line-height:1.5}
-.dc-examples{display:flex;justify-content:center;flex-wrap:wrap;gap:8px;max-width:800px;margin:0 auto}
+.dc-examples{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;width:min(100%,1100px);margin:0 auto;align-items:stretch}
 .dc-examples button,.dc-choice-list button{border:1px solid var(--dc-line);border-radius:14px;background:#fff;color:var(--dc-ink);min-height:44px;padding:10px 13px;font:600 12px/1.35 'Montserrat','Montserrat Fallback',sans-serif;text-align:left}
 .dc-examples button:hover,.dc-choice-list button:hover{border-color:var(--dc-rose);background:#fdf6f8}
 .dc-examples button span,.dc-choice-list button span{color:var(--dc-rose);margin-left:8px}
@@ -91,6 +91,7 @@
 .dc-loading-orbit{position:relative;width:46px;height:46px}
 .dc-loading-orbit i{position:absolute;inset:0;border-radius:50%;border:3px solid transparent;border-top-color:var(--dc-rose);animation:dc-spin 1.1s linear infinite}
 .dc-loading-orbit i:nth-child(2){inset:7px;border-top-color:#c98aa5;animation-duration:1.6s}.dc-loading-orbit i:nth-child(3){inset:14px;border-top-color:#e7c8d4;animation-duration:2.2s}
+.dc-search-progress{width:min(100%,420px);height:7px;border-radius:99px;background:#f0e6e2;overflow:hidden}.dc-search-progress span{display:block;height:100%;border-radius:inherit;background:var(--dc-rose);transition:width .25s ease}.dc-search-progress-label{color:var(--dc-muted);font-size:12px;font-variant-numeric:tabular-nums}
 @keyframes dc-spin{to{transform:rotate(360deg)}}
 .dc-mall-hint{display:flex;flex-direction:column;gap:8px;align-items:center;font-size:12px;color:var(--dc-muted)}
 .dc-mall-hint button{border:0;background:var(--dc-rose);color:#fff;border-radius:999px;padding:9px 15px;font:800 12px 'Montserrat','Montserrat Fallback',sans-serif;cursor:pointer}
@@ -146,9 +147,13 @@
 .dc-looks{display:flex;flex-direction:column;gap:10px}
 .dc-looks-head{display:flex;justify-content:space-between;align-items:center}
 .dc-shuffle{border:1px solid var(--dc-line);background:#fff;border-radius:999px;padding:7px 12px;font:800 12px 'Montserrat','Montserrat Fallback',sans-serif;color:var(--dc-rose);cursor:pointer}
-.dc-looks .dc-examples button{display:flex;flex-wrap:wrap;align-items:baseline;gap:2px 6px;text-align:left}
-.dc-looks .dc-examples button small{flex-basis:100%;font:700 10px 'Montserrat','Montserrat Fallback',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--dc-rose)}
+.dc-looks .dc-examples button{display:grid;grid-template-columns:minmax(0,1fr) auto;grid-template-rows:auto 1fr;align-items:start;gap:5px 10px;min-height:82px;padding:14px 16px;text-align:left;line-height:1.4;transition:border-color .16s ease,background .16s ease,transform .16s ease;font-size:13px}
+.dc-looks .dc-examples button:hover{transform:translateY(-2px)}
+.dc-looks .dc-examples button small{grid-column:1/-1;font:700 10px/1.3 'Montserrat','Montserrat Fallback',sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--dc-rose)}
+.dc-looks .dc-examples button span{grid-column:2;grid-row:2;align-self:center;margin-left:0}
 .dc-idea{border-style:dashed!important}
+@media(max-width:900px){.dc-examples{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){.dc-examples{grid-template-columns:1fr;width:100%}.dc-looks .dc-examples button{min-height:68px;padding:12px 14px;font-size:12px}.dc-looks .dc-examples button small{font-size:9px}}
 
 /* Design QA 6 Oct (v5): the in-app "results ready" card, no browser permission prompt. */
 .dc-ready-pill{flex-direction:column;align-items:stretch;gap:10px;padding:12px 14px 14px;border:1px solid #ecd3dd;background:rgba(255,255,255,.97);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:0 20px 44px rgba(40,27,34,.24),0 0 0 4px rgba(142,27,77,.08)}

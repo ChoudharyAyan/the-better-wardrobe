@@ -20,19 +20,36 @@ order imports** (My Wardrobe PRD FR#3 and FR#5).
 Stores without a connector yet (Amazon, Meesho) fall back to Amazon's order file and order
 screenshots on both web and phone.
 
-## Build
+## Build (Android)
 
-Needs Node 22+, Android Studio (Android) or Xcode 16+ (iOS).
+The Android project is generated and committed in `android/`. Android Studio is optional: the
+command-line SDK is enough (this Mac uses JDK 21 in `~/Library/Java/JavaVirtualMachines` and the SDK
+in `~/Library/Android/sdk`, with `platform-tools`, `platforms;android-36` and `build-tools;36.0.0`).
 
 ```sh
 cd mobile
 npm install
-npm run android   # first time: adds the android/ project, syncs, opens Android Studio
-npm run ios       # first time: adds the ios/ project, syncs, opens Xcode
+export JAVA_HOME=$(ls -d ~/Library/Java/JavaVirtualMachines/jdk-21*/Contents/Home | head -1)
+export ANDROID_HOME=~/Library/Android/sdk
+npx cap sync android                      # after plugin or config changes
+(cd android && ./gradlew assembleDebug)   # → android/app/build/outputs/apk/debug/app-debug.apk
+$ANDROID_HOME/platform-tools/adb install -r android/app/build/outputs/apk/debug/app-debug.apk
 ```
 
-After the first run, `npx cap sync` is enough when plugins change. Web changes need no app
-release: they ship with the Vercel deploy.
+Install on a phone: turn on Developer options → USB debugging, plug it in, accept the prompt, then
+run the `adb install` line. `adb logcat | grep -i -E "capacitor|chromium"` shows the app's logs, and
+`chrome://inspect` on the Mac attaches DevTools to the app's WebView in debug builds.
+
+Web changes need no app release: they ship with the Vercel deploy. The icon and splash come from
+the brand mark: `node scripts/make-icons.mjs`. iOS (`npm run ios`) needs Xcode and is not set up yet.
+
+## Google sign-in in the app
+
+Google refuses sign-in inside an app's WebView, so `prototype/dist/native-auth.js` opens it in a
+Chrome Custom Tab (`@capacitor/browser`). The server finishes the OAuth flow there and returns to the
+app through `com.thewardrobeos.app://auth?code=…` (intent filter in `AndroidManifest.xml`). The
+code is signed, lasts two minutes and only works with a verifier that never leaves the app's
+WebView (`POST /api/auth/app-exchange`), so another app catching the link gets nothing.
 
 ## Not verified yet
 
