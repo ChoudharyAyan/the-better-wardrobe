@@ -116,13 +116,16 @@ export const connectors=[
    const wait=ms=>new Promise(r=>setTimeout(r,ms));
    const get=async(page,range)=>{const r=await fetch(`/api/my-account/get-user-orders/${page}/10/${range}`,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json',Accept:'application/json'},body:'{}'});if(r.status===401||r.status===403)throw Object.assign(new Error('login'),{login:true});return r.json();};
    try{
-    const pages=[];
-    for(const range of ['LAST_6_MONTHS','CURRENT_YEAR','CURRENT_YEAR-1','CURRENT_YEAR-2','CURRENT_YEAR-3','CURRENT_YEAR-4','CURRENT_YEAR-5']){
+    const pages=[],ranges=['LAST_6_MONTHS','CURRENT_YEAR','CURRENT_YEAR-1','CURRENT_YEAR-2','CURRENT_YEAR-3','CURRENT_YEAR-4','CURRENT_YEAR-5'];
+    // Progress only (one step per date range); the orders themselves come back together at the end.
+    const emit=typeof globalThis.__tbwEmit==='function'?globalThis.__tbwEmit:()=>{};
+    for(const [step,range] of ranges.entries()){
      for(let page=0;page<30;page++){
       const data=await get(page,range);pages.push(data);
       if(!(Number(data.totalPages)>page+1))break;
       await wait(400);
      }
+     emit({pages:[]},{page:step+1,pages:ranges.length});
     }
     return {pages};
    }catch(e){return {error:e.login?'login':'layout',detail:String(e).slice(0,200)};}

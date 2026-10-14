@@ -19,25 +19,34 @@ export const CHROME_STORES=['flipkart'];
 export const needsChrome=id=>CHROME_STORES.includes(id);
 export const chromeAgent=(ua=globalThis.navigator?.userAgent||'')=>ua.replace(/; wv\)/,')').replace(/ Version\/[\d.]+/,'');
 
-// Runs in the store page: a slim bar with one button, well above the bottom edge so it clears Android's
-// gesture bar and the store's own bottom navigation (the in-app browser draws under the gesture bar and
-// store pages rarely set viewport-fit). It steps aside while the person types, so it never covers a
-// login form. Re-added on every page load because the person may sign in or navigate first.
-const banner=label=>`(()=>{if(document.getElementById('tbw-bar'))return;const bar=document.createElement('div');bar.id='tbw-bar';
-bar.setAttribute('style','position:fixed;left:12px;right:12px;bottom:max(112px,calc(64px + env(safe-area-inset-bottom,0px)));z-index:2147483647;display:flex;gap:10px;align-items:center;padding:12px 14px;border-radius:16px;background:#28101F;color:#FBF5EC;font:600 14px/1.3 Montserrat,system-ui,sans-serif;box-shadow:0 10px 30px rgba(0,0,0,.25)');
-const col=document.createElement('div');col.setAttribute('style','flex:1;min-width:0;display:flex;flex-direction:column');
-const style=document.createElement('style');style.textContent='@keyframes tbw-slide{from{transform:translateX(-100%)}to{transform:translateX(290%)}}#tbw-bar-track.busy i{width:35%!important;animation:tbw-slide 1.2s ease-in-out infinite}@media(prefers-reduced-motion:reduce){#tbw-bar-track.busy i{animation:none;width:100%!important;opacity:.4}}';
+// Runs in the store page. Idle it is a small pill in the bottom-right corner ("Import AJIO orders"),
+// so it covers as little of the store as possible; while importing it widens into a bar with progress.
+// It sits above whatever the store pins to the bottom of the screen (bottom menus, "Buy now" bars,
+// cookie notices) and Android's gesture bar, rechecking as the page scrolls, and steps aside while the
+// person types so it never covers a login form. Re-added on every page load (sign-in, navigation).
+const banner=label=>`(()=>{if(document.getElementById('tbw-bar'))return;
+const bar=document.createElement('div');bar.id='tbw-bar';bar.dataset.mode='pill';
+const style=document.createElement('style');style.textContent='#tbw-bar{position:fixed;right:12px;left:auto;bottom:112px;z-index:2147483647;display:flex;gap:10px;align-items:center;box-sizing:border-box;max-width:calc(100% - 24px);padding:6px;border-radius:999px;background:#28101F;color:#FBF5EC;font:600 14px/1.3 Montserrat,system-ui,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.28);transition:bottom .2s ease}#tbw-bar[data-mode=full]{left:12px;right:12px;padding:12px 14px;border-radius:16px}#tbw-bar[data-mode=pill] #tbw-bar-col{display:none}#tbw-bar-col{flex:1;min-width:0;display:flex;flex-direction:column}#tbw-bar-go{border:0;border-radius:999px;padding:10px 16px;background:#C2477F;color:#fff;font:700 13px Montserrat,system-ui,sans-serif;white-space:nowrap}@keyframes tbw-slide{from{transform:translateX(-100%)}to{transform:translateX(290%)}}#tbw-bar-track.busy i{width:35%!important;animation:tbw-slide 1.2s ease-in-out infinite}@media(prefers-reduced-motion:reduce){#tbw-bar-track.busy i{animation:none;width:100%!important;opacity:.4}#tbw-bar{transition:none}}';
+const col=document.createElement('div');col.id='tbw-bar-col';
 const track=document.createElement('div');track.id='tbw-bar-track';track.setAttribute('role','progressbar');track.setAttribute('aria-label','Import progress');track.setAttribute('style','display:none;position:relative;height:5px;margin-top:8px;border-radius:99px;background:rgba(255,255,255,.18);overflow:hidden');
 const fill=document.createElement('i');fill.setAttribute('style','display:block;height:100%;width:0;border-radius:inherit;background:#F7A8CB;transition:width .35s ease');track.append(fill);
-const text=document.createElement('span');text.id='tbw-bar-text';text.textContent=${JSON.stringify('Signed in to '+label+'? Bring your orders into your wardrobe.')};
-const go=document.createElement('button');go.id='tbw-bar-go';go.textContent='Import my orders';go.setAttribute('style','border:0;border-radius:999px;padding:10px 14px;background:#C2477F;color:#fff;font:700 13px Montserrat,system-ui,sans-serif');
-go.onclick=()=>{go.disabled=true;go.textContent='Reading…';window.mobileApp.postMessage({detail:{tbw:'go'}});};
+const text=document.createElement('span');text.id='tbw-bar-text';
+const go=document.createElement('button');go.id='tbw-bar-go';go.textContent=${JSON.stringify('Import '+label+' orders')};go.setAttribute('aria-label',${JSON.stringify('Import my '+label+' orders into The Wardrobe OS')});
+go.onclick=()=>{go.disabled=true;go.textContent='Reading…';bar.dataset.mode='full';window.mobileApp.postMessage({detail:{tbw:'go'}});};
 col.append(text,track);bar.append(col,go);document.head.appendChild(style);document.body.appendChild(bar);
+// Lift above anything the store fixes to the bottom edge of the screen.
+const lift=()=>{const h=innerHeight;let top=h;const seen=new Set();
+ for(const x of [0.1,0.3,0.5,0.7,0.9])for(let y=h-2;y>h-260;y-=24)for(const el of document.elementsFromPoint(innerWidth*x,y)){
+  if(seen.has(el)||bar.contains(el))continue;seen.add(el);const cs=getComputedStyle(el);if(cs.position!=='fixed'&&cs.position!=='sticky')continue;
+  const r=el.getBoundingClientRect();if(r.bottom>=h-6&&r.height<h*0.45&&r.height>0)top=Math.min(top,r.top);}
+ bar.style.bottom=Math.max(112,h-top+12)+'px';};
+let pending=0;const soon=()=>{if(pending)return;pending=setTimeout(()=>{pending=0;lift();},200);};
+addEventListener('scroll',soon,{passive:true});addEventListener('resize',soon);setInterval(lift,1500);lift();
 const typing=()=>/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName||'')||document.activeElement?.isContentEditable;
 const sync=()=>{bar.style.display=typing()?'none':'flex';};
 document.addEventListener('focusin',sync,true);document.addEventListener('focusout',()=>setTimeout(sync,60),true);sync();})();`;
 // pct: a number shows the share done, null a moving bar while the total is unknown, undefined hides it.
-const say=(text,done=false,pct,button)=>`(()=>{const t=document.getElementById('tbw-bar-text'),b=document.getElementById('tbw-bar-go'),k=document.getElementById('tbw-bar-track');if(t)t.textContent=${JSON.stringify(text)};if(b){b.disabled=${!done};b.textContent=${JSON.stringify(button||(done?'Try again':'Reading…'))};}
+const say=(text,done=false,pct,button)=>`(()=>{const t=document.getElementById('tbw-bar-text'),b=document.getElementById('tbw-bar-go'),k=document.getElementById('tbw-bar-track'),bar=document.getElementById('tbw-bar');if(bar)bar.dataset.mode='full';if(t)t.textContent=${JSON.stringify(text)};if(b){b.disabled=${!done};b.textContent=${JSON.stringify(button||(done?'Try again':'Reading…'))};}
 if(k){const p=${pct===undefined?'undefined':JSON.stringify(pct)};k.style.display=p===undefined?'none':'block';k.classList.toggle('busy',p===null);if(typeof p==='number'){k.firstChild.style.width=p+'%';k.setAttribute('aria-valuenow',p);}else k.removeAttribute('aria-valuenow');}})();`;
 // Drops the store's service worker and its caches in this browser only; it re-registers on its next visit.
 const FRESH=`(async()=>{try{for(const r of await navigator.serviceWorker?.getRegistrations?.()||[])await r.unregister();for(const k of await caches?.keys?.()||[])await caches.delete(k);}catch{}})();`;

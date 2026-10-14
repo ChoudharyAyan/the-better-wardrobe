@@ -183,7 +183,7 @@ test('phone app: Myntra orders stream from the in-app browser into the app',asyn
   const chunks=[],states=[];
   const done=run('myntra',{onData:d=>chunks.push(d),onStatus:s=>states.push(s)});
   await new Promise(r=>setTimeout(r,0));
-  listeners.browserPageLoaded();assert.match(scripts.at(-1),/Import my orders/);
+  listeners.browserPageLoaded();assert.match(scripts.at(-1),/Import Myntra orders/);assert.match(scripts.at(-1),/elementsFromPoint/,'the pill lifts above the store\'s own bottom bars');
   listeners.messageFromWebview({detail:{tbw:'go'}});assert.match(scripts.at(-1),/__tbwEmit/);assert.match(scripts.at(-1),/my\/orders\?p=/);
   listeners.messageFromWebview({detail:{tbw:'part',data:{lines:[{product:{id:1}}]},progress:{page:1,pages:2}}});
   listeners.messageFromWebview({detail:{tbw:'part',data:{lines:[{product:{id:2}}]},progress:{page:2,pages:2}}});assert.match(scripts.at(-1),/100% · 2 items read/);assert.match(scripts.at(-1),/firstChild\.style\.width=p\+'%'/);
