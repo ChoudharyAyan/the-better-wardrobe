@@ -15,13 +15,14 @@ import {readFeed} from './lib/mall-feed.mjs';
 import {createCommunity} from './lib/community.mjs';
 import {createWardrobe,productFromPage} from './lib/wardrobe.mjs';
 import {createCutout} from './lib/cutout.mjs';
+import {createInbox} from './lib/inbox.mjs';
 import {retailerPage} from './lib/discovery.mjs';
 import mallSnapshot from './dist/assets/mall-updates.json' with {type:'json'};
 try{process.loadEnvFile(fileURLToPath(new URL('./.env',import.meta.url)));}catch(e){if(e.code!=='ENOENT')throw e;}
 const root=fileURLToPath(new URL('./dist/',import.meta.url));
 const mime={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.svg':'image/svg+xml','.jpg':'image/jpeg','.png':'image/png','.webp':'image/webp','.woff2':'font/woff2','.ttf':'font/ttf'};
 // The bare (req,res) listener is what Vercel's Node runtime invokes; createServer wraps it for local runs.
-export function createHandler(discovery=createDiscovery(),qaStore=createQaStore(),photos=createPhotos(),connectors=createConnectorStore(),community=createCommunity(),credits=createCredits(),chats=createChats(),accounts=createAccounts(),wardrobe=createWardrobe(),cutout=createCutout(),pageFetcher=retailerPage){
+export function createHandler(discovery=createDiscovery(),qaStore=createQaStore(),photos=createPhotos(),connectors=createConnectorStore(),community=createCommunity(),credits=createCredits(),chats=createChats(),accounts=createAccounts(),wardrobe=createWardrobe(),cutout=createCutout(),pageFetcher=retailerPage,inbox=createInbox()){
 // Wardrobe AI (cutouts, link reading) per guest per hour: a backstop on a shared preview, generous
 // enough for a 100-piece first import. Per instance, like Discover's hourly cap.
 const wardrobeUse=new Map();
@@ -109,6 +110,13 @@ return async(req,res)=>{
  }
  // My Wardrobe (PRD NFR#2): the signed-in person's pieces, wear log and picks, kept on the server.
  if(pathname==='/api/wardrobe'||pathname.startsWith('/api/wardrobe/')){
+  // Forwarded order emails arrive from the mail service, not the app, so this sits before the
+  // same-site check and is guarded by the shared webhook secret instead (PRD FR#6).
+  if(req.method==='POST'&&pathname==='/api/wardrobe/inbound'){
+   if(!inbox.authorized(String(req.headers.authorization||''),String(req.headers['x-inbound-secret']||'')))return send(401,{error:'Not allowed'});
+   await credits.budgetOk?.();
+   return send(200,await inbox.receive(await readJson(4_500_000)));
+  }
   if(!sameSite())return send(403,{error:'Open the app to use your wardrobe.'});
   if(req.method==='POST'&&pathname==='/api/wardrobe/cutout'){
    if(!wardrobeAllowance(guest()))return send(429,{error:'Cutouts are paused for this hour. Your photos are kept as they are.'});
@@ -123,9 +131,11 @@ return async(req,res)=>{
    const product=productFromPage(html,target);
    return product?send(200,{product}):send(422,{error:'That page does not show a product we can read. Add it with a photo instead.'});
   }
-  if(req.method==='GET'&&pathname==='/api/wardrobe/status')return send(200,{signedIn:Boolean(accountId),cutouts:cutout.configured()});
+  if(req.method==='GET'&&pathname==='/api/wardrobe/status')return send(200,{signedIn:Boolean(accountId),cutouts:cutout.configured(),email:inbox.configured()});
   if(!accountId)return send(401,{error:'Sign in to keep your wardrobe on every device.',signIn:true});
   if(req.method==='GET'&&pathname==='/api/wardrobe')return send(200,await wardrobe.list(accountId));
+  if(req.method==='GET'&&pathname==='/api/wardrobe/inbox')return send(200,{address:await inbox.address(accountId),items:await inbox.pending(accountId)});
+  if(req.method==='POST'&&pathname==='/api/wardrobe/inbox/ack'){const {ids}=await readJson(60_000);return send(200,{removed:await inbox.ack(accountId,ids)});}
   if(req.method==='PUT'&&pathname==='/api/wardrobe/meta')return send(200,{meta:await wardrobe.putMeta(accountId,await readJson(450_000))});
   const imagePath=pathname.match(/^\/api\/wardrobe\/image\/([^/]+)$/);
   if(req.method==='GET'&&imagePath){const img=await wardrobe.image(accountId,imagePath[1]);if(!img)return send(404,{error:'Not found'});res.writeHead(200,{'Content-Type':img.type,'Cache-Control':'private, max-age=31536000, immutable','X-Content-Type-Options':'nosniff'});return res.end(img.data);}
@@ -198,5 +208,5 @@ return async(req,res)=>{
  const content=await readFile(target);res.writeHead(200,{'Content-Type':mime[path.extname(target)]||'application/octet-stream','Cache-Control':'no-cache','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer'});res.end(req.method==='HEAD'?undefined:content);
  }catch(e){const status=e.status||(e.code==='ENOENT'?404:500);if(status>=500&&!e.status)console.error('Unhandled',req.method,String(req.url||'').split('?')[0],e?.code||'',String(e?.message||e).replace(/postgres(ql)?:\/\/\S+/gi,'<db-url>').slice(0,300));send(status,{error:e instanceof ApiError||e.status?e.message:'Unable to complete this request.'});}
 };}
-export function createServer(discovery,qaStore,photos,connectors,community,credits,chats,accounts,wardrobe,cutout,pageFetcher){return http.createServer(createHandler(discovery,qaStore,photos,connectors,community,credits,chats,accounts,wardrobe,cutout,pageFetcher));}
+export function createServer(discovery,qaStore,photos,connectors,community,credits,chats,accounts,wardrobe,cutout,pageFetcher,inbox){return http.createServer(createHandler(discovery,qaStore,photos,connectors,community,credits,chats,accounts,wardrobe,cutout,pageFetcher,inbox));}
 if(process.argv[1]&&import.meta.url===pathToFileURL(path.resolve(process.argv[1])).href){const port=Number(process.env.PORT||5173),host=process.env.HOST||'0.0.0.0';createServer().listen(port,host,()=>console.log(`The Wardrobe OS: http://127.0.0.1:${port} · network enabled`));}

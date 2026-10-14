@@ -26,7 +26,7 @@ export function cleanItem(input={}){
  return {id,name,category,type:text(input.type,40),colour:text(input.colour,30),pattern:text(input.pattern,20),brand:text(input.brand,60),size:text(input.size,20),
   price:price(input.price),purchased:date(input.purchased),source:text(input.source,80),retailer:text(input.retailer,60),productUrl:safeURL(String(input.productUrl||''))||'',
   tags:(Array.isArray(input.tags)?input.tags:[]).map(t=>text(t,30)).filter(Boolean).slice(0,8),reviews,cutout:input.cutout===true,
-  status:['available','laundry','lent','tailor','stored'].includes(input.status)?input.status:'available',addedAt:text(input.addedAt,30),
+  status:['available','laundry','lent','tailor','stored'].includes(input.status)?input.status:'available',addedAt:text(input.addedAt,30),archived:input.archived===true,
   // A basic added from the tray is drawn, not photographed: its shape and colour are enough.
   art:input.art&&/^[a-z]{2,12}$/.test(input.art.shape)&&/^#[0-9A-Fa-f]{6}$/.test(input.art.colour)?{shape:input.art.shape,colour:input.art.colour}:null};
 }
@@ -34,7 +34,9 @@ export function cleanMeta(input={}){
  const ids=v=>(Array.isArray(v)?v:[]).map(String).filter(x=>ID.test(x)).slice(0,40);
  const wears=(Array.isArray(input.wears)?input.wears:[]).slice(-2000).map(w=>({id:text(w?.id,60),date:date(w?.date),occasion:text(w?.occasion,20)||'Untagged',items:ids(w?.items)})).filter(w=>w.id&&w.date&&w.items.length);
  const looks=(Array.isArray(input.looks)?input.looks:[]).slice(-200).map(l=>({id:text(l?.id,60),ids:ids(l?.ids),title:text(l?.title,80),occasion:text(l?.occasion,20)})).filter(l=>l.id&&l.ids.length);
- const meta={wears,looks,shops:(Array.isArray(input.shops)?input.shops:[]).map(s=>text(s,20)).filter(Boolean).slice(0,12),aiConsent:input.aiConsent===true};
+ // Last import per store (PRD FR#5): when, and how many pieces it found.
+ const syncs=Object.fromEntries(Object.entries(input.syncs&&typeof input.syncs==='object'?input.syncs:{}).filter(([k])=>/^[a-z]{2,20}$/.test(k)).slice(0,20).map(([k,v])=>[k,{at:text(v?.at,30),count:Math.max(0,Math.min(5000,Math.round(Number(v?.count)||0)))}]));
+ const meta={wears,looks,shops:(Array.isArray(input.shops)?input.shops:[]).map(s=>text(s,20)).filter(Boolean).slice(0,12),aiConsent:input.aiConsent===true,syncs};
  if(JSON.stringify(meta).length>MAX_META)throw new ApiError(413,'Your wear history is too large to save.');
  return meta;
 }

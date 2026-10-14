@@ -23,7 +23,7 @@ function payload(p){
  const image=p.art?undefined:typeof p.image!=='string'?undefined:/^data:image\/(png|jpeg|webp);base64,/.test(p.image)||/^https:\/\//.test(p.image)?p.image:undefined;
  return {item,image};
 }
-const metaOf=s=>({wears:s.wears||[],looks:(s.looks||[]).map(l=>({id:l.id,ids:l.ids,title:l.title,occasion:l.occasion})),shops:s.shops||[],aiConsent:s.aiConsent===true});
+const metaOf=s=>({wears:s.wears||[],looks:(s.looks||[]).map(l=>({id:l.id,ids:l.ids,title:l.title,occasion:l.occasion})),shops:s.shops||[],aiConsent:s.aiConsent===true,syncs:s.syncs||{}});
 
 async function flush(){
  const state=latest;if(!state||!account)return;
@@ -61,7 +61,7 @@ async function start(id,state,{basicImage}={}){
  const local=state.items.filter(p=>!byId.has(p.id)&&p.source!=='Sample wardrobe');
  const union=(a=[],b=[])=>{const seen=new Set(a.map(x=>x.id));return [...a,...b.filter(x=>!seen.has(x.id))];};
  const merged={items:[...byId.values(),...local],wears:union(remote.meta?.wears,(state.wears||[]).filter(w=>!String(w.id).startsWith('seed-'))),looks:union(remote.meta?.looks,state.looks),
-  shops:remote.meta?.shops?.length?remote.meta.shops:state.shops||[],aiConsent:Boolean(remote.meta?.aiConsent||state.aiConsent),uploaded:local.length};
+  shops:remote.meta?.shops?.length?remote.meta.shops:state.shops||[],aiConsent:Boolean(remote.meta?.aiConsent||state.aiConsent),syncs:{...(state.syncs||{}),...(remote.meta?.syncs||{})},uploaded:local.length};
  save();
  return merged;
 }

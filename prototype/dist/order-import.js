@@ -30,7 +30,10 @@ export function classify(...texts){
 }
 
 const https=url=>{if(typeof url!=='string'||!url)return '';const u=url.startsWith('//')?'https:'+url:url.replace(/^http:\/\//,'https://');try{return new URL(u).protocol==='https:'?u:'';}catch{return '';}};
-const isoDate=v=>{if(v==null||v==='')return null;const n=Number(v);const d=new Date(Number.isFinite(n)&&String(v).trim()!==''?n:v);return Number.isNaN(d.getTime())?null:d.toISOString().slice(0,10);};
+const isoDate=v=>{if(v==null||v==='')return null;const n=Number(v),num=Number.isFinite(n)&&String(v).trim()!=='';const d=new Date(num?n:v);if(Number.isNaN(d.getTime()))return null;
+ // A written-out date with no time ("14 October 2026", Amazon) parses as local midnight: read it back in local time, or it slips a day east of UTC.
+ if(!num&&!/\d:\d/.test(String(v))&&!/^\d{4}-\d{2}-\d{2}$/.test(String(v).trim()))return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+ return d.toISOString().slice(0,10);};
 const clean=(s,max=120)=>typeof s==='string'?s.replace(/\s+/g,' ').trim().slice(0,max):'';
 
 function toItem({retailer,productId,name,brand,type,size,color,image,productUrl,orderedAt,gender,category,flag,price=null}){
@@ -85,6 +88,23 @@ export function normalizeFlipkart(orders){
   }
  }
  return dedupe(out);
+}
+
+// Amazon (in-app connector): orders read from the order-history pages. Amazon sells everything,
+// so only lines that are clearly clothing are kept, as with the order file below.
+export function normalizeAmazonOrders(orders){
+ const out=[];
+ for(const order of Array.isArray(orders)?orders:[]){
+  if(order?.returned||order?.cancelled)continue;
+  for(const p of Array.isArray(order?.products)?order.products:[]){
+   if(!/^[A-Z0-9]{10}$/.test(String(p?.id||'')))continue;
+   const category=classify(p.title);if(!category||category==='unknown')continue;
+   // Amazon image URLs take a size token before the extension; ask for a tile-sized one.
+   const image=String(p.image||'').replace(/\._[^/]*_\.(jpg|png)$/i,'._AC_UL480_.$1');
+   out.push({...toItem({retailer:'amazon',productId:p.id,name:p.title,image,productUrl:'https://www.amazon.in/dp/'+p.id,orderedAt:isoDate(order.orderDate),category}),unverified:true});
+  }
+ }
+ return dedupe(out).map(i=>({...i,warning:i.warning||'Read with a new connector · check the name and category.'}));
 }
 
 // RFC 4180 CSV: quoted fields may hold commas, doubled quotes and newlines (Amazon's address columns do).
@@ -178,6 +198,7 @@ export const normalizers={myntra:normalizeMyntra,flipkart:normalizeFlipkart,amaz
 // Store connector batches (extension → /api/connectors) keyed by store id.
 export const connectorNormalizers={
  myntra:d=>normalizeMyntra(d?.lines),flipkart:d=>normalizeFlipkart(d?.orders),slikk:d=>normalizeSlikk(d?.orders),
- ajio:d=>normalizeGeneric('ajio',d?.pages),tatacliq:d=>normalizeGeneric('tatacliq',d?.pages),nykaafashion:d=>normalizeGeneric('nykaafashion',d?.pages)
+ ajio:d=>normalizeGeneric('ajio',d?.pages),tatacliq:d=>normalizeGeneric('tatacliq',d?.pages),nykaafashion:d=>normalizeGeneric('nykaafashion',d?.pages),
+ amazon:d=>normalizeAmazonOrders(d?.orders),meesho:d=>normalizeGeneric('meesho',d?.pages)
 };
 if(typeof window!=='undefined')window.OrderImport={classify,normalizeAmazon,normalizeMyntra,normalizeFlipkart,connectorNormalizers,CATEGORIES};

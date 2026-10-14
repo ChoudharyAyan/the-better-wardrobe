@@ -98,6 +98,14 @@ prod behaviour through the public API. Google OAuth client "TBW web" has the
 Newest first. Add one entry per merged PR: date, PR, what changed, anything
 left half-done or waiting on the owner.
 
+- 2026-10-14 — My Wardrobe Phase 2 (PR pending review, stacked on Phase 1):
+  Amazon and Meesho connectors (unverified until tried on real accounts);
+  per-store last import; order-email forwarding (`lib/inbox.mjs`, off until
+  `WARDROBE_INBOUND_DOMAIN`, `WARDROBE_INBOUND_SECRET` and a Postmark inbound
+  stream are set up); duplicate check across stores, emails and screenshots;
+  item page with wears, cost per wear, complete-this-look, archive and
+  duplicate; "What did you wear today?"; snapshot with colours, balance, gaps
+  (from 20 pieces) and a shareable season recap (`dist/wardrobe-insights.js`).
 - 2026-10-14 — My Wardrobe Phase 1 (PR pending review): module unparked; new
   people start empty (earlier visitors lose only untouched sample pieces);
   live review queue fed by parallel photo/screenshot reading (own rate lane);

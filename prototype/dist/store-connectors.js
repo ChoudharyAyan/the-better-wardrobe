@@ -22,16 +22,16 @@ export const connectors=[
     product:{id:p.id,name:p.name,brand:p.brand?.name||'',articleType:p.articleType||'',masterCategory:p.masterCategory||'',gender:p.gender||'',
      images:(p.images||[]).map(x=>({view:x.view,src:x.secureSrc||x.src})),size:(p.sizes||[]).find(s=>s.skuId===p.skuId)?.label||''}};};
    // Pages are read four at a time (Acloset read one screen at a time and took 7 min 20 s). When the
-   // app injects __tbwEmit (the in-app browser does), each page's lines are sent as soon as they
-   // arrive so the review queue fills while the rest load.
+   // app injects __tbwEmit(data,progress) (the in-app browser does), each page's lines are sent as
+   // soon as they arrive so the review queue fills while the rest load.
    const emit=typeof globalThis.__tbwEmit==='function'?globalThis.__tbwEmit:()=>{};
    try{
     const first=await page(1);
     if(!first)return {error:/login/.test(location.pathname)?'login':'layout'};
     const pages=Math.min(Number(first.totalPages)||1,80),byPage=[first.items.map(pick)];
-    emit({lines:byPage[0],page:1,pages});
+    emit({lines:byPage[0]},{page:1,pages});
     for(let start=2;start<=pages;start+=4){
-     const batch=[];for(let n=start;n<start+4&&n<=pages;n++)batch.push(page(n).then(o=>{const got=(o?.items||[]).map(pick);byPage[n-1]=got;if(got.length)emit({lines:got,page:n,pages});return got.length;}));
+     const batch=[];for(let n=start;n<start+4&&n<=pages;n++)batch.push(page(n).then(o=>{const got=(o?.items||[]).map(pick);byPage[n-1]=got;if(got.length)emit({lines:got},{page:n,pages});return got.length;}));
      const counts=await Promise.all(batch);
      if(counts.some(n=>!n))break;
      await new Promise(r=>setTimeout(r,150));
@@ -140,6 +140,87 @@ export const connectors=[
    for(let i=0;i<40&&idle<4;i++){const n=captured().length;idle=n===seen?idle+1:0;seen=n;window.scrollTo(0,document.body.scrollHeight);await wait(1000);}
    const pages=captured().map(c=>c.data);
    if(!pages.length)return {error:/login/.test(location.pathname)?'login':'layout'};
+   return {pages};
+  }
+ },
+ {
+  id:'amazon',label:'Amazon',verified:false,ordersUrl:'https://www.amazon.in/gp/css/order-history',
+  extract:async function(){
+   // Order history is server-rendered HTML: ten orders a page, one year at a time
+   // (?timeFilter=year-YYYY&startIndex=N). Product links carry the ASIN (/dp/XXXXXXXXXX).
+   const wait=ms=>new Promise(r=>setTimeout(r,ms));
+   const emit=typeof globalThis.__tbwEmit==='function'?globalThis.__tbwEmit:()=>{};
+   const text=el=>(el?.textContent||'').replace(/\s+/g,' ').trim();
+   const login=()=>Object.assign(new Error('login'),{login:true});
+   // Since Oct 2026 each order card arrives encrypted (.csd-encrypted-sensitive) and the page's own
+   // script decrypts it, so fetched HTML has no products. Such pages are read from a hidden
+   // same-origin frame once its script has run; once one page needs that, the rest go straight there.
+   let framed=false;
+   const frame=async url=>{
+    const f=document.createElement('iframe');
+    f.style.cssText='position:fixed;left:-10000px;top:0;width:1280px;height:1000px;border:0';f.setAttribute('aria-hidden','true');f.src=url;
+    document.body.appendChild(f);
+    try{
+     await new Promise(r=>{f.addEventListener('load',r,{once:true});setTimeout(r,20000);});
+     for(let i=0;i<40;i++){const d=f.contentDocument;if(d&&d.readyState==='complete'&&!d.querySelector('.csd-encrypted-sensitive'))break;await wait(250);}
+     if(/\/ap\/signin/.test(f.contentWindow?.location.pathname||''))throw login();
+     return new DOMParser().parseFromString(f.contentDocument.documentElement.outerHTML,'text/html');
+    }finally{f.remove();}
+   };
+   const get=async(year,start)=>{
+    const url=`/gp/css/order-history?timeFilter=year-${year}&startIndex=${start}`;
+    if(framed)return frame(url);
+    const r=await fetch(url,{credentials:'include'});
+    if(/\/ap\/signin/.test(r.url||''))throw login();
+    const doc=new DOMParser().parseFromString(await r.text(),'text/html');
+    if(!doc.querySelector('.csd-encrypted-sensitive'))return doc;
+    framed=true;return frame(url);
+   };
+   const read=card=>{
+    const header=text(card.querySelector('.order-header,.order-info,.a-box-group>.a-box:first-child'));
+    const date=(header.match(/(\d{1,2} [A-Z][a-z]+,? \d{4})/)||[])[1]||'';
+    const body=text(card);
+    const byAsin=new Map();
+    for(const a of card.querySelectorAll('a[href*="/dp/"],a[href*="/gp/product/"]')){
+     const asin=(a.getAttribute('href').match(/\/(?:dp|gp\/product)\/([A-Z0-9]{10})/)||[])[1];if(!asin)continue;
+     const p=byAsin.get(asin)||{id:asin,title:'',image:''};
+     const t=text(a);if(t.length>p.title.length)p.title=t.slice(0,200);
+     const img=a.querySelector('img');if(img&&!p.image)p.image=img.getAttribute('data-a-hires')||img.getAttribute('src')||'';
+     byAsin.set(asin,p);
+    }
+    return {orderDate:date,returned:/return(ed)?\s+(complete|received)|refund(ed)?\s+(issued|complete)/i.test(body),cancelled:/\bcancell?ed\b/i.test(header+' '+body.slice(0,400)),products:[...byAsin.values()].filter(p=>p.title)};
+   };
+   try{
+    const first=await get(new Date().getFullYear(),0);
+    if(!first.querySelector('.order-card,.js-order-card,.order,#ordersContainer,#yourOrders'))return {error:/signin/.test(location.pathname)?'login':'layout'};
+    const years=[...new Set([...first.querySelectorAll('select[name="timeFilter"] option,#time-filter option')].map(o=>(o.value.match(/year-(\d{4})/)||[])[1]).filter(Boolean))];
+    if(!years.length)for(let y=new Date().getFullYear();y>new Date().getFullYear()-6;y--)years.push(String(y));
+    const orders=[];let page=0;
+    for(const year of years){
+     for(let start=0;start<500;start+=10){
+      const doc=start===0&&year===String(new Date().getFullYear())?first:await get(year,start);
+      const cards=[...doc.querySelectorAll('.order-card,.js-order-card')];
+      if(!cards.length)break;
+      const got=cards.map(read).filter(o=>o.products.length);orders.push(...got);page++;
+      if(got.length)emit({orders:got},{page,pages:0});
+      if(cards.length<10)break;
+      await wait(300);
+     }
+    }
+    return {orders};
+   }catch(e){return {error:e.login?'login':'layout',detail:String(e).slice(0,200)};}
+  }
+ },
+ {
+  id:'meesho',label:'Meesho',verified:false,ordersUrl:'https://www.meesho.com/orders',
+  extract:async function(){
+   // The orders page loads more as it scrolls; observer.js keeps each order response the page receives.
+   const wait=ms=>new Promise(r=>setTimeout(r,ms));
+   const captured=()=>(window.__tbwCaptured||[]).filter(c=>/order/i.test(c.path));
+   let seen=-1,idle=0;
+   for(let i=0;i<40&&idle<4;i++){const n=captured().length;idle=n===seen?idle+1:0;seen=n;window.scrollTo(0,document.body.scrollHeight);await wait(1000);}
+   const pages=captured().map(c=>c.data);
+   if(!pages.length)return {error:/login|auth/.test(location.pathname)?'login':'layout'};
    return {pages};
   }
  }

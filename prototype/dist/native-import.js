@@ -20,7 +20,7 @@ go.onclick=()=>{go.disabled=true;go.textContent='Reading…';window.mobileApp.po
 bar.append(text,go);document.body.appendChild(bar);})();`;
 const say=(text,done=false)=>`(()=>{const t=document.getElementById('tbw-bar-text'),b=document.getElementById('tbw-bar-go');if(t)t.textContent=${JSON.stringify(text)};if(b){b.disabled=${!done};b.textContent=${JSON.stringify(done?'Try again':'Reading…')};}})();`;
 // Wraps the connector's extract() so partial pages and the final result come back as messages.
-const runner=c=>`(async()=>{const send=d=>window.mobileApp.postMessage({detail:d});window.__tbwEmit=d=>send({tbw:'part',data:d});
+const runner=c=>`(async()=>{const send=d=>window.mobileApp.postMessage({detail:d});window.__tbwEmit=(d,progress)=>send({tbw:'part',data:d,progress});
 try{const result=await (${c.extract.toString()})();send({tbw:'done',result});}catch(e){send({tbw:'done',result:{error:'layout',detail:String(e).slice(0,200)}});}})();`;
 
 // preShowScript (observer.js, for stores whose order list needs the page's own responses) only
@@ -41,8 +41,8 @@ export async function run(id,{onData=()=>{},onStatus=()=>{}}={}){
   handles.push(await IAB.addListener('messageFromWebview',async e=>{
    const d=e?.detail||{};
    if(d.tbw==='go'){onStatus('reading');exec(say('Reading your '+c.label+' orders. Keep this open…'));exec(runner(c));}
-   else if(d.tbw==='part'&&d.data){const n=d.data.lines?.length||0;streamed+=n;onData({lines:d.data.lines||[]});onStatus('reading',{page:d.data.page,pages:d.data.pages,count:streamed});
-    exec(say(`Read ${d.data.page} of ${d.data.pages} pages · ${streamed} pieces so far…`));}
+   else if(d.tbw==='part'&&d.data){const n=d.data.lines?.length??d.data.orders?.reduce((a,o)=>a+(o.products?.length||0),0)??0;streamed+=n;onData(d.data);const p=d.progress||{};onStatus('reading',{page:p.page,pages:p.pages,count:streamed});
+    exec(say(`Read ${p.pages?`${p.page} of ${p.pages}`:p.page} ${p.pages===1||p.page===1&&!p.pages?'page':'pages'} · ${streamed} pieces so far…`));}
    else if(d.tbw==='done'){
     const r=d.result||{};
     if(r.error==='login'){onStatus('login');exec(say('Sign in to '+c.label+' first, then tap Import again.',true));return;}

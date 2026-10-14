@@ -95,7 +95,7 @@ test('wardrobe routes: signed-in only for the list, same-site only, links and cu
  try{
   let cookie=(await fetch(base+'/api/me')).headers.get('set-cookie').split(';')[0];
   const call=(path,method='GET',body,headers={})=>fetch(base+path,{method,headers:{'Content-Type':'application/json',Cookie:cookie,...headers},body:body&&JSON.stringify(body)});
-  assert.deepEqual(await (await call('/api/wardrobe/status')).json(),{signedIn:false,cutouts:true});
+  assert.deepEqual(await (await call('/api/wardrobe/status')).json(),{signedIn:false,cutouts:true,email:false});
   const guest=await call('/api/wardrobe');assert.equal(guest.status,401);assert.equal((await guest.json()).signIn,true);
   assert.equal((await call('/api/wardrobe/cutout','POST',{image:'data:image/png;base64,AA=='})).status,200);
   assert.equal((await (await call('/api/wardrobe/link','POST',{url:'https://www.myntra.com/p/1'})).json()).product.name,'Black Kurta');
@@ -179,18 +179,33 @@ test('phone app: Myntra orders stream from the in-app browser into the app',asyn
  const realFetch=globalThis.fetch;globalThis.fetch=async()=>({text:async()=>read('dist/store-observer.js')});
  try{
   const {run,available}=await import('../dist/native-import.js');
-  assert.equal(available('myntra'),true);assert.equal(available('meesho'),false,'Meesho has no connector yet');
+  assert.equal(available('myntra'),true);assert.equal(available('meesho'),true);assert.equal(available('zara'),false);
   const chunks=[],states=[];
   const done=run('myntra',{onData:d=>chunks.push(d),onStatus:s=>states.push(s)});
   await new Promise(r=>setTimeout(r,0));
   listeners.browserPageLoaded();assert.match(scripts.at(-1),/Import my orders/);
   listeners.messageFromWebview({detail:{tbw:'go'}});assert.match(scripts.at(-1),/__tbwEmit/);assert.match(scripts.at(-1),/my\/orders\?p=/);
-  listeners.messageFromWebview({detail:{tbw:'part',data:{lines:[{product:{id:1}}],page:1,pages:2}}});
-  listeners.messageFromWebview({detail:{tbw:'part',data:{lines:[{product:{id:2}}],page:2,pages:2}}});
+  listeners.messageFromWebview({detail:{tbw:'part',data:{lines:[{product:{id:1}}]},progress:{page:1,pages:2}}});
+  listeners.messageFromWebview({detail:{tbw:'part',data:{lines:[{product:{id:2}}]},progress:{page:2,pages:2}}});assert.match(scripts.at(-1),/Read 2 of 2 pages · 2 pieces/);
   listeners.messageFromWebview({detail:{tbw:'done',result:{lines:[{product:{id:1}},{product:{id:2}}]}}});
   assert.deepEqual(await done,{count:2});assert.equal(opened[0],'https://www.myntra.com/my/orders');assert.equal(chunks.length,2,'the final result is not added twice');assert.equal(closed,true);
   const login=run('flipkart',{onStatus:s=>states.push(s)});await new Promise(r=>setTimeout(r,0));
   listeners.messageFromWebview({detail:{tbw:'done',result:{error:'login'}}});assert.equal(states.at(-1),'login');
   listeners.closeEvent();assert.deepEqual(await login,{count:0,closed:true});
  }finally{delete globalThis.Capacitor;globalThis.fetch=realFetch;}
+});
+
+test('insights: palette, gaps by profile, recap and complete-this-look',()=>{
+ const {WardrobeInsights:I}=load('dist/wardrobe-insights.js');
+ const items=[{id:'a',name:'Navy linen shirt',category:'Shirts'},{id:'b',name:'Blue jeans',category:'Trousers',price:2000},{id:'c',name:'White sneakers',category:'Footwear'},{id:'d',name:'Navy polo',category:'Shirts'},{id:'e',name:'Maroon kurta',category:'Ethnic wear',art:{shape:'kurta',colour:'#7E1F3A'}}];
+ assert.deepEqual([...I.palette(items).map(c=>c.name)],['navy','blue','white','maroon']);
+ const male=[...I.gaps(items,{gender:'male'}).map(g=>g.id)];assert.ok(male.includes('formal-shoes')&&male.includes('wedding')&&male.includes('layer')&&male.includes('belt'));
+ assert.equal(I.gaps(items,{gender:'female'}).find(g=>g.id==='wedding').search,'lehenga');
+ const state={items,wears:[{date:'2026-10-02',items:['a','b']},{date:'2026-10-05',items:['b','c']},{date:'2025-01-01',items:['d']}]};
+ const r=I.recap(state,{from:'2026-10-01',to:'2026-11-30'});
+ assert.equal(r.wears,2);assert.equal(r.mostWorn[0].item.id,'b');assert.equal(r.bestValue.cpw,1000);assert.deepEqual([...r.neverWorn.map(p=>p.id)].sort(),['d','e']);
+ const c=I.complete(items[0],state);assert.deepEqual([...c.picks.map(p=>p.id)],['b','c']);assert.deepEqual([...c.missing],['Belts']);
+ assert.deepEqual([...I.complete(items[4],state).picks.map(p=>p.id)],['b','c'],'a kurta is not paired with another kurta');
+ assert.equal(I.similar({name:'Roadster Men Navy Checked Shirt',retailer:'myntra',orderedAt:'2026-10-01'},{name:'Roadster Navy Checked Shirt',retailer:'Myntra',orderedAt:'2026-10-20'}),true);
+ assert.equal(I.similar({name:'Navy Shirt',retailer:'zara'},{name:'Navy Trousers',retailer:'zara'}),false);
 });
