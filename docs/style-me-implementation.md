@@ -1,5 +1,21 @@
 # Style Me P0 implementation and release checklist
 
+## Styling buddy UI follow-up — 14 October 2026
+
+Before merging PR #34, integrated main `fc93b54` (Sticker Studio #32 and Android #33). Browser inspection found global Discover styles hiding the Style Me greeting and flattening its prompts; scoped Style Me overrides restore the reviewed greeting and two-column prompt buttons. Updated desktop/390px screenshots confirm the integration; phone page width remains 390px. Integrated checks: 238 pass, 2 existing database skips, 0 fail. My Wardrobe and native mobile files match main.
+
+Owner-facing navigation now says **Your stylist** and **Outfit canvas**; internal section numbers are removed from the UI. The empty conversation greets with the illustrated Discover characters, with a tappable buddy switch, bob/blink motion and reduced-motion support. Buddy avatars accompany replies and generation states. A three-step outfit journey reflects actual saved state: suggestions, Canvas pieces, and frozen designs. Changing the buddy makes no generation/save request. Mobile heading spacing and selected-tab hover contrast were corrected.
+
+Rendered and inspected at the normal desktop viewport and 390×844 phone width. Browser interaction covered changing the buddy, a curated Himachal prompt, selecting a look in Canvas and returning to see completed journey steps. Phone document width matched the 390px viewport. Check passed; full tests: 213 pass, 2 existing database skips. Screenshots: `screenshots/style-me-buddy-desktop.png` and `screenshots/style-me-buddy-mobile.png`. My Wardrobe and native mobile implementation files were not changed.
+
+## Gemini Cloud access update — 14 October 2026
+
+The owner authorized using the existing Cloud trial project `fieldnotes-ayan-2026-1008` and creating a Cloud credential. A key restricted to the Agent Platform API was created and saved only in the gitignored local `prototype/.env` with owner-only file permissions. Billing was not upgraded and production configuration was not changed.
+
+Set `STYLE_PREVIEW_BACKEND=vertex`, `STYLE_PREVIEW_CLOUD_API_KEY`, `STYLE_PREVIEW_ENABLED=true`, and `STYLE_PREVIEW_MODEL=gemini-3.1-flash-image` to use the Cloud express endpoint. The default `developer` backend retains the existing Gemini Developer API integration and uses `GEMINI_API_KEY`. Keys never appear in request URLs. Unknown backends or missing backend-specific keys disable previews. Cloud Welcome credits do not cover the Developer API/AI Studio endpoint; see [Google billing documentation](https://ai.google.dev/gemini-api/docs/billing#can-i-use-my-google-cloud-welcome-credit-with-the-gemini-api).
+
+Two live synthetic tests succeeded: a mannequin generation returned HTTP 200, then the actual Style Me adapter changed its outfit in 9,989 ms. The rendered result was inspected: green top, black trousers and white shoes were present, but the requested long-sleeved shirt was reconstructed as a collarless top. No personal photo or photographic garment references were sent. This supersedes HTTP 429 as the latest access evidence, but does not validate personal identity preservation, garment fidelity, quality cohorts or the 100–200 ms image-generation aspiration. Credit deduction attribution has not been checked in Cloud billing reports. Check and full tests passed: 212 pass, 2 existing database skips, 0 fail.
+
 ## Scope and source
 
 Implementation follows the approved `style-me-vision-prd.md`, including P0 embedded Canvas (FR#20) and Gemini on-self preview (FR#13). It lives in separate modules to keep integration with the independently developed My Wardrobe module narrow. This is an initial implementation branch, not a production-ready declaration that every PRD release gate has passed.
