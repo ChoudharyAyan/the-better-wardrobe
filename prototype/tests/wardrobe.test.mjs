@@ -237,3 +237,24 @@ test('import progress: share done and a rough time left once a little is done',(
  assert.equal(W.importProgress(4,4,1000,9000).left,'','nothing left to estimate when done');
  assert.equal(W.importProgress(1,50,1000,2000).left,'','too early to guess');
 });
+
+test('phone app: the import pill waits until the person is signed in to the store',async()=>{
+ const vm=await import('node:vm');const {signedIn}=await import('../dist/native-import.js');
+ const visible={offsetParent:{}},hidden={offsetParent:null};
+ const page=(pathname,inputs=[],fetchUrl='https://www.amazon.in/gp/css/order-history',status=200)=>({location:{pathname},document:{querySelectorAll:()=>inputs},navigator:{userAgent:'x'},fetch:async()=>({url:fetchUrl,status}),Promise});
+ const run=(id,ctx)=>vm.runInNewContext(signedIn(id),ctx);
+ assert.equal(await run('myntra',page('/login')),false,'a login page');
+ assert.equal(await run('slikk',page('/orders',[visible])),false,'a visible login form');
+ assert.equal(await run('slikk',page('/orders',[hidden])),true,'orders page, no login form');
+ assert.equal(await run('flipkart',page('/rv/orders',[],'',401)),false,'Flipkart shows orders even signed out: its API decides');
+ assert.equal(await run('flipkart',page('/rv/orders',[],'',200)),true);
+ assert.equal(await run('amazon',page('/gp/aw/c',[],'https://www.amazon.in/ap/signin?x')),false,'Amazon order history bounces to sign-in');
+ assert.equal(await run('amazon',page('/gp/aw/c')),true,'signed in, even while on the cart');
+});
+
+test('Slikk keeps the first of its comma-separated photos',async()=>{
+ const {normalizeSlikk}=await import('../dist/order-import.js');
+ const [item]=normalizeSlikk([{status:'delivered',date:'2026-08-05T10:00:00Z',returned:false,items:[{name:'Tapered Slim Fit Jeans',image:'https://cdn1.slikkclub.com/product/a_1.jpg,https://cdn1.slikkclub.com/product/a_2.jpg',price:'1249'}]}]);
+ assert.equal(item.image,'https://cdn1.slikkclub.com/product/a_1.jpg');assert.equal(item.category,'Trousers');
+});
+

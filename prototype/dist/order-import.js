@@ -163,7 +163,9 @@ export function normalizeSlikk(orders){
   const flag=o?.returned?'This order had a return · tick it only if you kept this piece.':'';
   for(const i of Array.isArray(o?.items)?o.items:[]){
    const category=classify(i?.name);if(!i?.name||!category)continue;
-   out.push(toItem({retailer:'slikk',productId:hashId(i.name+'|'+(i.image||'')),name:i.name,image:i.image,orderedAt:isoDate(o.date),category,price:priceOf(i.price),flag}));
+   // Slikk sends every photo of the item as one comma-separated string; the first is the main one.
+   const image=String(i.image||'').split(',')[0].trim();
+   out.push(toItem({retailer:'slikk',productId:hashId(i.name+'|'+(i.image||'')),name:i.name,image,orderedAt:isoDate(o.date),category,price:priceOf(i.price),flag}));
   }
  }
  return dedupe(out);

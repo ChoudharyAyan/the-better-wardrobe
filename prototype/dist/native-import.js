@@ -19,13 +19,25 @@ export const CHROME_STORES=['flipkart'];
 export const needsChrome=id=>CHROME_STORES.includes(id);
 export const chromeAgent=(ua=globalThis.navigator?.userAgent||'')=>ua.replace(/; wv\)/,')').replace(/ Version\/[\d.]+/,'');
 
+// Is the person signed in to the store? The pill only shows once they are: before that there is nothing
+// to import. Most stores send a signed-out visitor to a login page or show a login form; Flipkart shows its
+// orders page either way and Amazon may land on the cart after login, so those two ask their own order
+// pages. Each probe is an expression for the store page that resolves to true or false.
+const SIGNED_OUT_PAGE=`(()=>{if(/(^|\\/)(login|signin|sign-in|register)(\\/|$)|\\/ap\\/signin/i.test(location.pathname))return true;
+ return [...document.querySelectorAll('input[type=password],input[type=tel],input[autocomplete=one-time-code],input[name*=otp i]')].some(i=>i.offsetParent!==null);})()`;
+const PROBES={
+ flipkart:`fetch('https://2.rome.api.flipkart.com/api/5/self-serve/orders/?page=1&filterType=PREORDER_UNITS',{credentials:'include',headers:{'X-User-Agent':navigator.userAgent+' FKUA/website/42/website/Desktop'}}).then(r=>r.status!==401&&r.status!==403).catch(()=>false)`,
+ amazon:`fetch('/gp/css/order-history',{credentials:'include'}).then(r=>!/\\/ap\\/signin/.test(r.url)).catch(()=>false)`
+};
+export const signedIn=id=>PROBES[id]?`(${SIGNED_OUT_PAGE}?Promise.resolve(false):${PROBES[id]})`:`Promise.resolve(!${SIGNED_OUT_PAGE})`;
+
 // Runs in the store page. Idle it is a small pill in the bottom-right corner ("Import AJIO orders"),
 // so it covers as little of the store as possible; while importing it widens into a bar with progress.
 // It sits above whatever the store pins to the bottom of the screen (bottom menus, "Buy now" bars,
 // cookie notices) and Android's gesture bar, rechecking as the page scrolls, and steps aside while the
 // person types so it never covers a login form. Re-added on every page load (sign-in, navigation).
-const banner=label=>`(()=>{if(document.getElementById('tbw-bar'))return;
-const bar=document.createElement('div');bar.id='tbw-bar';bar.dataset.mode='pill';
+export const banner=(label,probe='Promise.resolve(true)')=>`(()=>{if(document.getElementById('tbw-bar'))return;
+const bar=document.createElement('div');bar.id='tbw-bar';bar.dataset.mode='pill';let ready=false;
 const style=document.createElement('style');style.textContent='#tbw-bar{position:fixed;right:12px;left:auto;bottom:112px;z-index:2147483647;display:flex;gap:10px;align-items:center;box-sizing:border-box;max-width:calc(100% - 24px);padding:6px;border-radius:999px;background:#28101F;color:#FBF5EC;font:600 14px/1.3 Montserrat,system-ui,sans-serif;box-shadow:0 8px 24px rgba(0,0,0,.28);transition:bottom .2s ease}#tbw-bar[data-mode=full]{left:12px;right:12px;padding:12px 14px;border-radius:16px}#tbw-bar[data-mode=pill] #tbw-bar-col{display:none}#tbw-bar-col{flex:1;min-width:0;display:flex;flex-direction:column}#tbw-bar-go{border:0;border-radius:999px;padding:10px 16px;background:#C2477F;color:#fff;font:700 13px Montserrat,system-ui,sans-serif;white-space:nowrap}@keyframes tbw-slide{from{transform:translateX(-100%)}to{transform:translateX(290%)}}#tbw-bar-track.busy i{width:35%!important;animation:tbw-slide 1.2s ease-in-out infinite}@media(prefers-reduced-motion:reduce){#tbw-bar-track.busy i{animation:none;width:100%!important;opacity:.4}#tbw-bar{transition:none}}';
 const col=document.createElement('div');col.id='tbw-bar-col';
 const track=document.createElement('div');track.id='tbw-bar-track';track.setAttribute('role','progressbar');track.setAttribute('aria-label','Import progress');track.setAttribute('style','display:none;position:relative;height:5px;margin-top:8px;border-radius:99px;background:rgba(255,255,255,.18);overflow:hidden');
@@ -43,8 +55,11 @@ const lift=()=>{const h=innerHeight;let top=h;const seen=new Set();
 let pending=0;const soon=()=>{if(pending)return;pending=setTimeout(()=>{pending=0;lift();},200);};
 addEventListener('scroll',soon,{passive:true});addEventListener('resize',soon);setInterval(lift,1500);lift();
 const typing=()=>/^(INPUT|TEXTAREA|SELECT)$/.test(document.activeElement?.tagName||'')||document.activeElement?.isContentEditable;
-const sync=()=>{bar.style.display=typing()?'none':'flex';};
-document.addEventListener('focusin',sync,true);document.addEventListener('focusout',()=>setTimeout(sync,60),true);sync();})();`;
+const sync=()=>{bar.style.display=!ready||typing()?'none':'flex';};
+document.addEventListener('focusin',sync,true);document.addEventListener('focusout',()=>setTimeout(sync,60),true);sync();
+// Checked again every 2 s, so the pill appears by itself once sign-in completes on this page.
+const check=async()=>{if(bar.dataset.mode==='full')return;let ok=false;try{ok=await (${probe});}catch{}if(ok!==ready){ready=ok;sync();lift();}};
+check();setInterval(check,2000);})();`;
 // pct: a number shows the share done, null a moving bar while the total is unknown, undefined hides it.
 const say=(text,done=false,pct,button)=>`(()=>{const t=document.getElementById('tbw-bar-text'),b=document.getElementById('tbw-bar-go'),k=document.getElementById('tbw-bar-track'),bar=document.getElementById('tbw-bar');if(bar)bar.dataset.mode='full';if(t)t.textContent=${JSON.stringify(text)};if(b){b.disabled=${!done};b.textContent=${JSON.stringify(button||(done?'Try again':'Reading…'))};}
 if(k){const p=${pct===undefined?'undefined':JSON.stringify(pct)};k.style.display=p===undefined?'none':'block';k.classList.toggle('busy',p===null);if(typeof p==='number'){k.firstChild.style.width=p+'%';k.setAttribute('aria-valuenow',p);}else k.removeAttribute('aria-valuenow');}})();`;
@@ -68,7 +83,7 @@ export async function run(id,{onData=()=>{},onStatus=()=>{},asChrome=false}={}){
  return new Promise(async(resolve,reject)=>{
   const finish=(value,error)=>{if(finished)return;finished=true;cleanup();error?reject(error):resolve(value);};
   const exec=code=>IAB.executeScript({code,...(webview?{id:webview}:{})}).catch(()=>{});
-  handles.push(await IAB.addListener('browserPageLoaded',()=>exec(banner(c.label))));
+  handles.push(await IAB.addListener('browserPageLoaded',()=>exec(banner(c.label,signedIn(id)))));
   handles.push(await IAB.addListener('closeEvent',()=>finish({count:streamed,closed:true})));
   handles.push(await IAB.addListener('messageFromWebview',async e=>{
    const d=e?.detail||{};
