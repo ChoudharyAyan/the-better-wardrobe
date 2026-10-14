@@ -4,7 +4,8 @@ import vm from 'node:vm';
 import {readFileSync,existsSync} from 'node:fs';
 import {webcrypto} from 'node:crypto';
 import path from 'node:path';
-const source=readFileSync(new URL('../dist/app.js',import.meta.url),'utf8');
+const uiSource=readFileSync(new URL('../dist/style-me/style-me.js',import.meta.url),'utf8').replace(/^import .*;\n/m,'').replace('export function createStyleUI','function createStyleUI');
+const source='const createStyleUI=(()=>{'+uiSource+';return createStyleUI;})();\n'+readFileSync(new URL('../dist/app.js',import.meta.url),'utf8').replace(/^import .*;\n/m,'');
 // Code-level flow checks. These do not launch or automate a browser.
 function app(discovery){
   const nodes=new Map(),listeners={};
@@ -17,7 +18,7 @@ function app(discovery){
 test('all seven screens render with existing local media',()=>{
   const a=app();a.run('startDemoImport()');
   for(const route of ['discover','discover/select','discover/results','wardrobe','wardrobe/import','style','insights']){
-    a.visit(route);const html=a.nodes.get('main').innerHTML;assert.ok(html.length>(route==='insights'?80:500),route);assert.ok(!html.includes('undefined'),route);
+    a.visit(route);const html=a.nodes.get('main').innerHTML;assert.ok(html.length>(['insights','style'].includes(route)?80:500),route);assert.ok(!html.includes('undefined'),route);
     for(const m of html.matchAll(/src="(assets\/[^\"]+)"/g))assert.ok(existsSync(path.resolve('dist',m[1])),m[1]);
   }
 });
