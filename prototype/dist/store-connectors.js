@@ -12,7 +12,15 @@ export const connectors=[
  {
   id:'myntra',label:'Myntra',verified:true,ordersUrl:'https://www.myntra.com/my/orders',
   extract:async function(){
-   // /my/orders is server-rendered; each page embeds window.__myx. Pagination is ?p=N (?page=N is ignored).
+   // Two readers, both on the page's own session cookies (never a token):
+   // - the orders API the site itself calls, 50 lines a request. The mobile site (the phone app's
+   //   in-app browser) only pages through this and serves page 1 again for any ?p=N.
+   // - the server-rendered /my/orders?p=N, which embeds window.__myx (desktop; ?page=N is ignored).
+   const api=async n=>{try{
+    const r=await fetch('/my/ss-api/fetchOrdersApi/getOrders',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json',Accept:'application/json','x-myntra-client-id':'selfserve-ui','x-myntra-public-endpoint':'/my/orders'},
+     body:JSON.stringify({page:n,size:50,searchString:null,status:'ALL',filter:'DEFAULT',from:null,to:null,newSearchFG:true,newAggregatorResponse:true,getStyle:'true',getReturn:'true'})});
+    if(!r.ok)return null;const o=await r.json();return Array.isArray(o?.items)?o:null;
+   }catch{return null;}};
    const page=async n=>{
     const html=await (await fetch('/my/orders?p='+n,{credentials:'include'})).text();
     const m=html.match(/window\.__myx = (\{[\s\S]*?\});?\s*<\/script>/);
@@ -26,17 +34,21 @@ export const connectors=[
    // soon as they arrive so the review queue fills while the rest load.
    const emit=typeof globalThis.__tbwEmit==='function'?globalThis.__tbwEmit:()=>{};
    try{
-    const first=await page(1);
+    let read=api,first=await api(1);
+    if(!first){read=page;first=await page(1);}
     if(!first)return {error:/login/.test(location.pathname)?'login':'layout'};
-    const pages=Math.min(Number(first.totalPages)||1,80),byPage=[first.items.map(pick)];
+    const pages=Math.min(Number(first.totalPages)||1,80),byPage=[first.items.map(pick)],seen=new Set(first.items.map(i=>i.id));
     emit({lines:byPage[0]},{page:1,pages});
     for(let start=2;start<=pages;start+=4){
-     const batch=[];for(let n=start;n<start+4&&n<=pages;n++)batch.push(page(n).then(o=>{const got=(o?.items||[]).map(pick);byPage[n-1]=got;if(got.length)emit({lines:got},{page:n,pages});return got.length;}));
+     const batch=[];for(let n=start;n<start+4&&n<=pages;n++)batch.push(read(n).then(o=>{const items=o?.items||[];
+      // A page repeating lines already read means the site ignored the page number: stop instead of multiplying them.
+      if(items.some(i=>seen.has(i.id)))return 0;items.forEach(i=>seen.add(i.id));
+      const got=items.map(pick);byPage[n-1]=got;if(got.length)emit({lines:got},{page:n,pages});return got.length;}));
      const counts=await Promise.all(batch);
      if(counts.some(n=>!n))break;
      await new Promise(r=>setTimeout(r,150));
     }
-    return {lines:byPage.flat()};
+    return {lines:byPage.flat().filter(Boolean)};
    }catch(e){return {error:'layout',detail:String(e).slice(0,200)};}
   }
  },

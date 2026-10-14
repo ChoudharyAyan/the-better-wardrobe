@@ -26,17 +26,39 @@ test('every connector is injectable as a standalone function',()=>{
  assert.deepEqual(connectors.map(c=>c.id),['myntra','flipkart','slikk','ajio','tatacliq','nykaafashion','amazon','meesho']);
 });
 
-test('Myntra extractor pages with ?p=N and keeps only product fields',async()=>{
+test('Myntra extractor falls back to ?p=N pages and keeps only product fields',async()=>{
  const line=(id,extra={})=>({id,createdOn:'1781524960000',status:{code:'C'},...PII,unifiedAddressId:'431988586:4',chargesPaymentsData:{card:'4111'},product:{id,name:'Shirt '+id,brand:{name:'Roadster'},articleType:'Shirts',masterCategory:'Apparel',gender:'Men',skuId:7,sizes:[{skuId:7,label:'M'}],images:[{view:'default',secureSrc:'https://assets.myntassets.com/'+id+'.jpg'}]},...extra});
  const pages={1:{totalPages:2,totalOrders:3,items:[line(1),line(2,{return:{status:{code:'RRC'},address:PII.address}})]},2:{totalPages:2,items:[line(3)]}};
  const requested=[];
  const result=plain(await inject(connector('myntra'),{location:{pathname:'/my/orders'},fetch:async url=>{requested.push(url);const n=Number(new URL(url,'https://x').searchParams.get('p'));return {text:async()=>html({omsServiceResponse:{orderResponse:pages[n]}})};}}));
- assert.deepEqual(requested,['/my/orders?p=1','/my/orders?p=2']);
+ assert.deepEqual(requested.filter(u=>u.startsWith('/my/orders')),['/my/orders?p=1','/my/orders?p=2'],'the orders API failed, so the rendered pages are read');
  assert.equal(result.lines.length,3);
  assert.deepEqual(result.lines[0].product,{id:1,name:'Shirt 1',brand:'Roadster',articleType:'Shirts',masterCategory:'Apparel',gender:'Men',images:[{view:'default',src:'https://assets.myntassets.com/1.jpg'}],size:'M'});
  assert.equal(result.lines[1].returned,true);
  assert.doesNotMatch(JSON.stringify(result),/Secret Road|99999|ABCDE|4111|431988586/);
  assert.equal(connectorNormalizers.myntra(result).length,2,'returned line is dropped in the app');
+});
+
+test('Myntra extractor reads the site orders API 50 at a time, with cookies and no token',async()=>{
+ const line=id=>({id,createdOn:'1781524960000',status:{code:'C'},...PII,product:{id,name:'Shirt '+id,brand:{name:'Roadster'},articleType:'Shirts',masterCategory:'Apparel',gender:'Men',images:[]}});
+ const pages={1:{totalPages:3,items:Array.from({length:50},(_,i)=>line(i+1))},2:{totalPages:3,items:Array.from({length:50},(_,i)=>line(i+51))},3:{totalPages:3,items:[line(101)]}};
+ const calls=[],streamed=[];
+ const result=plain(await inject(connector('myntra'),{location:{pathname:'/my/orders'},__tbwEmit:(d,p)=>streamed.push(p.page),fetch:async(url,opts={})=>{
+  calls.push({url,credentials:opts.credentials,headers:opts.headers});const body=JSON.parse(opts.body);assert.equal(body.size,50);
+  return {ok:true,json:async()=>pages[body.page]};}}));
+ assert.equal(result.lines.length,101);
+ assert.ok(calls.every(c=>c.url==='/my/ss-api/fetchOrdersApi/getOrders'&&c.credentials==='include'));
+ assert.ok(calls.every(c=>!Object.keys(c.headers).some(k=>/authorization|token|cookie/i.test(k))),'never sends a token of its own');
+ assert.deepEqual(streamed.sort(),[1,2,3]);
+ assert.doesNotMatch(JSON.stringify(result),/Secret Road|99999|ABCDE/);
+});
+
+test('Myntra extractor stops when a page repeats lines instead of multiplying them',async()=>{
+ // The mobile site serves page 1 again for every ?p=N: 10 orders came back 12 times on a Pixel.
+ const line=id=>({id,createdOn:'1781524960000',status:{code:'C'},product:{id,name:'Shirt '+id,brand:{name:'Roadster'},articleType:'Shirts',masterCategory:'Apparel',gender:'Men',images:[]}});
+ const same={totalPages:12,items:[line(1),line(2)]};
+ const result=plain(await inject(connector('myntra'),{location:{pathname:'/my/orders'},fetch:async url=>url.startsWith('/my/orders')?{text:async()=>html({omsServiceResponse:{orderResponse:same}})}:{ok:false}}));
+ assert.deepEqual(result.lines.map(l=>l.product.id),[1,2]);
 });
 
 test('Myntra extractor reports a login page instead of partial data',async()=>{
