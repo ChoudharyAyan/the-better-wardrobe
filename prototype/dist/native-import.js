@@ -23,6 +23,8 @@ const say=(text,done=false)=>`(()=>{const t=document.getElementById('tbw-bar-tex
 const runner=c=>`(async()=>{const send=d=>window.mobileApp.postMessage({detail:d});window.__tbwEmit=d=>send({tbw:'part',data:d});
 try{const result=await (${c.extract.toString()})();send({tbw:'done',result});}catch(e){send({tbw:'done',result:{error:'layout',detail:String(e).slice(0,200)}});}})();`;
 
+// preShowScript (observer.js, for stores whose order list needs the page's own responses) only
+// runs when the browser is presented after the page loads, so isPresentAfterPageLoad is on.
 // Opens the store and resolves when the import finishes or the person closes the browser.
 // onData(data) receives connector-shaped data (e.g. {lines:[...]} for Myntra) one chunk at a time.
 export async function run(id,{onData=()=>{},onStatus=()=>{}}={}){
@@ -50,7 +52,7 @@ export async function run(id,{onData=()=>{},onStatus=()=>{}}={}){
    }
   }));
   try{
-   const opened=await IAB.openWebView({url:c.ordersUrl,title:c.label+' orders',toolbarType:'navigation',isPresentAfterPageLoad:false,
+   const opened=await IAB.openWebView({url:c.ordersUrl,title:c.label+' orders',toolbarType:'navigation',isPresentAfterPageLoad:true,
     preShowScript:observer,preShowScriptInjectionTime:'documentStart'});
    webview=opened?.id;
   }catch(e){finish(null,new Error(c.label+' could not be opened. Try again.'));}
