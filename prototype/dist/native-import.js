@@ -23,7 +23,7 @@ export const chromeAgent=(ua=globalThis.navigator?.userAgent||'')=>ua.replace(/;
 // to import. Most stores send a signed-out visitor to a login page or show a login form; Flipkart shows its
 // orders page either way and Amazon may land on the cart after login, so those two ask their own order
 // pages. Each probe is an expression for the store page that resolves to true or false.
-const SIGNED_OUT_PAGE=`(()=>{if(/(^|\\/)(login|signin|sign-in|register)(\\/|$)|\\/ap\\/signin/i.test(location.pathname))return true;
+const SIGNED_OUT_PAGE=`(()=>{if(/(^|\\/)(login|signin|sign-in|register|auth|authorization)(\\/|$)|\\/ap\\/signin/i.test(location.pathname))return true;
  return [...document.querySelectorAll('input[type=password],input[type=tel],input[autocomplete=one-time-code],input[name*=otp i]')].some(i=>i.offsetParent!==null);})()`;
 const PROBES={
  flipkart:`fetch('https://2.rome.api.flipkart.com/api/5/self-serve/orders/?page=1&filterType=PREORDER_UNITS',{credentials:'include',headers:{'X-User-Agent':navigator.userAgent+' FKUA/website/42/website/Desktop'}}).then(r=>r.status!==401&&r.status!==403).catch(()=>false)`,

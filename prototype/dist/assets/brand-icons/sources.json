@@ -792,5 +792,21 @@
     "site": "https://www.kaltculture.in/",
     "iconSource": "https://static.wixstatic.com/media/31e192_cb89f2a4f93547389ba4e5815f1f5f38~mv2.jpg/v1/fill/w_180%2Ch_180%2Clg_1%2Cusm_0.66_1.00_0.01/31e192_cb89f2a4f93547389ba4e5815f1f5f38~mv2.jpg",
     "sha256": "38c2b7b1e11c94619e4d6a0a371bfa286c96a4ff7e66f1355b1bcdacd69aa01e"
+  },
+  {
+    "id": 101,
+    "name": "Slikk",
+    "file": "assets/brand-icons/101.png",
+    "site": "https://www.slikk.club/",
+    "iconSource": "https://www.slikk.club/icon-192x192.png",
+    "sha256": "97f1f67131b639956977bee3808372c64bc929b0e3da6e85859cffecf93b48bc"
+  },
+  {
+    "id": 102,
+    "name": "Tata CLiQ",
+    "file": "assets/brand-icons/102.png",
+    "site": "https://www.tatacliq.com/",
+    "iconSource": "https://www.tatacliq.com/newFavicon_v1.png",
+    "sha256": "81d6743b302e47b3484314f721347a5fc6ec019d44479432c3e60dd48a62eebb"
   }
 ]

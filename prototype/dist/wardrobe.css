@@ -115,3 +115,8 @@
 .job-bar.indeterminate i{position:absolute;left:0;width:35%!important;animation:job-slide 1.2s ease-in-out infinite}
 @keyframes job-slide{from{transform:translateX(-100%)}to{transform:translateX(290%)}}
 @media(prefers-reduced-motion:reduce){.job-bar.indeterminate i{animation:none;width:100%!important;opacity:.35}}
+/* Store app icons beside each store's name (import chips, "Where do you shop?", per-store import rows). */
+.store-chip{display:inline-flex;align-items:center;gap:8px;padding-left:8px}
+.store-logo{width:20px;height:20px;border-radius:6px;object-fit:cover;flex:none;background:#fff;box-shadow:0 0 0 1px rgba(43,22,32,.08)}
+.store-sync{display:flex;align-items:center;gap:10px}.store-sync>span{flex:1;min-width:0}.store-sync .store-logo{width:28px;height:28px;border-radius:8px}
+.shop-picks .check-row{display:flex;align-items:center;gap:10px}

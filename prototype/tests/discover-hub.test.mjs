@@ -66,8 +66,9 @@ test('bundled store icons resolve locally and missing logos use a readable fallb
   const p = preview();
   const icons = p.context.window.BrandIconMap;
   const manifest = JSON.parse(readFileSync(new URL('../dist/assets/brand-icons/sources.json', import.meta.url), 'utf8'));
-  assert.equal(manifest.length, 100);
-  assert.equal(Object.keys(icons).length, 94);
+  // 100 mall brands plus Slikk (101) and Tata CLiQ (102), which My Wardrobe's store chips use.
+  assert.equal(manifest.length, 102);
+  assert.equal(Object.keys(icons).length, 96);
   for (const file of Object.values(icons)) assert.ok(existsSync(new URL(`../dist/${file}`, import.meta.url)), file);
   assert.ok(!icons[17]);
   assert.match(p.mallRoot.outerHTML, /mall-logo-text[^>]*>O<\/span>/);
