@@ -5,11 +5,13 @@ import {classify,parseCsv,normalizeAmazon,normalizeMyntra,normalizeFlipkart,CATE
 test('classifier maps Indian and Western retail types onto almirah categories',()=>{
  const cases={Shirts:['Shirts','Tshirts'],'Ethnic wear':['Kurtas','Kurta Sets','Sarees','WomenSari','Lehenga Choli','Sherwani','Nehru Jacket'],Suits:['Suits','Co-Ords'],Dresses:['Dresses','Jumpsuit'],Outerwear:['Sweatshirts','Blazers'],Trousers:['Jeans','Lounge Shorts','Track Pants','MensShortUnbranded'],Footwear:['Casual Shoes','Flip Flops','SpRunningShoes'],Belts:['Belts'],Jewellery:['Bracelet','Brooch'],Accessories:['Pocket Squares','Backpacks','Caps']};
  for(const [category,types] of Object.entries(cases))for(const t of types)assert.equal(classify(t),category,t);
- for(const t of ['Deodorant','Hair Serum','Free Gifts','Blankets Quilts and Dohars','Handset','OtherBooks','Suitcase','DamageProtectionPlan'])assert.equal(classify(t),null,t);
+ for(const t of ['Deodorant','Hair Serum','Free Gifts','Blankets Quilts and Dohars','Handset','OtherBooks','Suitcase','DamageProtectionPlan','MicrowaveOven','DigitalCombo','Flipkart Trust Shield','MobileChargingMobileCharger','LG 30 L Convection Microwave Oven','boAt Earbuds','Smart TV'])assert.equal(classify(t),null,t);
  assert.equal(classify('Trunk'),'innerwear');assert.equal(classify('Socks'),'innerwear');
  // The retailer's type field outranks words in a product title.
  assert.equal(classify('Shirts','Roadster Shirt with Mobile Pocket'),'Shirts');
  assert.equal(classify('Widget'),'unknown');
+ // Appliance words must not catch clothing titles (seen on a Flipkart account with a microwave order).
+ for(const [title,category] of [['Woven Kurta','Ethnic wear'],['Digital Print Shirt','Shirts'],['Cotton Roll-up Tab Sleeve Top','Shirts'],['Oversized Hoodie','Outerwear']])assert.equal(classify(title),category,title);
  for(const c of ['Suits','Outerwear','Jewellery','Ethnic wear'])assert.ok(CATEGORIES.includes(c));
 });
 
@@ -63,4 +65,10 @@ test('Flipkart orders keep one copy per product and skip returned orders',()=>{
  ]);
  assert.deepEqual(items.map(i=>i.category),['Footwear','Trousers'],'the refunded saree is gone');
  assert.equal(items[0].productUrl,'https://www.flipkart.com/p/itmSHOABC');assert.equal(items[0].image,'https://rukminim1.flixcart.com/x.jpeg');
+});
+
+test('Flipkart image templates are filled in with a tile size',async()=>{
+ const {normalizeFlipkart}=await import('../dist/order-import.js');
+ const [item]=normalizeFlipkart([{orderDate:1495106562753,returned:false,products:[{id:'SRTX',title:'FiTZ Solid Men Grey Sports Shorts',vertical:'MensShortUnbranded',category:'MensBottomwearUB',image:'https://rukminim1.flixcart.com/image/{@width}/{@height}/j2ggpe80/short/x.jpeg?q={@quality}'}]}]);
+ assert.equal(item.image,'https://rukminim1.flixcart.com/image/480/480/j2ggpe80/short/x.jpeg?q=80');assert.equal(item.category,'Trousers');
 });

@@ -12,7 +12,15 @@ export const connectors=[
  {
   id:'myntra',label:'Myntra',verified:true,ordersUrl:'https://www.myntra.com/my/orders',
   extract:async function(){
-   // /my/orders is server-rendered; each page embeds window.__myx. Pagination is ?p=N (?page=N is ignored).
+   // Two readers, both on the page's own session cookies (never a token):
+   // - the orders API the site itself calls, 50 lines a request. The mobile site (the phone app's
+   //   in-app browser) only pages through this and serves page 1 again for any ?p=N.
+   // - the server-rendered /my/orders?p=N, which embeds window.__myx (desktop; ?page=N is ignored).
+   const api=async n=>{try{
+    const r=await fetch('/my/ss-api/fetchOrdersApi/getOrders',{method:'POST',credentials:'include',headers:{'Content-Type':'application/json',Accept:'application/json','x-myntra-client-id':'selfserve-ui','x-myntra-public-endpoint':'/my/orders'},
+     body:JSON.stringify({page:n,size:50,searchString:null,status:'ALL',filter:'DEFAULT',from:null,to:null,newSearchFG:true,newAggregatorResponse:true,getStyle:'true',getReturn:'true'})});
+    if(!r.ok)return null;const o=await r.json();return Array.isArray(o?.items)?o:null;
+   }catch{return null;}};
    const page=async n=>{
     const html=await (await fetch('/my/orders?p='+n,{credentials:'include'})).text();
     const m=html.match(/window\.__myx = (\{[\s\S]*?\});?\s*<\/script>/);
@@ -26,17 +34,21 @@ export const connectors=[
    // soon as they arrive so the review queue fills while the rest load.
    const emit=typeof globalThis.__tbwEmit==='function'?globalThis.__tbwEmit:()=>{};
    try{
-    const first=await page(1);
+    let read=api,first=await api(1);
+    if(!first){read=page;first=await page(1);}
     if(!first)return {error:/login/.test(location.pathname)?'login':'layout'};
-    const pages=Math.min(Number(first.totalPages)||1,80),byPage=[first.items.map(pick)];
+    const pages=Math.min(Number(first.totalPages)||1,80),byPage=[first.items.map(pick)],seen=new Set(first.items.map(i=>i.id));
     emit({lines:byPage[0]},{page:1,pages});
     for(let start=2;start<=pages;start+=4){
-     const batch=[];for(let n=start;n<start+4&&n<=pages;n++)batch.push(page(n).then(o=>{const got=(o?.items||[]).map(pick);byPage[n-1]=got;if(got.length)emit({lines:got},{page:n,pages});return got.length;}));
+     const batch=[];for(let n=start;n<start+4&&n<=pages;n++)batch.push(read(n).then(o=>{const items=o?.items||[];
+      // A page repeating lines already read means the site ignored the page number: stop instead of multiplying them.
+      if(items.some(i=>seen.has(i.id)))return 0;items.forEach(i=>seen.add(i.id));
+      const got=items.map(pick);byPage[n-1]=got;if(got.length)emit({lines:got},{page:n,pages});return got.length;}));
      const counts=await Promise.all(batch);
      if(counts.some(n=>!n))break;
      await new Promise(r=>setTimeout(r,150));
     }
-    return {lines:byPage.flat()};
+    return {lines:byPage.flat().filter(Boolean)};
    }catch(e){return {error:'layout',detail:String(e).slice(0,200)};}
   }
  },
@@ -58,13 +70,16 @@ export const connectors=[
     return {orderDate:o.orderMetaData?.orderDate||null,returned,products};
    };
    try{
+    const emit=typeof globalThis.__tbwEmit==='function'?globalThis.__tbwEmit:()=>{};
     const orders=[];let query=new URLSearchParams({page:'1',filterType:'PREORDER_UNITS'});
     for(let n=1;n<=60;n++){
      const r=await fetch(base+'?'+query,{credentials:'include',headers});
      if(r.status===401||r.status===403)return {error:'login'};
      const view=(await r.json())?.RESPONSE?.multipleOrderDetailsView;
      if(!view)return orders.length?{orders}:{error:'layout'};
-     orders.push(...(view.orders||[]).map(pick));
+     const got=(view.orders||[]).map(pick);orders.push(...got);
+     // The total isn't known until the last page, so progress counts up until then.
+     emit({orders:got},{page:n,pages:view.moreOrder?0:n});
      if(!view.moreOrder)break;
      query=new URLSearchParams({page:String(n+1),filterType:'PREORDER_UNITS'});
      for(const p of view.nextCallParams||[])if(p?.key)query.set(p.key,p.value);
@@ -101,13 +116,16 @@ export const connectors=[
    const wait=ms=>new Promise(r=>setTimeout(r,ms));
    const get=async(page,range)=>{const r=await fetch(`/api/my-account/get-user-orders/${page}/10/${range}`,{method:'POST',credentials:'include',headers:{'Content-Type':'application/json',Accept:'application/json'},body:'{}'});if(r.status===401||r.status===403)throw Object.assign(new Error('login'),{login:true});return r.json();};
    try{
-    const pages=[];
-    for(const range of ['LAST_6_MONTHS','CURRENT_YEAR','CURRENT_YEAR-1','CURRENT_YEAR-2','CURRENT_YEAR-3','CURRENT_YEAR-4','CURRENT_YEAR-5']){
+    const pages=[],ranges=['LAST_6_MONTHS','CURRENT_YEAR','CURRENT_YEAR-1','CURRENT_YEAR-2','CURRENT_YEAR-3','CURRENT_YEAR-4','CURRENT_YEAR-5'];
+    // Progress only (one step per date range); the orders themselves come back together at the end.
+    const emit=typeof globalThis.__tbwEmit==='function'?globalThis.__tbwEmit:()=>{};
+    for(const [step,range] of ranges.entries()){
      for(let page=0;page<30;page++){
       const data=await get(page,range);pages.push(data);
       if(!(Number(data.totalPages)>page+1))break;
       await wait(400);
      }
+     emit({pages:[]},{page:step+1,pages:ranges.length});
     }
     return {pages};
    }catch(e){return {error:e.login?'login':'layout',detail:String(e).slice(0,200)};}
@@ -190,8 +208,43 @@ export const connectors=[
     }
     return {orderDate:date,returned:/return(ed)?\s+(complete|received)|refund(ed)?\s+(issued|complete)/i.test(body),cancelled:/\bcancell?ed\b/i.test(header+' '+body.slice(0,400)),products:[...byAsin.values()].filter(p=>p.title)};
    };
+   // Amazon's mobile site (the phone app's in-app browser) lists items, not orders: one card per item
+   // whose aria-label reads "<title>, Order placed 12 September 2026, <status>", paged with
+   // /your-orders/orders?timeFilter=year-YYYY&page=N. There is no ASIN, so the id is a hash of the title.
+   const mobile=async doc=>{
+    const years=[...new Set([...doc.querySelectorAll('input[name="timeFilterGroup"]')].map(i=>(i.value.match(/^year-(\d{4})$/)||[])[1]).filter(Boolean))];
+    if(!years.length)for(let y=new Date().getFullYear();y>new Date().getFullYear()-6;y--)years.push(String(y));
+    const hash=s=>{let h=5381;for(const c of s)h=(h*33+c.charCodeAt(0))>>>0;return 'm-'+h.toString(36);};
+    const STATUS=/, (Order placed|Return complete|Returned|Refund|Exchanged|Cancell?ed|Delivered|Arriving|Shipped|Out for delivery)\b/;
+    const orders=[],seen=new Set();let page=0;
+    // Year views leave out orders still on their way, so the recent view goes first; repeats are skipped.
+    const filters=['months-3',...years.map(y=>'year-'+y)];
+    for(const [step,filter] of filters.entries()){
+     for(let n=1;n<=50;n++){
+      const r=await fetch(`/your-orders/orders?timeFilter=${filter}&page=${n}`,{credentials:'include'});
+      if(/\/ap\/signin/.test(r.url||''))throw login();
+      const d=new DOMParser().parseFromString(await r.text(),'text/html');
+      const got=[];
+      for(const a of d.querySelectorAll('.item-card__link')){
+       const label=(a.getAttribute('aria-label')||'').replace(/\s+/g,' ').trim();if(!label||seen.has(label))continue;seen.add(label);
+       const cut=label.search(STATUS),title=(cut>0?label.slice(0,cut):label).slice(0,200),rest=cut>0?label.slice(cut):'';
+       const img=(a.closest('.past-purchase-tile')||a.parentElement)?.querySelector('img');
+       got.push({orderDate:(rest.match(/Order placed (\d{1,2} [A-Z][a-z]+,? \d{4})/)||[])[1]||'',
+        returned:/return(ed)? complete|returned\b|refund(ed)? (issued|complete)/i.test(rest),cancelled:/, cancell?ed\b/i.test(rest),
+        products:[{id:hash(title),title,image:String(img?.getAttribute('src')||'').replace(/\._[A-Z]{2}\d+_\./,'._SL500_.')}]});
+      }
+      if(!got.length)break;
+      orders.push(...got);emit({orders:got},{page:step+1,pages:filters.length,unit:'period'});
+      await wait(300);
+     }
+     // Empty years still move the bar.
+     emit({orders:[]},{page:step+1,pages:filters.length,unit:'period'});
+    }
+    return {orders};
+   };
    try{
     const first=await get(new Date().getFullYear(),0);
+    if(first.querySelector('.item-card__link,.js-yo-main-content,input[name="timeFilterGroup"]')&&!first.querySelector('.order-card,.js-order-card'))return await mobile(first);
     if(!first.querySelector('.order-card,.js-order-card,.order,#ordersContainer,#yourOrders'))return {error:/signin/.test(location.pathname)?'login':'layout'};
     const years=[...new Set([...first.querySelectorAll('select[name="timeFilter"] option,#time-filter option')].map(o=>(o.value.match(/year-(\d{4})/)||[])[1]).filter(Boolean))];
     if(!years.length)for(let y=new Date().getFullYear();y>new Date().getFullYear()-6;y--)years.push(String(y));

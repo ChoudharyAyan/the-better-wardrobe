@@ -125,3 +125,22 @@ test('Google sign-in returns to the domain the person is on, and never to an unt
   assert.doesNotMatch(await redirectFor('evil.example'),/evil/);
  }finally{await new Promise(r=>server.close(r));}
 });
+
+test('phone app sign-in: one-time code bound to the app verifier, short-lived and spent once',async()=>{
+ const {createHash}=await import('node:crypto');
+ let clock=1_000_000;const fetcher=async url=>url.includes('/token')?{ok:true,json:async()=>({access_token:'at'})}:{ok:true,json:async()=>({sub:'42',email:'a@example.com',email_verified:true})};
+ const accounts=createAccounts({env:{GOOGLE_CLIENT_ID:'cid',GOOGLE_CLIENT_SECRET:'sec',AUTH_SECRET:'s'},fetcher,now:()=>clock});
+ const verifier='v'.repeat(43),challenge=createHash('sha256').update(verifier).digest('base64url');
+ const start=accounts.authStart('https://app.example/cb',{app:challenge});
+ const done=await accounts.authFinish({code:'c',state:new URL(start.url).searchParams.get('state'),cookie:start.cookie,redirectUri:'https://app.example/cb'});
+ assert.equal(done.app,challenge,'the app challenge survives the Google round trip');
+ const plain=accounts.authStart('x',{app:'not a challenge'});assert.doesNotMatch(Buffer.from(plain.cookie.split('.')[0],'base64url').toString(),/"app"/,'junk challenges are ignored');
+ const code=accounts.appCode(done.id,done.app);
+ assert.throws(()=>accounts.appExchange({code,verifier:'someone-else'}),e=>e.status===400,'a code caught off the link is useless without the verifier');
+ assert.equal(accounts.appExchange({code,verifier}),'g:42');
+ assert.throws(()=>accounts.appExchange({code,verifier}),e=>e.status===400,'spent once');
+ const late=accounts.appCode(done.id,done.app);clock+=121000;
+ assert.throws(()=>accounts.appExchange({code:late,verifier}),e=>e.status===400,'two minutes only');
+ assert.throws(()=>accounts.appExchange({code:late.replace(/.$/,'x'),verifier}),e=>e.status===400,'signed');
+ assert.throws(()=>accounts.appCode('g:42','short'),e=>e.status===400);
+});

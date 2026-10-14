@@ -98,6 +98,13 @@ prod behaviour through the public API. Google OAuth client "TBW web" has the
 Newest first. Add one entry per merged PR: date, PR, what changed, anything
 left half-done or waiting on the owner.
 
+- 2026-10-14 — Android app (PR pending): `mobile/android` generated and building
+  with the command-line SDK (no Android Studio); brand icon and splash; Google
+  sign-in through a Chrome Custom Tab and a one-time code
+  (`dist/native-auth.js`, `POST /api/auth/app-exchange`). Myntra verified on a
+  Pixel 10a with a real account: 111 lines, 73 pieces in the queue ~2 s after
+  tapping Import (the mobile site needs its orders API; ?p=N repeats page 1).
+  Other stores not yet tried on the phone.
 - 2026-10-14 — Sticker Studio UI from the ChatGPT hackathon repo (PR pending): new
   welcome, Discover home with Home / Ask Bao / Mall / Community tabs, Bao the
   panda guide, pill top bar with credits coin, streamed search progress, web
