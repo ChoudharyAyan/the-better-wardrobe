@@ -98,6 +98,16 @@ prod behaviour through the public API. Google OAuth client "TBW web" has the
 Newest first. Add one entry per merged PR: date, PR, what changed, anything
 left half-done or waiting on the owner.
 
+- 2026-10-14 — My Wardrobe inputs + UI pass (PR pending): store and email imports
+  land in the almirah (Undo); store photos are cut out in the background (store
+  image hosts only); selfie + 5 gallery photos at a time with on-device face
+  matching (`dist/selfie-match.js`, vendored face-api); Instagram in the app,
+  reading your own profile grid (Instagram flags API calls as spam). UI: one type
+  scale (30/15/11px), Kitsu (Mall), Miso (Community) and Momo (Style Me) with
+  Bao's live eyes, dressed shoppers in Mall boxes (`dist/mall-folk.js`), equal
+  box sizes, Profile progress + 8 badges. Waiting on the owner: a Gemini key with
+  prepaid credit (local key: 402 credits depleted) to see outfit reading and
+  cutouts live; `gemini-2.5-flash` (cutout/inbox default) is closed to new users.
 - 2026-10-14 — Android app (PR pending): `mobile/android` generated and building
   with the command-line SDK (no Android Studio); brand icon and splash; Google
   sign-in through a Chrome Custom Tab and a one-time code
