@@ -1,5 +1,13 @@
 # Style Me P0 implementation and release checklist
 
+## Gemini Cloud access update — 14 October 2026
+
+The owner authorized using the existing Cloud trial project `fieldnotes-ayan-2026-1008` and creating a Cloud credential. A key restricted to the Agent Platform API was created and saved only in the gitignored local `prototype/.env` with owner-only file permissions. Billing was not upgraded and production configuration was not changed.
+
+Set `STYLE_PREVIEW_BACKEND=vertex`, `STYLE_PREVIEW_CLOUD_API_KEY`, `STYLE_PREVIEW_ENABLED=true`, and `STYLE_PREVIEW_MODEL=gemini-3.1-flash-image` to use the Cloud express endpoint. The default `developer` backend retains the existing Gemini Developer API integration and uses `GEMINI_API_KEY`. Keys never appear in request URLs. Unknown backends or missing backend-specific keys disable previews. Cloud Welcome credits do not cover the Developer API/AI Studio endpoint; see [Google billing documentation](https://ai.google.dev/gemini-api/docs/billing#can-i-use-my-google-cloud-welcome-credit-with-the-gemini-api).
+
+Two live synthetic tests succeeded: a mannequin generation returned HTTP 200, then the actual Style Me adapter changed its outfit in 9,989 ms. The rendered result was inspected: green top, black trousers and white shoes were present, but the requested long-sleeved shirt was reconstructed as a collarless top. No personal photo or photographic garment references were sent. This supersedes HTTP 429 as the latest access evidence, but does not validate personal identity preservation, garment fidelity, quality cohorts or the 100–200 ms image-generation aspiration. Credit deduction attribution has not been checked in Cloud billing reports. Check and full tests passed: 212 pass, 2 existing database skips, 0 fail.
+
 ## Scope and source
 
 Implementation follows the approved `style-me-vision-prd.md`, including P0 embedded Canvas (FR#20) and Gemini on-self preview (FR#13). It lives in separate modules to keep integration with the independently developed My Wardrobe module narrow. This is an initial implementation branch, not a production-ready declaration that every PRD release gate has passed.
