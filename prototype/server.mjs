@@ -105,7 +105,7 @@ return async(req,res)=>{
   if(!action&&req.method==='DELETE')return send(200,await styleMe.remove(who,id));
   if(action==='preview'&&jobId&&req.method==='DELETE')return send(200,await styleMe.deletePreview(who,id,jobId));
   if(req.method!=='POST'||jobId)return send(405,{error:'Method not allowed.'});
-  const body=await readJson(['preview','reference'].includes(action)?4_400_000:150_000);
+  const body=await readJson(['preview','reference','freeze'].includes(action)?4_400_000:150_000);
   if(action==='generate'){const replay=await styleMe.replay(who,id,body);if(replay)return send(200,replay);await styleMe.reserve(who,id,body);}
   const cancelled=new AbortController();res.on('close',()=>{if(!res.writableFinished)cancelled.abort();});
   let charge;

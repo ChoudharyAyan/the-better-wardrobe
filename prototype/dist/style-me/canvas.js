@@ -1,3 +1,4 @@
+import {itemConstraintIssues} from './constraints.js';
 /** Headless Canvas state. Persistence and authorization belong to the host adapter. */
 const clone = value => structuredClone(value);
 export class CanvasError extends Error {
@@ -15,10 +16,12 @@ const deepFreeze = value => {
   return value;
 };
 function validItem(item) {
-  if (!item || typeof item.id !== 'string' || !/^[a-zA-Z0-9_-]{1,100}$/.test(item.id) || ['__proto__','constructor','prototype'].includes(item.id) || typeof item.name !== 'string' || !item.name.trim() || item.name.length > 150)
+  if (!item || typeof item.id !== 'string' || !/^[a-zA-Z0-9:._-]{1,100}$/.test(item.id) || ['__proto__','constructor','prototype'].includes(item.id) || typeof item.name !== 'string' || !item.name.trim() || item.name.length > 150)
     fail('INVALID_ITEM', 'Each garment needs an ID and name.');
   if (!slots.has(item.slot) || !sources.has(item.source) || !ownership.has(item.ownership))
     fail('INVALID_ITEM', 'Garment slot, source and ownership must be explicit.');
+  if (item.layer != null && (!Number.isInteger(item.layer) || item.layer < 0 || item.layer > 4))
+    fail('INVALID_LAYER', 'Choose a clothing layer from zero to four.');
   if (item.source === 'concept' && item.ownership !== 'unowned')
     fail('INVALID_OWNERSHIP', 'Representative concepts cannot be marked owned.');
   if (item.source === 'wardrobe' && (item.ownership !== 'confirmed' || !item.itemRevision))
@@ -68,12 +71,18 @@ export function editCanvas(state, expectedRevision, action) {
     }
     case 'move': {
       if (index < 0) fail('MISSING_ITEM', 'Select the garment before moving it.');
+      if (next.pinned.includes(action.itemId)) fail('PINNED_ITEM', 'Unpin the garment before moving it.');
       if (![action.x, action.y].every(n => Number.isFinite(n) && n >= 0 && n <= 1))
         fail('INVALID_POSITION', 'Board positions must be normalized between zero and one.');
-      next.layout[action.itemId] = { x: action.x, y: action.y }; break;
+      const old=next.layout[action.itemId]||{};
+      const scale=action.scale??old.scale??1,rotation=action.rotation??old.rotation??0,depth=action.depth??old.depth??index;
+      if(!Number.isFinite(scale)||scale<0.4||scale>2.5||!Number.isFinite(rotation)||rotation < -180||rotation > 180||!Number.isInteger(depth)||depth<0||depth>30)
+        fail('INVALID_POSITION','Choose a supported size, rotation and stacking order.');
+      next.layout[action.itemId] = {x:action.x,y:action.y,scale,rotation,depth}; break;
     }
     case 'describe': {
       if(index<0)fail('MISSING_ITEM','Select the garment before correcting it.');
+      if(next.pinned.includes(action.itemId))fail('PINNED_ITEM','Unpin the garment before correcting it.');
       const candidate={...next.items[index],...action.patch};
       candidate.id=next.items[index].id;
       if(action.patch?.ownership==='user-described'){candidate.source='described';candidate.ownership='user-described';}
@@ -104,7 +113,7 @@ export function editCanvas(state, expectedRevision, action) {
 export function validateCanvas(state) {
   const issues = [];
   const count = slot => state.items.filter(i => i.slot === slot).length;
-  if (!(count('onePiece') === 1 || (count('top') === 1 && count('bottom') === 1)))
+  if (!(count('onePiece') === 1 || (count('top') >= 1 && count('bottom') === 1)))
     issues.push({ code: 'INCOMPLETE', message: 'Choose a top and bottom, or one one-piece outfit.' });
   if (count('onePiece') && (count('top') || count('bottom')))
     issues.push({ code: 'CONFLICTING_LAYERS', message: 'Resolve one-piece and separates before freezing.' });
@@ -115,6 +124,7 @@ export function validateCanvas(state) {
     issues.push({ code: 'OWNED_ONLY', message: 'Replace unowned pieces or explicitly change the styling mode.' });
   if (state.items.some(i => i.available === false))
     issues.push({ code: 'UNAVAILABLE', message: 'Replace unavailable garments before freezing.' });
+  issues.push(...state.items.flatMap(i=>itemConstraintIssues(state.brief,i)));
   return issues;
 }
 export function freezeDesign(state, expectedRevision, { id, createdAt, validate = () => [] }) {

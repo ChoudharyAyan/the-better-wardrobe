@@ -4,14 +4,16 @@ import vm from 'node:vm';
 import {readFileSync,existsSync} from 'node:fs';
 import {webcrypto} from 'node:crypto';
 import path from 'node:path';
-const uiSource=readFileSync(new URL('../dist/style-me/style-me.js',import.meta.url),'utf8').replace(/^import .*;\n/m,'').replace('export function createStyleUI','function createStyleUI');
-const source='const createStyleUI=(()=>{'+uiSource+';return createStyleUI;})();\n'+readFileSync(new URL('../dist/app.js',import.meta.url),'utf8').replace(/^import .*;\n/m,'');
+import {createDraftEditor} from '../dist/style-me/draft-editor.js';
+import {wardrobeRecords} from '../dist/style-me/wardrobe-adapter.js';
+const uiSource=readFileSync(new URL('../dist/style-me/style-me.js',import.meta.url),'utf8').replace(/^import .*;\n/gm,'').replace('export function createStyleUI','function createStyleUI');
+const source='const createStyleUI=(()=>{'+uiSource+';return createStyleUI;})();\n'+readFileSync(new URL('../dist/app.js',import.meta.url),'utf8').replace(/^import .*;\n/gm,'');
 // Code-level flow checks. These do not launch or automate a browser.
 function app(discovery){
   const nodes=new Map(),listeners={};
   function node(key){if(!nodes.has(key))nodes.set(key,{innerHTML:'',textContent:'',open:false,disabled:false,classList:{add(){},remove(){},toggle(){}},showModal(){this.open=true},close(){this.open=false},addEventListener(){},focus(){},click(){},setSelectionRange(){}});return nodes.get(key);}
   const storage=new Map();
-  const context=vm.createContext({console,crypto:webcrypto,Date,Intl,URL,Set,Map,Promise,setTimeout:()=>1,clearTimeout(){},localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)},location:{hash:''},history:{replaceState(){}},window:{Discovery:discovery,scrollY:0,scrollTo(){},addEventListener:(k,fn)=>listeners['window:'+k]=fn},document:{querySelector:node,activeElement:null,addEventListener:(k,fn)=>listeners[k]=fn},FormData:class{constructor(f){this.data=f.data}get(k){return this.data[k]??''}getAll(k){return Array.isArray(this.data[k])?this.data[k]:[this.data[k]].filter(Boolean)}}});
+  const context=vm.createContext({console,createDraftEditor,wardrobeRecords,crypto:webcrypto,Date,Intl,URL,Set,Map,Promise,setTimeout:()=>1,clearTimeout(){},localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)},location:{hash:''},history:{replaceState(){}},window:{Discovery:discovery,scrollY:0,scrollTo(){},addEventListener:(k,fn)=>listeners['window:'+k]=fn},document:{querySelector:node,activeElement:null,addEventListener:(k,fn)=>listeners[k]=fn},FormData:class{constructor(f){this.data=f.data}get(k){return this.data[k]??''}getAll(k){return Array.isArray(this.data[k])?this.data[k]:[this.data[k]].filter(Boolean)}}});
   vm.runInContext(source,context);
   return {run:c=>vm.runInContext(c,context),nodes,listeners,context,submit:(id,data,extra={})=>listeners.submit({preventDefault(){},target:{id,data,dataset:extra}}),action:(name,data={})=>vm.runInContext(`actions[${JSON.stringify(name)}]({dataset:${JSON.stringify(data)}})`,context),visit:r=>vm.runInContext(`route=${JSON.stringify(r)};render()`,context)};
 }

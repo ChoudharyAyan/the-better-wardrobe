@@ -4,16 +4,22 @@
 
 Implementation follows the approved `style-me-vision-prd.md`, including P0 embedded Canvas (FR#20) and Gemini on-self preview (FR#13). It lives in separate modules to keep integration with the independently developed My Wardrobe module narrow. This is an initial implementation branch, not a production-ready declaration that every PRD release gate has passed.
 
+## Current experience: 3.1 and 3.2
+
+The owner's screenshot-driven revision is implemented as two sections in the existing Style Me route: **3.1 Style suggester** shares Discover's conversation components and offers wardrobe-aware trip essentials; **3.2 Canvas** is a free-form board with an Add items tray, pointer/keyboard movement, resizing, rotation, stacking, pins, correction, undo, saving and freeze review. A local PNG compositor exports the board; this is separate from Gemini's on-self generation. One four-piece conceptual board export took 93 ms in the browser; there is no cohort latency guarantee.
+
+See [the complete P0 audit](style-me-p0-audit.md) for every FR's code, evidence, gaps and phase mapping. P0 remains incomplete, especially actual preview fidelity and canonical/account/privacy release gates.
+
 ## Implemented
 
 - Conversational brief, source modes, occasion requests, explicit exclusions, owner-scoped opt-in preference memory/reset and optional user-provided context.
 - OpenRouter structured AI outfits with ownership, inventory-ID and pinned-piece validation; curated starter mode when text AI is absent.
 - An editable starter direction streams and is persisted before the AI answer. Subsequent user edits prevent the late answer from overwriting the chosen outfit.
-- Embedded Canvas with garment trays, source labels, search, drag-to-slot and equivalent buttons, manual described pieces, pins, undo, explicit layers and reference-photo crops through the shared photo reader.
-- Frozen outfit snapshots, saved sessions, previous frozen-version selection and editing copies.
+- Embedded Canvas with garment trays, source labels, search, free pointer placement, resizing/rotation/stacking and equivalent keyboard/tap controls, manual described pieces, pins, undo, explicit layers and reference-photo crops through the shared photo reader.
+- Frozen outfit snapshots, captured garment image bytes/hashes, saved sessions, previous frozen-version selection and editing copies. Gemini references are read from the immutable snapshot; later record/image changes cannot replace them.
 - Owner-scoped file/Postgres storage, atomic revisions and account migration of this browser's guest sessions. Non-configured serverless storage fails explicitly instead of claiming persistence.
 - Gemini image generation with personal-photo consent, disclosed credits, bounded inputs/timeouts, saved job states, snapshot binding, optional garment image references, failure refunds, retry and deletion. Original personal photos are not saved to session storage. Generated results become inaccessible after 24 hours and are physically purged on the next owner-scoped operation; scheduled global deletion is still required for strict timed erasure.
-- A public client adapter registration point: `window.StyleMe.registerWardrobeAdapter(() => records)`. The host can pass available confirmed wardrobe records; currently legacy device records are labelled user-described and sample wardrobe data is excluded.
+- A public client adapter registration point: `window.StyleMe.registerWardrobeAdapter(() => records, {schemaVersion:1, canonical:true})`. The read projection is aligned to Claude’s phase-2 record fields, including lifecycle/Indian categories and a content-derived revision; real canonical host/account integration is still unverified. The host can pass available confirmed wardrobe records; currently legacy device records are labelled user-described and sample wardrobe data is excluded.
 
 ## Run
 
@@ -70,8 +76,18 @@ Mutation bodies include a unique `requestId`, and Canvas mutations include `revi
 
 ## Verification record
 
-- `npm run check` passes; full suite: 169 passed, 2 existing skips, 0 failures.
+- The revised two-section implementation passed `npm run check` and the full suite: 180 passed, 2 existing skips, 0 failures.
 - Live OpenRouter office styling succeeded after bounding reasoning; the initial request timed out and prompted explicit timeout recovery and starter streaming.
 - The Gemini adapter passes injected image-input/output tests. A live test used only a synthetic mannequin fixture (no user photo) and was rejected with HTTP 429. No actual on-self render or fidelity gate is claimed.
 - Browser inspection verified Montserrat, no horizontal overflow at 390×844, real AI outfit cards, embedded Canvas, replacement, pins, immutable freeze and saved-session recovery. [Mobile view](screenshots/style-me-mobile.png).
 - Production credentials, strict timed erasure, the real My Wardrobe adapter, the 100-brief evaluation and consented preview quality cohort remain unverified.
+
+### Two-section verification (14 October 2026)
+
+Final checks: syntax check and complete suite passed, **180 passed / 2 existing skips / 0 failures**. Browser checks saw both sections render on desktop and the Canvas at 390×844 with Montserrat and no horizontal overflow. Pointer drag, keyboard rotation/nudge, pinning, freeze review, saved reload and local board PNG export were exercised. Canonical asset snapshot binding has an added provider fixture test. Dark theme and full screen-reader quality are not claimed as visually validated.
+
+- [Style suggester](screenshots/style-me-suggester-desktop.png)
+- [Free-form Canvas, desktop](screenshots/style-me-free-canvas-desktop.png)
+- [Free-form Canvas, mobile](screenshots/style-me-free-canvas-mobile.png)
+
+The local browser used curated mode with no live Gemini calls. The previous HTTP 429 remains the latest live image-provider evidence; actual on-self fidelity remains unvalidated. Claude's branch was inspected read-only, not merged or modified. No production deployment, billing change or provider switch was made.

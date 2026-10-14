@@ -1,7 +1,8 @@
+import {refineBrief} from '../dist/style-me/constraints.js';
 import {randomUUID,createHash} from 'node:crypto';
 import {ApiError} from './discovery.mjs';
 import {createStyleStore} from './style-store.mjs';
-import {createStyleEngine,essentials,sanitizeBrief,normalizeWardrobe,starterLooks} from './style-engine.mjs';
+import {createStyleEngine,essentials,sanitizeBrief,normalizeWardrobe,starterLooks,tripSuggestions} from './style-engine.mjs';
 import {createStylePreview} from './style-preview.mjs';
 import {createCanvas,editCanvas,freezeDesign,forkDesign,createPreviewJob,transitionPreview} from '../dist/style-me/canvas.js';
 const clone=v=>structuredClone(v);
@@ -32,7 +33,7 @@ export function createStyleMe({env=process.env,store=createStyleStore({env}),eng
   migrate:async (guest,account)=>{if(!store.migrate)throw new ApiError(503,'Session migration unavailable.');await store.migrate(owner(guest),owner(account));},
   status:()=>({schemaVersion:1,ai:engine.enabled,preview:preview.enabled,previewApproximate:true,previewCredits:8,stylingCredits:engine.enabled?8:0,essentials,retention:'Reference photos are processed for this request only. Saved preview results expire after 24 hours or can be deleted immediately.',storage:env.POSTGRES_URL||env.COMMUNITY_DATABASE_URL?'account-database':env.VERCEL?'unconfigured':'local-file'}),
   async preferences(who,body){return tx(who,rows=>{
-   if(body){const clean=sanitizeBrief({...body,mode:body.mode||'from-scratch'});rows._preferences={mode:clean.mode,aesthetic:clean.aesthetic,exclusions:clean.exclusions,budget:clean.budget,currency:'INR'};}
+   if(body){const clean=sanitizeBrief({...body,mode:body.mode||'from-scratch'});rows._preferences={mode:clean.mode,aesthetic:clean.aesthetic,exclusions:clean.exclusions,budget:clean.budget,currency:clean.currency,region:clean.region,coverage:clean.coverage,comfort:clean.comfort};}
    return {preferences:clone(rows._preferences||{})};
   });},
   async clearPreferences(who){return tx(who,rows=>{delete rows._preferences;return {preferences:{}};});},
@@ -46,7 +47,7 @@ export function createStyleMe({env=process.env,store=createStyleStore({env}),eng
    if(rows[id])return publicSession(rows[id]);
    if(Object.keys(rows).filter(id=>ID.test(id)).length>=20)throw new ApiError(409,'Delete an old styling session before creating another.');
    const brief=sanitizeBrief(body.brief||{mode:'from-scratch'});
-   const s={id,title:'Your styling session',updatedAt:new Date(now()).toISOString(),canvas:createCanvas({id,brief}),frozen:[],jobs:{},assets:{},referenceItems:[],messages:[],looks:[],receipts:{},feedback:[]};rows[id]=s;return publicSession(s);
+   const s={id,title:'Your styling session',updatedAt:new Date(now()).toISOString(),canvas:createCanvas({id,brief}),frozen:[],jobs:{},assets:{},referenceItems:[],messages:[],looks:[],suggestions:[],receipts:{},feedback:[]};rows[id]=s;return publicSession(s);
   });},
   async remove(who,id){for(const [key,controller] of running)if(key.startsWith(owner(who)+'|'+id+'|'))controller.abort();return tx(who,rows=>{get(rows,id);delete rows[id];return {ok:true};});},
   async edit(who,id,body){return mutation(who,id,body,s=>{
@@ -57,12 +58,24 @@ export function createStyleMe({env=process.env,store=createStyleStore({env}),eng
   async select(who,id,body){return mutation(who,id,body,s=>{
    if(s.canvas.revision!==body.revision)throw new ApiError(409,'Your outfit changed. Reload before selecting a look.');
    const look=s.looks.find(l=>l.id===body.lookId);if(!look)throw new ApiError(404,'Outfit not found.');
-   const next=createCanvas({id:s.id,brief:s.canvas.brief,items:look.items});next.revision=s.canvas.revision+1;next.pinned=s.canvas.pinned.filter(id=>next.items.some(i=>i.id===id));next.history=[...s.canvas.history,{brief:clone(s.canvas.brief),items:clone(s.canvas.items),pinned:clone(s.canvas.pinned),layout:clone(s.canvas.layout)}].slice(-100);
+   if(s.canvas.pinned.some(id=>!look.items.some(i=>i.id===id)))throw new ApiError(409,'This option would remove a pinned piece. Unpin it or ask for another option.');
+   const next=createCanvas({id:s.id,brief:s.canvas.brief,items:look.items});next.layout=Object.fromEntries(Object.entries(s.canvas.layout).filter(([id])=>look.items.some(i=>i.id===id)));next.items=next.items.map(i=>{const old=s.canvas.items.find(x=>x.id===i.id);return old?clone(old):i;});next.revision=s.canvas.revision+1;next.pinned=s.canvas.pinned.filter(id=>next.items.some(i=>i.id===id));next.history=[...s.canvas.history,{brief:clone(s.canvas.brief),items:clone(s.canvas.items),pinned:clone(s.canvas.pinned),layout:clone(s.canvas.layout)}].slice(-100);
    s.canvas=next;s.title=look.title;
   });},
-  async freeze(who,id,body){return mutation(who,id,body,s=>{
+  async freeze(who,id,body){
+   const images=body.garmentImages||[];
+   if(!Array.isArray(images)||images.length>12)throw new ApiError(400,'Use up to 12 frozen garment references.');
+   const references=new Map();
+   for(const ref of images){
+    if(references.has(ref.id)||typeof ref.image!=='string'||ref.image.length>120000||!/^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(ref.image))throw new ApiError(400,'Invalid frozen garment image.');
+    const {default:sharp}=await import('sharp');try{await sharp(Buffer.from(ref.image.split(',')[1],'base64'),{limitInputPixels:16000000}).metadata();}catch{throw new ApiError(400,'A frozen garment reference could not be read.');}
+    references.set(ref.id,ref.image);
+   }
+   return mutation(who,id,body,s=>{
    if(s.frozen.length>=30)throw new ApiError(409,'This session already has 30 frozen designs. Start another session.');
-   s.frozen.push(freezeDesign(s.canvas,body.revision,{id:randomUUID(),createdAt:new Date(now()).toISOString(),validate:state=>{const terms=String(state.brief.exclusions||'').toLowerCase().split(/[,;\n]/).map(x=>x.trim().replace(/^(no|avoid|without)\s+/, '')).filter(Boolean);return state.items.some(i=>terms.some(t=>(i.name+' '+(i.colour||'')).toLowerCase().includes(t)))?[{message:'Replace excluded garments or explicitly amend your brief before freezing.'}]:[];}}));
+   if([...references.keys()].some(id=>!s.canvas.items.some(i=>i.id===id)))throw new ApiError(400,'A frozen reference does not belong to this outfit.');
+   const draft=clone(s.canvas);draft.items=draft.items.map(i=>({...i,...(references.has(i.id)?{image:references.get(i.id),snapshotAssetVersion:sha(references.get(i.id))}:{})}));
+   s.frozen.push(freezeDesign(draft,body.revision,{id:randomUUID(),createdAt:new Date(now()).toISOString()}));
   });},
   async fork(who,id,body){return mutation(who,id,body,s=>{
    if(s.canvas.revision!==body.revision)throw new ApiError(409,'The draft changed. Reload before editing a frozen design.');
@@ -77,10 +90,10 @@ export function createStyleMe({env=process.env,store=createStyleStore({env}),eng
    const replay=await this.replay(who,id,body);if(replay)return replay;
    const s=await this.get(who,id);
    if(s.canvas.revision!==body.revision)throw new ApiError(409,'The outfit changed before this request.');
-   const brief=sanitizeBrief(body.brief),wardrobe=normalizeWardrobe(body.wardrobe||[]);
+   const brief=sanitizeBrief(refineBrief({...s.canvas.brief,...body.brief},body.brief?.request||'')),wardrobe=normalizeWardrobe(body.wardrobe||[]);
    const pinned=s.canvas.items.filter(i=>s.canvas.pinned.includes(i.id));
    const provisional=starterLooks(brief,wardrobe,pinned);
-   const provisionalSession=await tx(who,rows=>{const current=get(rows,id);if(current.canvas.revision!==body.revision)throw new ApiError(409,'A newer edit arrived.');current.canvas=editCanvas(current.canvas,body.revision,{type:'brief',patch:brief});current.looks=provisional;current.messages.push({role:'user',text:brief.request});current.messages=current.messages.slice(-40);current.updatedAt=new Date(now()).toISOString();return publicSession(current);});
+   const provisionalSession=await tx(who,rows=>{const current=get(rows,id);if(current.canvas.revision!==body.revision)throw new ApiError(409,'A newer edit arrived.');current.canvas=editCanvas(current.canvas,body.revision,{type:'brief',patch:brief});current.looks=provisional;current.suggestions=tripSuggestions(brief,wardrobe);current.messages.push({role:'user',text:brief.request});current.messages=current.messages.slice(-40);current.updatedAt=new Date(now()).toISOString();return publicSession(current);});
    progress({type:'draft',session:provisionalSession,label:'Editable starter direction · AI is still working.'});
    const result=await engine.generate({brief,wardrobe,pinned,current:s.canvas.items},signal);
    return mutation(who,id,body,current=>{
@@ -120,15 +133,16 @@ export function createStyleMe({env=process.env,store=createStyleStore({env}),eng
     if(existing){if(existing.fingerprint!==fingerprint)throw new ApiError(409,'This preview ID belongs to another design or photo.');return {...clone(existing),replayed:true};}
     if(Object.keys(s.jobs).length>=5)throw new ApiError(409,'Delete an old preview before creating another.');
     const frozen=s.frozen.find(f=>f.id===body.designId);if(!frozen)throw new ApiError(404,'Freeze the design before previewing.');
+    if((body.garmentImages||[]).some(ref=>!frozen.items.some(i=>i.id===ref.id&&i.image===ref.image)))throw new ApiError(400,'Garment references must match the frozen image bytes. Freeze a new design to update an asset.');
     const photo={id:randomUUID(),version:fingerprint,consentId:randomUUID()};
     const job=createPreviewJob(frozen,photo,{id:body.jobId,supportedSlots:['top','bottom','onePiece','shoes','outerwear','accessory'],now:new Date(now()).toISOString()});
-    s.jobs[job.id]={...transitionPreview(job,'processing'),fingerprint,referenceIds:frozen.items.filter(i=>s.assets?.[i.id]).map(i=>i.id)};return clone(s.jobs[job.id]);
+    s.jobs[job.id]={...transitionPreview(job,'processing'),fingerprint,referenceIds:frozen.items.filter(i=>i.image?.startsWith('data:image/')).map(i=>i.id)};return clone(s.jobs[job.id]);
    });
    if(job.replayed)return job;
    const controller=new AbortController(),runningKey=owner(who)+'|'+id+'|'+job.id;running.set(runningKey,controller);
    try{
-    const latest=await this.get(who,id);if(!latest.jobs[job.id])throw new ApiError(409,'Preview was deleted before rendering.');const assets=latest.assets||{};
-    const result=await preview.render(job.snapshot,body.photo,signal?AbortSignal.any([signal,controller.signal]):controller.signal,[...(job.referenceIds||[]).map(id=>({id,image:assets[id].image})),...(body.garmentImages||[]).filter(i=>!(job.referenceIds||[]).includes(i.id))]);
+    const latest=await this.get(who,id);if(!latest.jobs[job.id])throw new ApiError(409,'Preview was deleted before rendering.');
+    const result=await preview.render(job.snapshot,body.photo,signal?AbortSignal.any([signal,controller.signal]):controller.signal,job.snapshot.items.filter(i=>i.image?.startsWith('data:image/')).map(i=>({id:i.id,image:i.image})));
     return await tx(who,rows=>{
      const s=get(rows,id),current=s.jobs[job.id];if(!current||current.status!=='processing')throw new ApiError(409,'Preview was cancelled or deleted.');
      s.jobs[job.id]=transitionPreview(current,'completed',{...result,assetId:randomUUID(),designId:job.designId,photoVersion:job.photoVersion});if(JSON.stringify(s).length>3800000)throw new ApiError(413,'This session is full. Delete an old preview before retrying.');return clone(s.jobs[job.id]);

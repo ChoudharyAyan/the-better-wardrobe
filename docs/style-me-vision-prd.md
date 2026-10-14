@@ -4,6 +4,15 @@ Version: 1.0 · 14 October 2026 · Status: approved for development on 14 Octobe
 
 Revision: Canvas and on-self preview are P0. Existing FR IDs remain stable; Canvas is FR#20. This document governs Style Me only. My Wardrobe is being developed separately with Claude; its PRD was read for alignment and remains unchanged.
 
+## Approved interaction amendment — 14 October 2026
+
+The owner subsequently supplied four Whering Canvas screenshots and directed a two-section Style Me experience:
+
+- **3.1 Style suggester:** the same conversation UI/UX as Discover, with Mangalore and Varkala beach holidays, Himachal holidays and work-trip starters. Connect wardrobe records to suggestions of what to reuse and what may be missing, such as a mountain jacket/scarf or beach shorts/flip-flops.
+- **3.2 Canvas:** a free-form garment board with an Add items tray, selected-piece movement, resizing, rotation, visual stacking, pins, removal, undo and saving. Shirts, trousers, footwear and accessories can be combined visually. Use real cutouts when available and clearly labelled representatives otherwise.
+
+Both sections share the existing session/brief/outfit. FR IDs and P0/P1/P2 priorities remain unchanged: Canvas, immutable freeze and real on-self preview are still P0. The 100–200 ms interaction/composition ambition is a target for local loaded-asset operations; new Gemini on-self generation has a separate provider latency and quality gate. A local board image is not evidence of on-self preview fidelity. See `style-me-p0-audit.md` for the phase mapping, audit evidence and remaining gates.
+
 ## 1. Vision
 
 Style Me is a personal styling agent that turns a request, garment, inspiration image, or occasion into an outfit the user can act on. It works with a full wardrobe, a few known pieces, or no wardrobe. It connects **what I own → how I could wear it → what is missing → where I can find it → what I actually wore**.
@@ -179,7 +188,7 @@ Acceptance: a user can complete the core flow with text only, denied permissions
 
 **Garment tray.** Provide category trays for tops/shirts, trousers/bottoms, one-piece outfits, footwear, outerwear and accessories, using appropriate Indian categories. Sources are My Wardrobe, user-described pieces, representative Essentials and selected Discover candidates when available. Each card displays ownership and provenance. Search and filters work without leaving Canvas. From-scratch users can build entirely with labelled conceptual pieces.
 
-**Playful editing.** Drag garments into meaningful slots; also provide equivalent tap/click and keyboard Add, Replace, Remove, Move layer, Pin and Undo actions. Snap into place with short optional animations, selection highlights and a subtle completion celebration. Offer Try another combination and AI help for a selected slot; random choices must be constrained by the brief and pinned pieces. No timers, forced streaks, mystery pricing or unsupported fashion scores. Reduced-motion and screen-reader users get the same editing capabilities.
+**Playful editing.** Place garment cutouts freely on the board; move, resize, rotate and change visual stacking without changing their garment slots. Provide category-aware replacement and explicit clothing-layer validation; also provide equivalent tap/click and keyboard Add, Replace, Remove, Move layer, Pin and Undo actions. Snap into place with short optional animations, selection highlights and a subtle completion celebration. Offer Try another combination and AI help for a selected slot; random choices must be constrained by the brief and pinned pieces. No timers, forced streaks, mystery pricing or unsupported fashion scores. Reduced-motion and screen-reader users get the same editing capabilities.
 
 **Outfit model.** Support valid top/bottom and one-piece combinations, optional outerwear/accessories and explicit clothing layer order. A multi-slot piece is one selected garment, not duplicated inventory. Replacing a garment changes that slot deliberately; multiple tops require explicit layering. Board placement is visual arrangement and is not evidence of fit, tuck, drape or rendered position on the body. The user may request tucked/untucked or open/closed layers as separate styling instructions.
 

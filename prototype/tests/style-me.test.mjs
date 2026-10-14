@@ -84,3 +84,17 @@ test('explicit preference memory is owner scoped and can be reset without losing
 test('failed local transaction rolls back instead of leaking a partial mutation',async()=>{
  const store=createStyleStore({env:{STYLE_MEMORY_STORE:'true'}});await store.transact('owner',data=>{data.good=1;});await assert.rejects(store.transact('owner',data=>{data.bad=2;throw new Error('rollback');}));assert.deepEqual(await store.transact('owner',data=>structuredClone(data)),{good:1});
 });
+
+test('frozen image bytes remain attached to the preview when the live reference changes',async()=>{
+ const {default:sharp}=await import('sharp');
+ const image=await sharp({create:{width:200,height:300,channels:3,background:'#234567'}}).png().toBuffer();
+ const original='data:image/png;base64,'+image.toString('base64');let received;
+ const {svc,id}=await setup({enabled:true,render:async(snapshot,photo,signal,refs)=>{received=refs;return {image:original,label:'Illustrative'};}});
+ const draft=await svc.get('alice',id),itemId=draft.canvas.items[0].id;
+ const saved=await svc.freeze('alice',id,body({revision:3,garmentImages:[{id:itemId,image:original}]}));
+ assert.equal(saved.frozen[0].items[0].image,original);assert.ok(saved.frozen[0].items[0].snapshotAssetVersion);
+ await svc.edit('alice',id,body({revision:3,action:{type:'describe',itemId,patch:{name:'New shirt'}}}));
+ await svc.render('alice',id,{jobId:uuid(),designId:saved.frozen[0].id,photo:'fixture',consent:true,costAccepted:true});
+ assert.deepEqual(received,[{id:itemId,image:original}]);
+ await assert.rejects(svc.render('alice',id,{jobId:uuid(),designId:saved.frozen[0].id,photo:'fixture',garmentImages:[{id:itemId,image:'different'}],consent:true,costAccepted:true}),e=>e.status===400);
+});
