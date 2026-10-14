@@ -1,5 +1,9 @@
 # Style Me: P0 audit and two-section implementation
 
+## Cloud access follow-up — 14 October 2026
+
+Gemini Cloud image access now succeeds through the owner's credited Cloud project. Both a synthetic mannequin generation and the actual Style Me image-edit adapter returned images; the latter took 9,989 ms. Earlier HTTP 429 statements below describe the historical Developer API test and are superseded as an access blocker. Fidelity remains an open P0 gate: the synthetic shirt edit produced a collarless top, no consented personal-photo cohort was tested, and billing report attribution to trial credits is not yet verified. See the configuration and validation details in `style-me-implementation.md`. No billing upgrade or production configuration change was made.
+
 Audited 14 October 2026 against every P0 FR and its acceptance criteria in the approved vision PRD, starting from `3002191`. The owner's later screenshot guidance governs the revised interaction: **3.1 Style suggester** and **3.2 Canvas** inside Style Me, sharing the same session. The four supplied Whering screenshots are interaction references, not garment assets or proof of preview quality. No scope reduction to Canvas, freeze or real on-self preview is proposed.
 
 ## Later integration update during PR preparation

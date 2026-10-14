@@ -126,12 +126,3 @@ main .ss-hero h1 br{display:none}
 .ss-tile-folk .mall-folk svg+svg{display:none}
 .ss-tile:hover .ss-tile-folk svg{animation:folk-hop .5s var(--ss-pop)}
 .ss-tile h2{font-size:26px!important}
-/* Style Me's starter ideas are tappable pills, like Ask Bao's prompt chips. */
-.sm-prompts{display:flex!important;flex-wrap:wrap;justify-content:center;gap:10px!important;max-width:640px!important}
-.sm-prompts button{padding:10px 16px!important;border:2px solid #EADFD3!important;border-radius:999px!important;background:#fff!important;color:#2B1620!important;font:700 13px/1.2 Montserrat,system-ui,sans-serif!important;box-shadow:0 3px 0 #EADFD3;transition:transform .16s cubic-bezier(.34,1.56,.64,1),border-color .16s}
-.sm-prompts button:hover{transform:translateY(-2px);border-color:#EBBDD0!important}
-.sm-prompts button:active{transform:translateY(2px);box-shadow:none}
-.sm-conversation .dc-examples{display:flex!important;flex-wrap:wrap;justify-content:center;gap:10px!important;width:100%!important;margin:10px auto 4px!important}
-.sm-conversation .dc-examples button{width:auto!important;min-height:44px;padding:10px 16px!important;border:2px solid #EADFD3!important;border-radius:999px!important;background:#fff!important;color:#2B1620!important;font:700 13px/1.2 Montserrat,system-ui,sans-serif!important;box-shadow:0 3px 0 #EADFD3;transition:transform .16s cubic-bezier(.34,1.56,.64,1),border-color .16s}
-.sm-conversation .dc-examples button:hover{transform:translateY(-2px);border-color:#EBBDD0!important}
-.sm-conversation .dc-examples button:active{transform:translateY(2px);box-shadow:none}
