@@ -197,8 +197,8 @@ test('phone app: Myntra orders stream from the in-app browser into the app',asyn
 });
 
 test('phone app: only Flipkart, and only when asked, opens identifying as Chrome',async()=>{
- const opens=[];const listeners={};
- globalThis.Capacitor={isNativePlatform:()=>true,Plugins:{InAppBrowser:{addListener:async(name,fn)=>{listeners[name]=fn;return {remove(){}};},openWebView:async opts=>{opens.push(opts);return {id:'w'};},executeScript:async()=>{},close:async()=>{}}}};
+ const opens=[],calls=[];const listeners={};
+ globalThis.Capacitor={isNativePlatform:()=>true,Plugins:{InAppBrowser:{addListener:async(name,fn)=>{listeners[name]=fn;return {remove(){}};},openWebView:async opts=>{opens.push(opts);return {id:'w'};},executeScript:async({code})=>{calls.push('script:'+(/unregister/.test(code)?'fresh':'other'));},close:async()=>{},clearCache:async o=>{calls.push('clearCache:'+o.id);},reload:async o=>{calls.push('reload:'+o.id);}}}};
  const realFetch=globalThis.fetch;globalThis.fetch=async()=>({text:async()=>''});
  const realNav=Object.getOwnPropertyDescriptor(globalThis,'navigator');
  Object.defineProperty(globalThis,'navigator',{value:{userAgent:'Mozilla/5.0 (Linux; Android 17; Pixel 10a Build/X; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/154.0.1.2 Mobile Safari/537.36'},configurable:true});
@@ -206,8 +206,9 @@ test('phone app: only Flipkart, and only when asked, opens identifying as Chrome
   const {run,needsChrome,chromeAgent}=await import('../dist/native-import.js');
   assert.equal(needsChrome('flipkart'),true);assert.equal(needsChrome('myntra'),false);
   assert.equal(chromeAgent(),'Mozilla/5.0 (Linux; Android 17; Pixel 10a Build/X) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/154.0.1.2 Mobile Safari/537.36');
-  for(const [id,asChrome] of [['flipkart',false],['flipkart',true],['myntra',true]]){const p=run(id,{asChrome});await new Promise(r=>setTimeout(r,0));listeners.closeEvent();await p;}
+  for(const [id,asChrome] of [['flipkart',false],['flipkart',true],['myntra',true]]){const p=run(id,{asChrome});await new Promise(r=>setTimeout(r,asChrome?450:0));listeners.closeEvent();await p;}
   assert.equal(opens[0].headers,undefined,'Flipkart without consent opens as it is');
+  assert.deepEqual(calls,['clearCache:w','script:fresh','reload:w'],'only the Chrome open clears cached failures and reloads');
   assert.doesNotMatch(opens[1].headers['User-Agent'],/; wv|Version\/4\.0/);
   assert.equal(opens[2].headers,undefined,'other stores never change identity');
  }finally{delete globalThis.Capacitor;globalThis.fetch=realFetch;if(realNav)Object.defineProperty(globalThis,'navigator',realNav);}

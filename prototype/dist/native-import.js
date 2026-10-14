@@ -39,6 +39,8 @@ document.addEventListener('focusin',sync,true);document.addEventListener('focuso
 // pct: a number shows the share done, null a moving bar while the total is unknown, undefined hides it.
 const say=(text,done=false,pct,button)=>`(()=>{const t=document.getElementById('tbw-bar-text'),b=document.getElementById('tbw-bar-go'),k=document.getElementById('tbw-bar-track');if(t)t.textContent=${JSON.stringify(text)};if(b){b.disabled=${!done};b.textContent=${JSON.stringify(button||(done?'Try again':'Reading…'))};}
 if(k){const p=${pct===undefined?'undefined':JSON.stringify(pct)};k.style.display=p===undefined?'none':'block';k.classList.toggle('busy',p===null);if(typeof p==='number'){k.firstChild.style.width=p+'%';k.setAttribute('aria-valuenow',p);}else k.removeAttribute('aria-valuenow');}})();`;
+// Drops the store's service worker and its caches in this browser only; it re-registers on its next visit.
+const FRESH=`(async()=>{try{for(const r of await navigator.serviceWorker?.getRegistrations?.()||[])await r.unregister();for(const k of await caches?.keys?.()||[])await caches.delete(k);}catch{}})();`;
 const pace=(done,total,startedAt)=>globalThis.WardrobeIntake?.importProgress?.(done,total,startedAt)||{pct:total?Math.round(Math.min(1,done/total)*100):null,left:''};
 // Wraps the connector's extract() so partial pages and the final result come back as messages.
 const runner=c=>`(async()=>{const send=d=>window.mobileApp.postMessage({detail:d});window.__tbwEmit=(d,progress)=>send({tbw:'part',data:d,progress});
@@ -80,6 +82,14 @@ export async function run(id,{onData=()=>{},onStatus=()=>{},asChrome=false}={}){
     ...(asChrome&&needsChrome(id)?{headers:{'User-Agent':chromeAgent()}}:{}),
     preShowScript:observer,preShowScriptInjectionTime:'documentStart'});
    webview=opened?.id;
+   // A store that refused this browser before may have cached those failures (HTTP cache and its own
+   // service worker). Once it opens as Chrome, clear both (never cookies, so the person stays signed
+   // in) and reload, so the page asks afresh. Seen with Flipkart: data request 200 only after this.
+   if(asChrome&&needsChrome(id)){
+    await IAB.clearCache(webview?{id:webview}:{}).catch(()=>{});
+    await exec(FRESH);await new Promise(r=>setTimeout(r,400));
+    await IAB.reload(webview?{id:webview}:{}).catch(()=>{});
+   }
   }catch(e){finish(null,new Error(c.label+' could not be opened. Try again.'));}
  });
 }
