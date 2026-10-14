@@ -2,14 +2,16 @@
 // Runs in the browser only: order files are parsed on the device, and only the
 // product fields below are kept. Addresses, payment and contact columns are never read.
 
-export const CATEGORIES=['Shirts','Trousers','Footwear','Accessories','Belts','Dresses','Suits','Outerwear','Jewellery'];
+// Ethnic wear is its own shelf (PRD FR#11): a kurta is not a shirt and a saree is not a dress.
+export const CATEGORIES=['Shirts','Trousers','Ethnic wear','Footwear','Accessories','Belts','Dresses','Suits','Outerwear','Jewellery'];
 
 // Order matters: the first rule that matches wins, so specific types sit above generic ones.
 const RULES=[
  [/perfume|deodorant|fragrance|serum|shampoo|lipstick|makeup|skin ?care|personal care|grooming|blanket|quilt|dohar|bedsheet|cushion|towel|free ?gift|voucher|gift ?card|protection ?plan|charger|handset|mobile|book|suitcase|trolley|luggage|playgym|baby/i,null],
  [/trunk|brief|boxer|bra\b|panty|panties|innerwear|vest|socks?\b|thermal|camisole|shapewear/i,'innerwear'],
- [/kurta ?set|salwar ?suit|churidar ?set|co-?ords?|\bsuits?\b|sherwani|nehru/i,'Suits'],
- [/sari|saree|lehenga|dress|gown|jumpsuit|anarkali/i,'Dresses'],
+ [/kurta|kurti|salwar|churidar|sherwani|nehru|bandhgala|sari\b|saree|lehenga|anarkali|dhoti|ethnic|achkan|ghagra|patiala/i,'Ethnic wear'],
+ [/co-?ords?|\bsuits?\b/i,'Suits'],
+ [/dress|gown|jumpsuit/i,'Dresses'],
  [/blazer|jacket|coat|sweat ?shirt|hoodie|sweater|cardigan|pullover|shrug|waistcoat|gilet/i,'Outerwear'],
  [/shoe|sneaker|sandal|flip ?flop|slipper|slider|loafer|heel|boot|mojari|jutti|kolhapuri|flats\b|clogs?/i,'Footwear'],
  [/belts?\b/i,'Belts'],

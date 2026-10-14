@@ -84,13 +84,30 @@ prod behaviour through the public API. Google OAuth client "TBW web" has the
   that host is ever retired.
 - Design QA teardown "The better wardrobe - discover module v2.0": notes
   #1–#20 are implemented. #21 and #22 are screenshots with empty notes.
-- My Wardrobe and Style Me are parked behind Coming soon.
+- Style Me is parked behind Coming soon. My Wardrobe is open (Phase 1 of the
+  My Wardrobe vision PRD, FR#1–4, 8–12, 16; see the session log).
+- **My Wardrobe needs on prod:** `OPENAI_API_KEY` for the cutout fallback
+  (Gemini masks work with the existing `GEMINI_API_KEY` or OpenRouter key).
+  Without either, photos are kept as cropped, without background removal.
+- **Phone app (`mobile/`)** is a Capacitor shell around app.thewardrobeos.com;
+  the native projects are not generated yet and store imports have not been
+  tried on a real phone. See `mobile/README.md`.
 
 ## Session log
 
 Newest first. Add one entry per merged PR: date, PR, what changed, anything
 left half-done or waiting on the owner.
 
+- 2026-10-14 — My Wardrobe Phase 1 (PR pending review): module unparked; new
+  people start empty (earlier visitors lose only untouched sample pieces);
+  live review queue fed by parallel photo/screenshot reading (own rate lane);
+  Gemini-mask cutouts with OpenAI fallback (`lib/cutout.mjs`); innerwear,
+  kids' sizes and likely gifts hidden by default; basics tray; product-link
+  paste; "Where do you shop?" store order; real XP/level/streak; Ethnic wear
+  category; search inside the almirah; signed-in wardrobe sync
+  (`lib/wardrobe.mjs`, `dist/wardrobe-sync.js`); Capacitor in-app browser
+  bridge for store imports (`dist/native-import.js`, `mobile/`). Phase 2 next:
+  connectors for Amazon and Meesho, email forwarding, FR#7, FR#13–15.
 - 2026-10-08 — Handoff refresh (this PR): added this Current state section,
   marked `CLAUDE_HANDOFF.md` as historical, listed auth/database variables in
   `.env.example`.

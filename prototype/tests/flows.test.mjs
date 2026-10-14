@@ -5,13 +5,17 @@ import {readFileSync,existsSync} from 'node:fs';
 import {webcrypto} from 'node:crypto';
 import path from 'node:path';
 const source=readFileSync(new URL('../dist/app.js',import.meta.url),'utf8');
+const intake=readFileSync(new URL('../dist/wardrobe-intake.js',import.meta.url),'utf8');
 // Code-level flow checks. These do not launch or automate a browser.
-function app(discovery){
+function app(discovery,{sample=true}={}){
   const nodes=new Map(),listeners={};
   function node(key){if(!nodes.has(key))nodes.set(key,{innerHTML:'',textContent:'',open:false,disabled:false,classList:{add(){},remove(){},toggle(){}},showModal(){this.open=true},close(){this.open=false},addEventListener(){},focus(){},click(){},setSelectionRange(){}});return nodes.get(key);}
   const storage=new Map();
   const context=vm.createContext({console,crypto:webcrypto,Date,Intl,URL,Set,Map,Promise,setTimeout:()=>1,clearTimeout(){},localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)},location:{hash:''},history:{replaceState(){}},window:{Discovery:discovery,scrollY:0,scrollTo(){},addEventListener:(k,fn)=>listeners['window:'+k]=fn},document:{querySelector:node,activeElement:null,addEventListener:(k,fn)=>listeners[k]=fn},FormData:class{constructor(f){this.data=f.data}get(k){return this.data[k]??''}getAll(k){return Array.isArray(this.data[k])?this.data[k]:[this.data[k]].filter(Boolean)}}});
+  vm.runInContext(intake,context);
   vm.runInContext(source,context);
+  // New people start empty; these walkthrough checks run on the five-piece sample wardrobe.
+  if(sample)vm.runInContext('state=seed()',context);
   return {run:c=>vm.runInContext(c,context),nodes,listeners,context,submit:(id,data,extra={})=>listeners.submit({preventDefault(){},target:{id,data,dataset:extra}}),action:(name,data={})=>vm.runInContext(`actions[${JSON.stringify(name)}]({dataset:${JSON.stringify(data)}})`,context),visit:r=>vm.runInContext(`route=${JSON.stringify(r)};render()`,context)};
 }
 test('all seven screens render with existing local media',()=>{
@@ -80,4 +84,53 @@ test('navigation follows the funnel: Discover, My Wardrobe, Style Me, then Profi
   const a=app();
   assert.equal(a.run('JSON.stringify(tabs.map(t=>t[1]))'),JSON.stringify(['Discover','My Wardrobe','Style Me','My Profile']));
   assert.equal(a.run('route'),'discover','a fresh visit with no hash lands on Discover');
+});
+
+test('My Wardrobe is open to everyone and a new person starts with an empty almirah',()=>{
+  const a=app(undefined,{sample:false});
+  assert.equal(a.run('state.items.length'),0);
+  a.visit('wardrobe');const html=a.nodes.get('main').innerHTML;
+  assert.doesNotMatch(html,/Coming soon/);assert.match(html,/Import your wardrobe/);assert.match(html,/data-action="basics"/);assert.match(html,/data-action="link-paste"/);
+  assert.doesNotMatch(a.nodes.get('#desktop-nav').innerHTML,/My Wardrobe<em class="soon-tag"/);
+  assert.match(html,/data-id="myntra"[^>]*>Myntra<\/button>[\s\S]*data-id="flipkart"/,'Myntra leads the store row');
+  a.visit('style');assert.match(a.nodes.get('main').innerHTML,/Coming soon/,'Style Me stays behind its card');
+});
+test('earlier visitors lose only the untouched sample pieces',()=>{
+  const a=app();
+  const s=a.run('JSON.stringify(migrate({items:[{id:"black",source:"Sample wardrobe"},{id:"mine",source:"Your photo"}],wears:[{id:"seed-1",items:["black"]},{id:"w1",items:["mine"]}]}))');
+  const m=JSON.parse(s);assert.deepEqual(m.items.map(p=>p.id),['mine']);assert.deepEqual(m.wears.map(w=>w.id),['w1']);assert.equal(m.v,2);assert.deepEqual(m.shops,[]);
+});
+test('the review queue hides innerwear and likely gifts until asked, and saves clean pieces',()=>{
+  const a=app(undefined,{sample:false});
+  a.run(`window.TBWAccount={profile:{gender:'male'}};addDraft([{id:'order-myntra-1',name:'Roadster kurta',category:'Ethnic wear',selected:true,gender:'Men',image:'https://assets.myntassets.com/1.jpg'},{id:'order-myntra-2',name:'Floral dress',category:'Dresses',selected:true,gender:'Women'},{id:'order-myntra-3',name:'Briefs',category:'Accessories',selected:true,innerwear:true}],'Myntra','Myntra orders')`);
+  assert.equal(a.run('importDraft.filter(p=>p.selected).length'),1);
+  a.visit('wardrobe/import');let html=a.nodes.get('main').innerHTML;
+  assert.equal((html.match(/class="import-card /g)||[]).length,1);assert.match(html,/Show 2 hidden · looks like a gift, innerwear/);
+  assert.match(a.nodes.get('#desktop-nav').innerHTML,/tab-badge[^>]*>1</,'the tab shows what is waiting');
+  a.action('toggle-hidden');html=a.nodes.get('main').innerHTML;assert.equal((html.match(/class="import-card /g)||[]).length,3);assert.match(html,/Hidden: looks like a gift/);
+  a.action('save-import');
+  const saved=JSON.parse(a.run('JSON.stringify(state.items)'));
+  assert.deepEqual(saved.map(p=>p.id),['order-myntra-1']);
+  for(const k of ['draftId','selected','hidden','warning','cutting','needsCutout'])assert.equal(k in saved[0],false,k);
+  assert.match(saved[0].addedAt,/^\d{4}-/);assert.equal(a.run('importDraft.length'),0);
+});
+test('basics are drawn, added in one tap, and hang on the rail with Ethnic wear',()=>{
+  const a=app(undefined,{sample:false});
+  a.run(`addBasics(window.WardrobeIntake.BASICS.filter(b=>['basic-white-kurta','basic-white-sneakers'].includes(b.id)))`);
+  assert.equal(a.run('state.items.length'),2);assert.equal(a.run('state.items[0].art.shape'),'kurta');
+  a.visit('wardrobe/open');const html=a.nodes.get('main').innerHTML;
+  assert.match(html,/On the rail[\s\S]*White kurta[\s\S]*Folded shelf[\s\S]*White sneakers/);assert.match(html,/Ethnic wear 1/);
+});
+test('the open almirah can be searched by name, brand or colour',()=>{
+  const a=app();
+  a.run(`state.items[0].brand='Roadster';query='roadster';route='wardrobe/open';render()`);
+  let html=a.nodes.get('main').innerHTML;assert.equal((html.match(/data-action="wardrobe-look"/g)||[]).length,1);
+  a.run(`query='nothing like this';render()`);html=a.nodes.get('main').innerHTML;assert.match(html,/Nothing matches/);
+  a.action('clear-search');assert.equal(a.run('query'),'');
+});
+test('levels, XP and streaks come from what was recorded',()=>{
+  const a=app(undefined,{sample:false});
+  a.run(`addBasics(window.WardrobeIntake.BASICS.slice(0,6));const t=new Date().toISOString().slice(0,10);state.wears.push({id:'w',date:t,items:[state.items[0].id]});route='wardrobe';render()`);
+  const html=a.nodes.get('main').innerHTML;
+  assert.match(html,/Level 1 · Collector/);assert.match(html,/1-day streak/);assert.match(html,/75 XP/);assert.match(html,/6 pieces/);
 });
