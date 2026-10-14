@@ -6,13 +6,43 @@ import {ApiError,safeURL} from './discovery.mjs';
 import {classify} from '../dist/order-import.js';
 
 // Order-email forwarding (PRD FR#6). Each signed-in person gets a private address
-// (orders+<token>@<WARDROBE_INBOUND_DOMAIN>). An inbound mail service (Postmark's inbound
-// webhook shape) posts each forwarded email here; a model lists the clothing lines, and they wait
+// (orders+<token>@<WARDROBE_INBOUND_DOMAIN>). A Cloudflare Email Worker (scripts/email-worker.js)
+// or Postmark's inbound webhook posts each forwarded email here; a model lists the clothing lines, and they wait
 // in the person's inbox until the app pulls them into the review queue. The email itself is never
 // stored: only the pieces read from it. No mailbox access is ever asked for.
 const MAX_PENDING=300,DAILY=60,ID=/^[A-Za-z0-9:._-]{1,100}$/;
 const text=(v,max)=>typeof v==='string'?v.replace(/[\x00-\x1f]/g,' ').replace(/\s+/g,' ').trim().slice(0,max):'';
 const decode=s=>s.replace(/&nbsp;/g,' ').replace(/&amp;/g,'&').replace(/&quot;/g,'"').replace(/&#39;|&apos;/g,"'").replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&#(\d+);/g,(_,n)=>String.fromCharCode(Number(n)));
+
+// Raw RFC 5322 messages (Cloudflare Email Routing hands the worker the raw email): headers,
+// multipart bodies, base64 and quoted-printable, charsets and encoded subjects. Attachments are
+// skipped; only the first text/html and text/plain parts matter here.
+const bytesOf=s=>Uint8Array.from(String(s),c=>c.charCodeAt(0)&255);
+function decodeWords(v){return String(v||'').replace(/=\?([^?]+)\?([bq])\?([^?]*)\?=/gi,(_,cs,enc,data)=>{try{const bin=enc.toLowerCase()==='b'?atob(data):data.replace(/_/g,' ').replace(/=([0-9a-f]{2})/gi,(_,h)=>String.fromCharCode(parseInt(h,16)));return new TextDecoder(cs,{fatal:false}).decode(bytesOf(bin));}catch{return data;}}).replace(/\?=\s+=\?/g,'');}
+function headersOf(block){const h={};for(const line of block.replace(/\r?\n[ \t]+/g,' ').split(/\r?\n/)){const i=line.indexOf(':');if(i>0)h[line.slice(0,i).trim().toLowerCase()]=line.slice(i+1).trim();}return h;}
+const param=(v,k)=>(String(v||'').match(new RegExp(k+'\\s*=\\s*"?([^";]+)"?','i'))||[])[1]||'';
+function bodyOf(h,raw){
+ const enc=String(h['content-transfer-encoding']||'').toLowerCase(),cs=param(h['content-type'],'charset')||'utf-8';
+ // The worker read the message as UTF-8 text, so 8-bit bodies are already decoded.
+ if(enc==='base64'){try{return new TextDecoder(cs,{fatal:false}).decode(bytesOf(atob(raw.replace(/[^A-Za-z0-9+/=]/g,''))));}catch{return '';}}
+ if(enc==='quoted-printable'){const bin=raw.replace(/=\r?\n/g,'').replace(/=([0-9A-F]{2})/gi,(_,x)=>String.fromCharCode(parseInt(x,16)));try{return new TextDecoder(cs,{fatal:false}).decode(Uint8Array.from(bin,c=>c.charCodeAt(0)&255));}catch{return bin;}}
+ return raw;
+}
+export function parseMime(raw,depth=0){
+ const text=String(raw||''),split=text.search(/\r?\n\r?\n/);
+ const h=headersOf(split<0?text:text.slice(0,split)),body=split<0?'':text.slice(split).replace(/^\r?\n\r?\n/,'');
+ const type=String(h['content-type']||'text/plain').toLowerCase(),out={subject:decodeWords(h.subject),html:'',text:''};
+ if(type.startsWith('multipart/')&&depth<6){
+  const boundary=param(h['content-type'],'boundary');if(!boundary)return out;
+  for(const part of body.split('--'+boundary).slice(1)){if(/^--/.test(part))break;const sub=parseMime(part.replace(/^\r?\n/,''),depth+1);out.html||=sub.html;out.text||=sub.text;}
+  return out;
+ }
+ if(/attachment/i.test(h['content-disposition']||''))return out;
+ if(type.startsWith('text/html'))out.html=bodyOf(h,body);else if(type.startsWith('text/plain'))out.text=bodyOf(h,body);
+ // A forwarded email attached as message/rfc822 holds the original order.
+ else if(type.startsWith('message/rfc822')&&depth<6){const sub=parseMime(body,depth+1);out.html=sub.html;out.text=sub.text;}
+ return out;
+}
 
 // The model sees the email as plain text plus a numbered list of its product pictures; it picks
 // pictures by number, so it cannot invent an image URL.
@@ -124,6 +154,8 @@ export function createInbox({env=process.env,store,fetcher=fetch,now=Date.now,fi
    return a.length===b.length&&timingSafeEqual(a,b);
   },
   async receive(mail={}){
+   // Cloudflare Email Worker: {to, raw}. Postmark inbound: parsed JSON fields.
+   if(typeof mail.raw==='string'){const m=parseMime(mail.raw.slice(0,4_000_000));mail={To:mail.to,Subject:m.subject,HtmlBody:m.html,TextBody:m.text};}
    const to=[mail.OriginalRecipient,mail.To,...(Array.isArray(mail.ToFull)?mail.ToFull.map(t=>t?.Email):[]),...(Array.isArray(mail.CcFull)?mail.CcFull.map(t=>t?.Email):[])].filter(Boolean).join(' ');
    const token=(String(to).toLowerCase().match(/orders\+([a-f0-9]{12})@/)||[])[1];
    const o=token&&await store.token(token);

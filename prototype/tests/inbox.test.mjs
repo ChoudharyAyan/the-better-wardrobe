@@ -62,3 +62,17 @@ test('inbox routes: webhook from the mail service, pending pieces for the signed
   assert.equal((await (await call('/api/wardrobe/status')).json()).email,true);
  }finally{await new Promise(r=>server.close(r));}
 });
+
+test('raw emails from the Cloudflare worker are parsed: multipart, base64, quoted-printable, forwarded originals',async()=>{
+ const {parseMime}=await import('../lib/inbox.mjs');
+ const html=Buffer.from('<p>Relaxed fit jeans · ₹1,999</p><img src="https://image.hm.com/jeans.jpg">').toString('base64');
+ const raw=['From: Ayan <a@example.com>','To: orders+abc@in.thewardrobeos.com','Subject: =?UTF-8?B?'+Buffer.from('Fwd: Your H&M order ✓').toString('base64')+'?=','Content-Type: multipart/mixed; boundary="outer"','','--outer','Content-Type: multipart/alternative; boundary=inner','','--inner','Content-Type: text/plain; charset=utf-8','Content-Transfer-Encoding: quoted-printable','','Relaxed fit jeans =E2=82=B91,999 and a very long line that is soft=','-wrapped','--inner','Content-Type: text/html; charset=utf-8','Content-Transfer-Encoding: base64','',html,'--inner--','--outer','Content-Type: application/pdf; name=invoice.pdf','Content-Disposition: attachment; filename=invoice.pdf','Content-Transfer-Encoding: base64','','JVBERi0=','--outer--',''].join('\r\n');
+ const m=parseMime(raw);
+ assert.equal(m.subject,'Fwd: Your H&M order ✓');assert.match(m.html,/Relaxed fit jeans · ₹1,999/);assert.match(m.text,/₹1,999 and a very long line that is soft-wrapped/);
+ const forwarded=parseMime(['Subject: Fwd','Content-Type: message/rfc822','','Subject: Order','Content-Type: text/html','','<b>Linen shirt</b>'].join('\n'));
+ assert.equal(forwarded.html,'<b>Linen shirt</b>');
+ const inbox=createInbox({env,fetcher:model(()=>({store:'H&M',items:[{name:'Relaxed fit jeans',price:1999,image:1}]}))});
+ const address=await inbox.address('acct-raw');
+ assert.deepEqual(await inbox.receive({to:address,raw:raw.replace('orders+abc@in.thewardrobeos.com',address)}),{accepted:1});
+ assert.equal((await inbox.pending('acct-raw'))[0].image,'https://image.hm.com/jeans.jpg');
+});
