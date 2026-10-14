@@ -141,6 +141,22 @@ test('Amazon extractor walks each year of order history and keeps product links 
  assert.equal(items[0].image,'https://m.media-amazon.com/images/I/B0AAAAAAAA._AC_UL480_.jpg');assert.equal(items[0].productUrl,'https://www.amazon.in/dp/B0AAAAAAAA');
 });
 
+test('Amazon extractor reads encrypted order cards from a frame, with the date as written',async()=>{
+ // Amazon now ships each card encrypted; only the page's own script can decrypt it.
+ const year=new Date().getFullYear();
+ const encrypted=`<div class="order-card"><div class="csd-encrypted-sensitive">x9f…</div></div>`;
+ const decrypted={[`year-${year}|0`]:`<select name="timeFilter"><option value="year-${year}">${year}</option></select><div class="order-card"><div class="order-header">Order placed 14 October ${year} Total ₹999</div><a href="/dp/B0EEEEEEEE?ref=x"><img src="https://m.media-amazon.com/images/I/e._SS284_.jpg"></a><a href="/dp/B0EEEEEEEE?ref=y">Men Regular Fit Shirt</a></div>`};
+ const frames=[];
+ const document={body:{appendChild:f=>{frames.push(f.src);setTimeout(()=>f.onload?.(),0);}},createElement:()=>{const f={style:{},setAttribute(){},remove(){},addEventListener:(_,cb)=>{f.onload=cb;}};
+  Object.defineProperty(f,'contentDocument',{get:()=>{const u=new URL(f.src,'https://www.amazon.in');return {readyState:'complete',querySelector:()=>null,documentElement:{outerHTML:decrypted[u.searchParams.get('timeFilter')+'|'+u.searchParams.get('startIndex')]||''}};}});
+  f.contentWindow={location:{pathname:'/gp/css/order-history'}};return f;}};
+ const result=plain(await inject(connector('amazon'),{DOMParser,document,location:{pathname:'/gp/css/order-history'},fetch:async url=>({url:new URL(url,'https://www.amazon.in').href,text:async()=>encrypted})}));
+ assert.equal(frames.length,1,'the first encrypted page is read from a frame');
+ const items=connectorNormalizers.amazon(result);
+ assert.deepEqual(items.map(i=>[i.id,i.category,i.orderedAt]),[['order-amazon-B0EEEEEEEE','Shirts',`${year}-10-14`]]);
+ assert.equal(items[0].image,'https://m.media-amazon.com/images/I/e._AC_UL480_.jpg');
+});
+
 test('Amazon extractor reports the sign-in page instead of an empty import',async()=>{
  const result=plain(await inject(connector('amazon'),{DOMParser,location:{pathname:'/ap/signin'},fetch:async()=>({url:'https://www.amazon.in/ap/signin?x',text:async()=>''})}));
  assert.equal(result.error,'login');

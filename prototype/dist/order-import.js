@@ -30,7 +30,10 @@ export function classify(...texts){
 }
 
 const https=url=>{if(typeof url!=='string'||!url)return '';const u=url.startsWith('//')?'https:'+url:url.replace(/^http:\/\//,'https://');try{return new URL(u).protocol==='https:'?u:'';}catch{return '';}};
-const isoDate=v=>{if(v==null||v==='')return null;const n=Number(v);const d=new Date(Number.isFinite(n)&&String(v).trim()!==''?n:v);return Number.isNaN(d.getTime())?null:d.toISOString().slice(0,10);};
+const isoDate=v=>{if(v==null||v==='')return null;const n=Number(v),num=Number.isFinite(n)&&String(v).trim()!=='';const d=new Date(num?n:v);if(Number.isNaN(d.getTime()))return null;
+ // A written-out date with no time ("14 October 2026", Amazon) parses as local midnight: read it back in local time, or it slips a day east of UTC.
+ if(!num&&!/\d:\d/.test(String(v))&&!/^\d{4}-\d{2}-\d{2}$/.test(String(v).trim()))return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+ return d.toISOString().slice(0,10);};
 const clean=(s,max=120)=>typeof s==='string'?s.replace(/\s+/g,' ').trim().slice(0,max):'';
 
 function toItem({retailer,productId,name,brand,type,size,color,image,productUrl,orderedAt,gender,category,flag,price=null}){

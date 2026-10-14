@@ -151,10 +151,30 @@ export const connectors=[
    const wait=ms=>new Promise(r=>setTimeout(r,ms));
    const emit=typeof globalThis.__tbwEmit==='function'?globalThis.__tbwEmit:()=>{};
    const text=el=>(el?.textContent||'').replace(/\s+/g,' ').trim();
+   const login=()=>Object.assign(new Error('login'),{login:true});
+   // Since Oct 2026 each order card arrives encrypted (.csd-encrypted-sensitive) and the page's own
+   // script decrypts it, so fetched HTML has no products. Such pages are read from a hidden
+   // same-origin frame once its script has run; once one page needs that, the rest go straight there.
+   let framed=false;
+   const frame=async url=>{
+    const f=document.createElement('iframe');
+    f.style.cssText='position:fixed;left:-10000px;top:0;width:1280px;height:1000px;border:0';f.setAttribute('aria-hidden','true');f.src=url;
+    document.body.appendChild(f);
+    try{
+     await new Promise(r=>{f.addEventListener('load',r,{once:true});setTimeout(r,20000);});
+     for(let i=0;i<40;i++){const d=f.contentDocument;if(d&&d.readyState==='complete'&&!d.querySelector('.csd-encrypted-sensitive'))break;await wait(250);}
+     if(/\/ap\/signin/.test(f.contentWindow?.location.pathname||''))throw login();
+     return new DOMParser().parseFromString(f.contentDocument.documentElement.outerHTML,'text/html');
+    }finally{f.remove();}
+   };
    const get=async(year,start)=>{
-    const r=await fetch(`/gp/css/order-history?timeFilter=year-${year}&startIndex=${start}`,{credentials:'include'});
-    if(/\/ap\/signin/.test(r.url||''))throw Object.assign(new Error('login'),{login:true});
-    return new DOMParser().parseFromString(await r.text(),'text/html');
+    const url=`/gp/css/order-history?timeFilter=year-${year}&startIndex=${start}`;
+    if(framed)return frame(url);
+    const r=await fetch(url,{credentials:'include'});
+    if(/\/ap\/signin/.test(r.url||''))throw login();
+    const doc=new DOMParser().parseFromString(await r.text(),'text/html');
+    if(!doc.querySelector('.csd-encrypted-sensitive'))return doc;
+    framed=true;return frame(url);
    };
    const read=card=>{
     const header=text(card.querySelector('.order-header,.order-info,.a-box-group>.a-box:first-child'));
@@ -192,7 +212,7 @@ export const connectors=[
   }
  },
  {
-  id:'meesho',label:'Meesho',verified:false,ordersUrl:'https://www.meesho.com/my-orders',
+  id:'meesho',label:'Meesho',verified:false,ordersUrl:'https://www.meesho.com/orders',
   extract:async function(){
    // The orders page loads more as it scrolls; observer.js keeps each order response the page receives.
    const wait=ms=>new Promise(r=>setTimeout(r,ms));
