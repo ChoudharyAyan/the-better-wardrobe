@@ -132,6 +132,33 @@ export const connectors=[
   }
  },
  {
+  // Your own Instagram posts (owner's ask, 14 Oct 2026). Instagram flags scripted API calls as spam (seen: 400
+  // "spam" and 429 on a real account), so this makes none: it opens your own profile, as if you had tapped it,
+  // and reads the photo grid Instagram itself shows, scrolling gently. Only photo URLs and post ids come back.
+  id:'instagram',label:'Instagram',noun:'photos',verified:false,ordersUrl:'https://www.instagram.com/accounts/login/?next=%2F',
+  extract:async function(){
+   const wait=ms=>new Promise(r=>setTimeout(r,ms));
+   const emit=typeof globalThis.__tbwEmit==='function'?globalThis.__tbwEmit:()=>{};
+   // Your username is in the link to your own profile (the one with your profile picture in the menu).
+   const mine=[...document.querySelectorAll('a[href^="/"]')].find(a=>a.querySelector('img[alt*="profile picture" i]'));
+   const user=(mine?.getAttribute('href')||'').replace(/\//g,'');
+   if(!user)return {error:/\/accounts\/login/.test(location.pathname)?'login':'layout'};
+   if(location.pathname.replace(/\/+$/,'')!=='/'+user){location.assign('/'+encodeURIComponent(user)+'/');return {retryAfterLoad:true};}
+   const largest=img=>{const set=(img.getAttribute('srcset')||'').split(',').map(s=>s.trim().split(/\s+/)).map(([u,w])=>({u,w:parseInt(w)||0})).filter(x=>x.u&&x.w<=1080).sort((a,b)=>b.w-a.w);return set[0]?.u||img.currentSrc||img.src||'';};
+   const posts=new Map();let idle=0;
+   for(let round=1;round<=12&&posts.size<36&&idle<3;round++){
+    const before=posts.size;
+    for(const a of document.querySelectorAll('a[href*="/p/"]')){
+     const id=(a.getAttribute('href').match(/\/p\/([^/?#]+)/)||[])[1],img=a.querySelector('img');
+     if(id&&img&&!posts.has(id)){const src=largest(img);if(/^https:/.test(src))posts.set(id,{id,takenAt:null,images:[src]});}
+    }
+    idle=posts.size===before?idle+1:0;emit({posts:[]},{page:Math.min(posts.size,36),pages:36,unit:'photo'});
+    window.scrollBy({top:window.innerHeight*0.9,behavior:'smooth'});await wait(1500);
+   }
+   return {posts:[...posts.values()]};
+  }
+ },
+ {
   id:'tatacliq',label:'Tata CLiQ',verified:false,ordersUrl:'https://www.tatacliq.com/my-account/orders',
   extract:async function(){
    // The page loads one period at a time; step the period filter so it fetches each year, and observer.js keeps each response.

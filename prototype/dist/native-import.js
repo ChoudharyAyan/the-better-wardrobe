@@ -43,7 +43,7 @@ const col=document.createElement('div');col.id='tbw-bar-col';
 const track=document.createElement('div');track.id='tbw-bar-track';track.setAttribute('role','progressbar');track.setAttribute('aria-label','Import progress');track.setAttribute('style','display:none;position:relative;height:5px;margin-top:8px;border-radius:99px;background:rgba(255,255,255,.18);overflow:hidden');
 const fill=document.createElement('i');fill.setAttribute('style','display:block;height:100%;width:0;border-radius:inherit;background:#F7A8CB;transition:width .35s ease');track.append(fill);
 const text=document.createElement('span');text.id='tbw-bar-text';
-const go=document.createElement('button');go.id='tbw-bar-go';go.textContent=${JSON.stringify('Import '+label+' orders')};go.setAttribute('aria-label',${JSON.stringify('Import my '+label+' orders into The Wardrobe OS')});
+const go=document.createElement('button');go.id='tbw-bar-go';go.textContent=${JSON.stringify('Import '+label)};go.setAttribute('aria-label',${JSON.stringify('Import my '+label+' into The Wardrobe OS')});
 go.onclick=()=>{go.disabled=true;go.textContent='Reading…';bar.dataset.mode='full';window.mobileApp.postMessage({detail:{tbw:'go'}});};
 col.append(text,track);bar.append(col,go);document.head.appendChild(style);document.body.appendChild(bar);
 // Lift above anything the store fixes to the bottom edge of the screen.
@@ -78,31 +78,33 @@ export async function run(id,{onData=()=>{},onStatus=()=>{},asChrome=false}={}){
  const IAB=plugin(),c=connectors.find(x=>x.id===id);
  if(!IAB||!c)throw new Error('Store imports open inside The Wardrobe OS app.');
  let observer='';try{observer=await (await fetch('store-observer.js')).text();}catch{}
- const handles=[];let streamed=0,finished=false,webview,startedAt=0;
+ const handles=[];let streamed=0,finished=false,webview,startedAt=0,again=false;
  const cleanup=()=>{for(const h of handles)h?.remove?.();};
  return new Promise(async(resolve,reject)=>{
   const finish=(value,error)=>{if(finished)return;finished=true;cleanup();error?reject(error):resolve(value);};
   const exec=code=>IAB.executeScript({code,...(webview?{id:webview}:{})}).catch(()=>{});
-  handles.push(await IAB.addListener('browserPageLoaded',()=>exec(banner(c.label,signedIn(id)))));
+  // A reader that first has to open another page (Instagram: your profile) asks to run again once it loads.
+  handles.push(await IAB.addListener('browserPageLoaded',()=>{exec(banner(`${c.label} ${c.noun||'orders'}`,signedIn(id)));if(again){again=false;setTimeout(()=>{exec(say(`Reading your ${c.label} ${c.noun||'orders'}. Keep this open…`,false,null));exec(runner(c));},1500);}}));
   handles.push(await IAB.addListener('closeEvent',()=>finish({count:streamed,closed:true})));
   handles.push(await IAB.addListener('messageFromWebview',async e=>{
    const d=e?.detail||{};
-   if(d.tbw==='go'){startedAt=Date.now();onStatus('reading');exec(say('Reading your '+c.label+' orders. Keep this open…',false,null));exec(runner(c));}
+   if(d.tbw==='go'){startedAt=Date.now();onStatus('reading');exec(say(`Reading your ${c.label} ${c.noun||'orders'}. Keep this open…`,false,null));exec(runner(c));}
    else if(d.tbw==='part'&&d.data){const n=d.data.lines?.length??d.data.orders?.reduce((a,o)=>a+(o.products?.length||0),0)??0;streamed+=n;onData(d.data);const p=d.progress||{},{pct,left}=pace(p.page,p.pages,startedAt);onStatus('reading',{page:p.page,pages:p.pages,count:streamed});
     // Items read, not pieces: the app decides later which of them are clothes.
     exec(say(`${pct!=null?pct+'% · ':''}${streamed} ${streamed===1?'item':'items'} read${pct==null?' so far':''}${left?' · '+left:''}`,false,pct));}
    else if(d.tbw==='done'){
     const r=d.result||{};
+    if(r.retryAfterLoad){again=true;return;}
     if(r.error==='login'){onStatus('login');exec(say('Sign in to '+c.label+' first, then tap Import again.',true));return;}
     if(r.error){exec(say(c.label+"'s order page looked different than expected. Nothing was imported.",true));onStatus('error');return;}
     if(!streamed)onData(r);
     // Show the finished bar for a moment so the person sees it complete, then return to the app.
-    exec(say(`Done · ${streamed||r.lines?.length||r.orders?.length||0} items read. Back to your wardrobe…`,false,100,'Done ✓'));
-    onStatus('done');setTimeout(()=>IAB.close().catch(()=>{}),900);finish({count:streamed||r.lines?.length||r.orders?.length||r.pages?.length||0});
+    exec(say(`Done · ${streamed||r.lines?.length||r.orders?.length||r.posts?.length||0} ${c.noun==='photos'?'posts':'items'} read. Back to your wardrobe…`,false,100,'Done ✓'));
+    onStatus('done');setTimeout(()=>IAB.close().catch(()=>{}),900);finish({count:streamed||r.lines?.length||r.orders?.length||r.pages?.length||r.posts?.length||0});
    }
   }));
   try{
-   const opened=await IAB.openWebView({url:c.ordersUrl,title:c.label+' orders',toolbarType:'navigation',isPresentAfterPageLoad:true,
+   const opened=await IAB.openWebView({url:c.ordersUrl,title:`${c.label} ${c.noun||'orders'}`,toolbarType:'navigation',isPresentAfterPageLoad:true,
     ...(asChrome&&needsChrome(id)?{headers:{'User-Agent':chromeAgent()}}:{}),
     preShowScript:observer,preShowScriptInjectionTime:'documentStart'});
    webview=opened?.id;

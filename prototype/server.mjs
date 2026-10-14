@@ -162,6 +162,18 @@ return async(req,res)=>{
    return send(200,await inbox.receive(await readJson(4_500_000)));
   }
   if(!sameSite())return send(403,{error:'Open the app to use your wardrobe.'});
+  // Photos from your own Instagram posts, fetched here so the app can find you in them on the phone (a page
+  // can't read another site's pixels). Only Instagram's and Facebook's image hosts; nothing is kept.
+  if(req.method==='GET'&&pathname==='/api/wardrobe/photo'){
+   if(!wardrobeAllowance(guest()))return send(429,{error:'Try again in a little while.'});
+   let u;try{u=new URL(new URL(req.url,'http://localhost').searchParams.get('url')||'');}catch{return send(400,{error:'Unsupported photo.'});}
+   if(u.protocol!=='https:'||u.username||u.password||!/(^|\.)(cdninstagram\.com|fbcdn\.net)$/i.test(u.hostname))return send(400,{error:'Unsupported photo.'});
+   const r=await fetch(u.href,{signal:AbortSignal.timeout(15000)}).catch(()=>null);
+   const type=r?.headers.get('content-type')||'';
+   if(!r?.ok||!/^image\//i.test(type)||!/(^|\.)(cdninstagram\.com|fbcdn\.net)$/i.test(new URL(r.url||u.href).hostname))return send(422,{error:'That photo could not be fetched.'});
+   const bytes=Buffer.from(await r.arrayBuffer());if(bytes.length>8_000_000)return send(413,{error:'That photo is too large.'});
+   res.writeHead(200,{'Content-Type':type,'Cache-Control':'private, max-age=600','X-Content-Type-Options':'nosniff'});return res.end(bytes);
+  }
   if(req.method==='POST'&&pathname==='/api/wardrobe/cutout'){
    if(!wardrobeAllowance(guest()))return send(429,{error:'Cutouts are paused for this hour. Your photos are kept as they are.'});
    await credits.budgetOk?.();
