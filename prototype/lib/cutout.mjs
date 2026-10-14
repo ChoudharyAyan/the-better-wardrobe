@@ -1,6 +1,7 @@
 import {createHash} from 'node:crypto';
 import sharp from 'sharp';
 import {ApiError,imageData} from './discovery.mjs';
+import {geminiRequest} from './gemini.mjs';
 
 // Clean wardrobe cutouts (PRD FR#10). The garment keeps its own pixels: Gemini returns a
 // segmentation mask and sharp cuts the photo with it, so colour, print and logos cannot drift.
@@ -70,7 +71,7 @@ export function createCutout({env=process.env,fetcher=fetch}={}){
   const input=await sharp(photo).rotate().resize(MAX_SIDE,MAX_SIDE,{fit:'inside',withoutEnlargement:true}).jpeg({quality:88}).toBuffer();
   if(env.GEMINI_API_KEY){
    // Thinking off: Google recommends it for segmentation, and it keeps the call to a few seconds.
-   const r=await post('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(model)+':generateContent',{method:'POST',headers:{'x-goog-api-key':env.GEMINI_API_KEY,'Content-Type':'application/json'},body:JSON.stringify({contents:[{role:'user',parts:[{inlineData:{mimeType:'image/jpeg',data:input.toString('base64')}},{text:prompt(label)}]}],generationConfig:{responseMimeType:'application/json',temperature:0,thinkingConfig:{thinkingBudget:0}}})});
+   const r=await (({url,init})=>post(url,init))(geminiRequest(env,model,{contents:[{role:'user',parts:[{inlineData:{mimeType:'image/jpeg',data:input.toString('base64')}},{text:prompt(label)}]}],generationConfig:{responseMimeType:'application/json',temperature:0,thinkingConfig:{thinkingBudget:0}}}));
    return parseMasks(r.candidates?.[0]?.content?.parts?.map(p=>p.text||'').join(''));
   }
   if(env.OPENROUTER_API_KEY){
