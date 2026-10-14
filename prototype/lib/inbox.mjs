@@ -4,6 +4,7 @@ import path from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {ApiError,safeURL} from './discovery.mjs';
 import {classify} from '../dist/order-import.js';
+import {geminiRequest} from './gemini.mjs';
 
 // Order-email forwarding (PRD FR#6). Each signed-in person gets a private address
 // (orders+<token>@<WARDROBE_INBOUND_DOMAIN>). A Cloudflare Email Worker (scripts/email-worker.js)
@@ -115,7 +116,7 @@ export function createInbox({env=process.env,store,fetcher=fetch,now=Date.now,fi
   const timeout=AbortSignal.timeout(Number(env.WARDROBE_EMAIL_TIMEOUT_MS||25000));
   let raw;
   if(env.GEMINI_API_KEY){
-   const r=await fetcher('https://generativelanguage.googleapis.com/v1beta/models/'+encodeURIComponent(model)+':generateContent',{method:'POST',signal:timeout,headers:{'x-goog-api-key':env.GEMINI_API_KEY,'Content-Type':'application/json'},body:JSON.stringify({contents:[{role:'user',parts:[{text:prompt(digest)}]}],generationConfig:{responseMimeType:'application/json',temperature:0,thinkingConfig:{thinkingBudget:0}}})});
+   const r=await (({url,init})=>fetcher(url,{...init,signal:timeout}))(geminiRequest(env,model,{contents:[{role:'user',parts:[{text:prompt(digest)}]}],generationConfig:{responseMimeType:'application/json',temperature:0,thinkingConfig:{thinkingBudget:0}}}));
    if(!r.ok)throw new Error('Model '+r.status);raw=(await r.json()).candidates?.[0]?.content?.parts?.map(p=>p.text||'').join('');
   }else{
    const r=await fetcher('https://openrouter.ai/api/v1/chat/completions',{method:'POST',signal:timeout,headers:{Authorization:'Bearer '+env.OPENROUTER_API_KEY,'Content-Type':'application/json','X-Title':'The Wardrobe OS'},body:JSON.stringify({model:'google/'+model,temperature:0,response_format:{type:'json_object'},messages:[{role:'user',content:prompt(digest)}]})});
