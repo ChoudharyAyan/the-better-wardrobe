@@ -5,11 +5,13 @@ import {classify,parseCsv,normalizeAmazon,normalizeMyntra,normalizeFlipkart,CATE
 test('classifier maps Indian and Western retail types onto almirah categories',()=>{
  const cases={Shirts:['Shirts','Tshirts'],'Ethnic wear':['Kurtas','Kurta Sets','Sarees','WomenSari','Lehenga Choli','Sherwani','Nehru Jacket'],Suits:['Suits','Co-Ords'],Dresses:['Dresses','Jumpsuit'],Outerwear:['Sweatshirts','Blazers'],Trousers:['Jeans','Lounge Shorts','Track Pants','MensShortUnbranded'],Footwear:['Casual Shoes','Flip Flops','SpRunningShoes'],Belts:['Belts'],Jewellery:['Bracelet','Brooch'],Accessories:['Pocket Squares','Backpacks','Caps']};
  for(const [category,types] of Object.entries(cases))for(const t of types)assert.equal(classify(t),category,t);
- for(const t of ['Deodorant','Hair Serum','Free Gifts','Blankets Quilts and Dohars','Handset','OtherBooks','Suitcase','DamageProtectionPlan'])assert.equal(classify(t),null,t);
+ for(const t of ['Deodorant','Hair Serum','Free Gifts','Blankets Quilts and Dohars','Handset','OtherBooks','Suitcase','DamageProtectionPlan','MicrowaveOven','DigitalCombo','Flipkart Trust Shield','MobileChargingMobileCharger','LG 30 L Convection Microwave Oven','boAt Earbuds','Smart TV'])assert.equal(classify(t),null,t);
  assert.equal(classify('Trunk'),'innerwear');assert.equal(classify('Socks'),'innerwear');
  // The retailer's type field outranks words in a product title.
  assert.equal(classify('Shirts','Roadster Shirt with Mobile Pocket'),'Shirts');
  assert.equal(classify('Widget'),'unknown');
+ // Appliance words must not catch clothing titles (seen on a Flipkart account with a microwave order).
+ for(const [title,category] of [['Woven Kurta','Ethnic wear'],['Digital Print Shirt','Shirts'],['Cotton Roll-up Tab Sleeve Top','Shirts'],['Oversized Hoodie','Outerwear']])assert.equal(classify(title),category,title);
  for(const c of ['Suits','Outerwear','Jewellery','Ethnic wear'])assert.ok(CATEGORIES.includes(c));
 });
 

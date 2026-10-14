@@ -7,7 +7,7 @@ export const CATEGORIES=['Shirts','Trousers','Ethnic wear','Footwear','Accessori
 
 // Order matters: the first rule that matches wins, so specific types sit above generic ones.
 const RULES=[
- [/perfume|deodorant|fragrance|serum|shampoo|lipstick|makeup|skin ?care|personal care|grooming|blanket|quilt|dohar|bedsheet|cushion|towel|free ?gift|voucher|gift ?card|protection ?plan|charger|handset|mobile|book|suitcase|trolley|luggage|playgym|baby/i,null],
+ [/perfume|deodorant|fragrance|serum|shampoo|lipstick|makeup|skin ?care|personal care|grooming|blanket|quilt|dohar|bedsheet|cushion|towel|free ?gift|voucher|gift ?card|protection ?plan|charger|handset|mobile|book|suitcase|trolley|luggage|playgym|baby|microwave|\bovens?\b|appliance|refrigerator|fridge|washing ?machine|television|\btv\b|laptop|\btablet\b|earphone|headphone|earbud|speaker|power ?bank|adapt[eo]r|\bcable\b|trust ?shield|warranty|insurance|digital ?(combo|voucher|code)|grocery/i,null],
  [/trunk|brief|boxer|bra\b|panty|panties|innerwear|vest|socks?\b|thermal|camisole|shapewear/i,'innerwear'],
  [/kurta|kurti|salwar|churidar|sherwani|nehru|bandhgala|sari\b|saree|lehenga|anarkali|dhoti|ethnic|achkan|ghagra|patiala/i,'Ethnic wear'],
  [/co-?ords?|\bsuits?\b/i,'Suits'],
