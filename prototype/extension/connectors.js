@@ -21,12 +21,22 @@ export const connectors=[
    const pick=i=>{const p=i.product||{};return {createdOn:i.createdOn,statusCode:i.status?.code||'',returned:!!i.return,cancelled:!!i.cancellationStatus,
     product:{id:p.id,name:p.name,brand:p.brand?.name||'',articleType:p.articleType||'',masterCategory:p.masterCategory||'',gender:p.gender||'',
      images:(p.images||[]).map(x=>({view:x.view,src:x.secureSrc||x.src})),size:(p.sizes||[]).find(s=>s.skuId===p.skuId)?.label||''}};};
+   // Pages are read four at a time (Acloset read one screen at a time and took 7 min 20 s). When the
+   // app injects __tbwEmit (the in-app browser does), each page's lines are sent as soon as they
+   // arrive so the review queue fills while the rest load.
+   const emit=typeof globalThis.__tbwEmit==='function'?globalThis.__tbwEmit:()=>{};
    try{
     const first=await page(1);
     if(!first)return {error:/login/.test(location.pathname)?'login':'layout'};
-    const lines=first.items.map(pick),pages=Math.min(Number(first.totalPages)||1,80);
-    for(let n=2;n<=pages;n++){await new Promise(r=>setTimeout(r,350));const o=await page(n);if(!o?.items?.length)break;lines.push(...o.items.map(pick));}
-    return {lines};
+    const pages=Math.min(Number(first.totalPages)||1,80),byPage=[first.items.map(pick)];
+    emit({lines:byPage[0],page:1,pages});
+    for(let start=2;start<=pages;start+=4){
+     const batch=[];for(let n=start;n<start+4&&n<=pages;n++)batch.push(page(n).then(o=>{const got=(o?.items||[]).map(pick);byPage[n-1]=got;if(got.length)emit({lines:got,page:n,pages});return got.length;}));
+     const counts=await Promise.all(batch);
+     if(counts.some(n=>!n))break;
+     await new Promise(r=>setTimeout(r,150));
+    }
+    return {lines:byPage.flat()};
    }catch(e){return {error:'layout',detail:String(e).slice(0,200)};}
   }
  },
