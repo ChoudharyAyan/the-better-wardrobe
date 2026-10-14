@@ -93,7 +93,8 @@ export function createCutout({env=process.env,fetcher=fetch}={}){
    let lastError=null;
    for(const provider of providers){
     try{const out=await run[provider](photo,label);const result={image:'data:image/webp;base64,'+out.toString('base64'),provider};cache.set(key,result);if(cache.size>60)cache.delete(cache.keys().next().value);return result;}
-    catch(e){lastError=e;if(e instanceof ApiError&&e.status===429)continue;}
+    // A rate limit is the more useful error to report than a later provider not being set up.
+    catch(e){if(!(lastError instanceof ApiError))lastError=e;}
    }
    if(lastError instanceof ApiError)throw lastError;
    throw new ApiError(502,'This piece could not be cleaned up. Your photo is kept as it is.');
