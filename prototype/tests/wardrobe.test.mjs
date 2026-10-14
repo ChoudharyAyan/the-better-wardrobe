@@ -87,6 +87,21 @@ test('cutouts apply the Gemini mask to the real pixels, then fall back to OpenAI
  assert.equal(createCutout({env:{}}).configured(),false);
 });
 
+test('saved store pieces are cut out from the store photo, fetched only from store image hosts',async()=>{
+ const mask=await squareMask(),jpeg=await photo(),asked=[];
+ const maskReply={ok:true,status:200,json:async()=>({candidates:[{content:{parts:[{text:JSON.stringify([{box_2d:[250,250,750,750],mask:'data:image/png;base64,'+mask.toString('base64')}])}]}}]})};
+ const c=createCutout({env:{GEMINI_API_KEY:'g'},fetcher:async(url)=>{asked.push(String(url));if(String(url).includes('googleapis'))return maskReply;
+  return {ok:true,status:200,url:String(url),headers:{get:()=>'image/jpeg'},arrayBuffer:async()=>jpeg.buffer.slice(jpeg.byteOffset,jpeg.byteOffset+jpeg.byteLength)};}});
+ const r=await c.cut({image:'https://assets.myntassets.com/w_540,q_85/v1/assets/images/shirt.jpg',label:'shirts'});
+ assert.equal(r.provider,'gemini');assert.equal(asked[0],'https://assets.myntassets.com/w_540,q_85/v1/assets/images/shirt.jpg');
+ for(const bad of ['https://169.254.169.254/latest/meta-data','https://evil.example/x.jpg','http://assets.myntassets.com/x.jpg','https://user:pw@assets.myntassets.com/x.jpg','https://myntassets.com.evil.example/x.jpg'])
+  await assert.rejects(c.cut({image:bad}),e=>e.status===400,bad);
+ const html=createCutout({env:{GEMINI_API_KEY:'g'},fetcher:async url=>({ok:true,status:200,url:String(url),headers:{get:()=>'text/html'},arrayBuffer:async()=>new ArrayBuffer(8)})});
+ await assert.rejects(html.cut({image:'https://rukminim1.flixcart.com/image/480/480/x.jpeg'}),e=>e.status===422,'only images');
+ const moved=createCutout({env:{GEMINI_API_KEY:'g'},fetcher:async()=>({ok:true,status:200,url:'https://evil.example/x.jpg',headers:{get:()=>'image/jpeg'},arrayBuffer:async()=>new ArrayBuffer(8)})});
+ await assert.rejects(moved.cut({image:'https://m.media-amazon.com/images/I/x.jpg'}),e=>e.status===422,'a redirect off the store host is refused');
+});
+
 test('wardrobe routes: signed-in only for the list, same-site only, links and cutouts for everyone',async()=>{
  const cutout={configured:()=>true,cut:async()=>({image:'data:image/webp;base64,AAAA',provider:'gemini'})};
  const pages={'https://www.myntra.com/p/1':'<meta property="og:title" content="Black Kurta"><meta property="og:image" content="https://assets.myntassets.com/k.jpg">'};
