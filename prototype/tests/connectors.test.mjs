@@ -146,7 +146,8 @@ test('connector routes accept the extension, refuse web pages, and serve batches
 // A small DOMParser over cheerio, enough for the Amazon extractor's selectors.
 import * as cheerio from 'cheerio';
 const wrap=($,el)=>({get textContent(){return $(el).text();},getAttribute:n=>$(el).attr(n)??null,get value(){return $(el).attr('value')||'';},
- querySelector:s=>{const f=$(el).find(s).first();return f.length?wrap($,f[0]):null;},querySelectorAll:s=>$(el).find(s).toArray().map(e=>wrap($,e))});
+ querySelector:s=>{const f=$(el).find(s).first();return f.length?wrap($,f[0]):null;},querySelectorAll:s=>$(el).find(s).toArray().map(e=>wrap($,e)),
+ closest:s=>{const f=$(el).closest(s);return f.length?wrap($,f[0]):null;},get parentElement(){const f=$(el).parent();return f.length?wrap($,f[0]):null;}});
 class DOMParser{parseFromString(html){const $=cheerio.load(html);return wrap($,$.root()[0]);}}
 
 test('Amazon extractor walks each year of order history and keeps product links only',async()=>{
@@ -161,6 +162,27 @@ test('Amazon extractor walks each year of order history and keeps product links 
  const items=connectorNormalizers.amazon(result);
  assert.deepEqual(items.map(i=>[i.id,i.category]),[['order-amazon-B0AAAAAAAA','Trousers'],['order-amazon-B0DDDDDDDD','Footwear']],'earbuds and the returned kurta are dropped');
  assert.equal(items[0].image,'https://m.media-amazon.com/images/I/B0AAAAAAAA._AC_UL480_.jpg');assert.equal(items[0].productUrl,'https://www.amazon.in/dp/B0AAAAAAAA');
+});
+
+test('Amazon extractor reads the mobile site: item cards per year, statuses from the label',async()=>{
+ // What a Pixel's in-app browser gets: no order cards or /dp/ links, one item card per item.
+ const year=new Date().getFullYear();
+ const item=(title,rest)=>`<li><div class="a-box past-purchase-tile"><div class="a-box-inner"><a class="item-card__link" href="/progress-tracker/package?orderId=403-1&shipmentId=S" aria-label="${title}, ${rest}"></a><img src="https://m.media-amazon.com/images/I/x${title.length}._SS142_.jpg"></div></div></li>`;
+ const radios=`<form class="order-filter-view__hidden-form"></form><input name="timeFilterGroup" value="months-3"><input name="timeFilterGroup" value="year-${year}"><input name="timeFilterGroup" value="year-${year-1}"><div class="js-yo-main-content"></div>`;
+ const pages={'months-3|1':item('Allen Solly Men Polo T-shirt',`Order placed 14 October ${year}, Arriving Friday`)+item("Levi's Men Slim Fit Jeans, Blue",`Order placed 3 March ${year}, Delivered 5 March, Package was handed to resident`),
+  [`year-${year}|1`]:item("Levi's Men Slim Fit Jeans, Blue",`Order placed 3 March ${year}, Delivered 5 March, Package was handed to resident`)+item('Story@Home Blackout Door Curtains',`Order placed 1 March ${year}, Delivered 2 March`),
+  [`year-${year-1}|1`]:item('Men Cotton Kurta','Return complete, Return complete, Your return is complete.')+item('Campus Running Shoes',`Order placed 8 June ${year-1}, Delivered 9 June`)+item('Amazon Pay balance: Credits',`Order placed 8 June ${year-1}, Cancelled, If you were charged, a refund will be processed`)};
+ const asked=[];
+ const result=plain(await inject(connector('amazon'),{DOMParser,location:{pathname:'/gp/css/order-history'},fetch:async url=>{const u=new URL(url,'https://www.amazon.in');asked.push(u.pathname);
+  return {url:u.href,text:async()=>u.pathname==='/gp/css/order-history'?radios:pages[u.searchParams.get('timeFilter')+'|'+u.searchParams.get('page')]||radios};}}));
+ assert.ok(asked.includes('/your-orders/orders'));
+ assert.equal(result.orders.length,6,'the in-transit polo from the recent view is added once, the jeans are not repeated');
+ assert.doesNotMatch(JSON.stringify(result),/403-1|progress-tracker/,'order ids stay in the page');
+ const kurta=result.orders.find(o=>o.products[0].title==='Men Cotton Kurta');assert.equal(kurta.returned,true);
+ const items=connectorNormalizers.amazon(result);
+ assert.deepEqual(items.map(i=>[i.name,i.category,i.orderedAt]),[['Allen Solly Men Polo T-shirt','Shirts',`${year}-10-14`],["Levi's Men Slim Fit Jeans, Blue",'Trousers',`${year}-03-03`],['Campus Running Shoes','Footwear',`${year-1}-06-08`]],'curtains, the returned kurta and Pay credits are dropped');
+ assert.match(items[0].id,/^order-amazon-m-[a-z0-9]+$/);assert.equal(items[0].productUrl,'','no ASIN on mobile, so no product link');
+ assert.match(items[0].image,/_AC_UL480_\.jpg$/);
 });
 
 test('Amazon extractor reads encrypted order cards from a frame, with the date as written',async()=>{

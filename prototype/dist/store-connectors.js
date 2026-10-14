@@ -202,8 +202,40 @@ export const connectors=[
     }
     return {orderDate:date,returned:/return(ed)?\s+(complete|received)|refund(ed)?\s+(issued|complete)/i.test(body),cancelled:/\bcancell?ed\b/i.test(header+' '+body.slice(0,400)),products:[...byAsin.values()].filter(p=>p.title)};
    };
+   // Amazon's mobile site (the phone app's in-app browser) lists items, not orders: one card per item
+   // whose aria-label reads "<title>, Order placed 12 September 2026, <status>", paged with
+   // /your-orders/orders?timeFilter=year-YYYY&page=N. There is no ASIN, so the id is a hash of the title.
+   const mobile=async doc=>{
+    const years=[...new Set([...doc.querySelectorAll('input[name="timeFilterGroup"]')].map(i=>(i.value.match(/^year-(\d{4})$/)||[])[1]).filter(Boolean))];
+    if(!years.length)for(let y=new Date().getFullYear();y>new Date().getFullYear()-6;y--)years.push(String(y));
+    const hash=s=>{let h=5381;for(const c of s)h=(h*33+c.charCodeAt(0))>>>0;return 'm-'+h.toString(36);};
+    const STATUS=/, (Order placed|Return complete|Returned|Refund|Exchanged|Cancell?ed|Delivered|Arriving|Shipped|Out for delivery)\b/;
+    const orders=[],seen=new Set();let page=0;
+    // Year views leave out orders still on their way, so the recent view goes first; repeats are skipped.
+    for(const filter of ['months-3',...years.map(y=>'year-'+y)]){
+     for(let n=1;n<=50;n++){
+      const r=await fetch(`/your-orders/orders?timeFilter=${filter}&page=${n}`,{credentials:'include'});
+      if(/\/ap\/signin/.test(r.url||''))throw login();
+      const d=new DOMParser().parseFromString(await r.text(),'text/html');
+      const got=[];
+      for(const a of d.querySelectorAll('.item-card__link')){
+       const label=(a.getAttribute('aria-label')||'').replace(/\s+/g,' ').trim();if(!label||seen.has(label))continue;seen.add(label);
+       const cut=label.search(STATUS),title=(cut>0?label.slice(0,cut):label).slice(0,200),rest=cut>0?label.slice(cut):'';
+       const img=(a.closest('.past-purchase-tile')||a.parentElement)?.querySelector('img');
+       got.push({orderDate:(rest.match(/Order placed (\d{1,2} [A-Z][a-z]+,? \d{4})/)||[])[1]||'',
+        returned:/return(ed)? complete|returned\b|refund(ed)? (issued|complete)/i.test(rest),cancelled:/, cancell?ed\b/i.test(rest),
+        products:[{id:hash(title),title,image:String(img?.getAttribute('src')||'').replace(/\._[A-Z]{2}\d+_\./,'._SL500_.')}]});
+      }
+      if(!got.length)break;
+      orders.push(...got);page++;emit({orders:got},{page,pages:0});
+      await wait(300);
+     }
+    }
+    return {orders};
+   };
    try{
     const first=await get(new Date().getFullYear(),0);
+    if(first.querySelector('.item-card__link,.js-yo-main-content,input[name="timeFilterGroup"]')&&!first.querySelector('.order-card,.js-order-card'))return await mobile(first);
     if(!first.querySelector('.order-card,.js-order-card,.order,#ordersContainer,#yourOrders'))return {error:/signin/.test(location.pathname)?'login':'layout'};
     const years=[...new Set([...first.querySelectorAll('select[name="timeFilter"] option,#time-filter option')].map(o=>(o.value.match(/year-(\d{4})/)||[])[1]).filter(Boolean))];
     if(!years.length)for(let y=new Date().getFullYear();y>new Date().getFullYear()-6;y--)years.push(String(y));
