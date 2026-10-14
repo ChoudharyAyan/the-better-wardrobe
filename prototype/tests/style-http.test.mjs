@@ -4,7 +4,7 @@ import {randomUUID} from 'node:crypto';
 import {createServer} from '../server.mjs';
 import {createStyleMe} from '../lib/style-me.mjs';
 test('Style API creates/resumes private sessions, rejects cross-origin edits, and hides other owners',async()=>{
- const service=createStyleMe({env:{}}),server=createServer(undefined,undefined,undefined,undefined,undefined,undefined,undefined,undefined,service);
+ const service=createStyleMe({env:{}}),server=createServer(...Array(12).fill(undefined),service);
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+server.address().port;
  try{
   const id=randomUUID();const create=await fetch(base+'/api/style/sessions',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({id,brief:{mode:'from-scratch'}})});assert.equal(create.status,201);

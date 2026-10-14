@@ -2,6 +2,10 @@
 
 Audited 14 October 2026 against every P0 FR and its acceptance criteria in the approved vision PRD, starting from `3002191`. The owner's later screenshot guidance governs the revised interaction: **3.1 Style suggester** and **3.2 Canvas** inside Style Me, sharing the same session. The four supplied Whering screenshots are interaction references, not garment assets or proof of preview quality. No scope reduction to Canvas, freeze or real on-self preview is proposed.
 
+## Later integration update during PR preparation
+
+My Wardrobe PRs #29 and #30 subsequently landed on main at `3afa4ce`. The Style Me branch now integrates that main revision and registers the actual host wardrobe state through the canonical adapter. Browser guest verification covered three drawn wardrobe basics → owned-only styling → Canvas → frozen image bytes. Rows describing the absence of canonical host registration below are the initial audit state, superseded for this guest host path only. Real account/cross-device, server-resolved wardrobe authorization and photographic fidelity remain unverified. My Wardrobe modules and `mobile/` files remain identical to the merged main version; Claude's separate Android/mobile UI branches remain untouched.
+
 ## Experience and phase mapping
 
 | Phase | 3.1 Style suggester | 3.2 Canvas | Shared dependencies / exit |

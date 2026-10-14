@@ -1,9 +1,9 @@
-// Runs in the store's own page (MAIN world, document_start) on Slikk, Tata CLiQ and Nykaa
-// Fashion. These sites attach a login token to their order requests, so instead of
+// Runs in the store's own page (MAIN world, document_start) on Slikk, Tata CLiQ, Nykaa
+// Fashion and Meesho. These sites attach a login token to their order requests, so instead of
 // reading or replaying that token, we keep the JSON the page itself receives for its
 // order list. Only the response body and URL path are kept: never headers or query strings.
 (()=>{
- const ORDER_RESPONSES=[/api\.slikkclub\.com\/user\/order(\?|$)/,/\/orderhistorylist_V2(\?|$)/,/\/fe-api\/omsApis\/v2\/orders(\?|$)/];
+ const ORDER_RESPONSES=[/api\.slikkclub\.com\/user\/order(\?|$)/,/\/orderhistorylist_V2(\?|$)/,/\/fe-api\/omsApis\/v2\/orders(\?|$)/,/meesho\.com\/api\/[^?]*orders?(\/|\?|$)/i];
  const wanted=url=>ORDER_RESPONSES.some(p=>p.test(url));
  const keep=(url,body)=>{
   try{const data=typeof body==='string'?JSON.parse(body):body;if(data&&typeof data==='object')(window.__tbwCaptured||=[]).push({path:new URL(url,location.href).pathname,data});}catch{}

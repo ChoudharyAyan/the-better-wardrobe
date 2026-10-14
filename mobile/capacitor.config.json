@@ -1,0 +1,16 @@
+{
+  "appId": "com.thewardrobeos.app",
+  "appName": "The Wardrobe OS",
+  "webDir": "www",
+  "server": {
+    "url": "https://app.thewardrobeos.com",
+    "cleartext": false,
+    "allowNavigation": ["app.thewardrobeos.com"]
+  },
+  "android": {
+    "allowMixedContent": false
+  },
+  "plugins": {
+    "InAppBrowser": {}
+  }
+}

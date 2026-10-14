@@ -63,3 +63,8 @@ test('retry resends exact request IDs and preserves all local edits after an out
  const a=editor.edit({type:'move',itemId:'shirt',x:.2,y:.3}),b=editor.edit({type:'move',itemId:'pants',x:.7,y:.6});await assert.rejects(a);await b;
  assert.equal(session.canvas.revision,2);assert.equal(editor.failed,true);assert.equal(editor.pending,2);await assert.rejects(editor.flush());online=true;await editor.retry();assert.equal(requests[0],requests[1]);assert.deepEqual(session.canvas,remote.canvas);assert.equal(editor.pending,0);
 });
+
+test('canonical wardrobe basics retain their declared colour and generated asset',()=>{
+ const basic={id:'basic-kurta',name:'Ivory kurta',category:'Ethnic wear',type:'kurta',source:'Basics',art:{shape:'kurta',colour:'#eee4c7'},image:'data:image/svg+xml,fixture',owned:true};
+ const mapped=wardrobeRecords([basic],{canonical:true})[0];assert.equal(mapped.source,'wardrobe');assert.equal(mapped.colour,'#eee4c7');assert.equal(mapped.image,basic.image);assert.equal(mapped.slot,'top');
+});

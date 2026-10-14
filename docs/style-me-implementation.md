@@ -91,3 +91,11 @@ Final checks: syntax check and complete suite passed, **180 passed / 2 existing 
 - [Free-form Canvas, mobile](screenshots/style-me-free-canvas-mobile.png)
 
 The local browser used curated mode with no live Gemini calls. The previous HTTP 429 remains the latest live image-provider evidence; actual on-self fidelity remains unvalidated. Claude's branch was inspected read-only, not merged or modified. No production deployment, billing change or provider switch was made.
+
+### PR preparation after My Wardrobe landed on main
+
+Integrated `origin/main` at `3afa4ce` (My Wardrobe PRs #29 and #30) into the Style Me branch to resolve conflicts. My Wardrobe ingestion/sync/insights/server interfaces and `mobile/` files remain identical to main. The host now registers its current wardrobe state using the canonical read adapter, while source mode still works with fewer than five items. Style Me's injectable server service follows the existing wardrobe arguments so wardrobe API tests retain their interface.
+
+Browser verification used three photo-free My Wardrobe basics: white shirt, black trousers and white sneakers. They appeared with owned provenance in the Canvas tray, produced an owned-only starter, and froze with their captured image bytes. These are drawn basics, not real garment photos. This verifies the guest host bridge only; real account/cross-device and photographic fidelity remain open. [Current bridge screenshot](screenshots/style-me-wardrobe-bridge.png).
+
+The reviewed UI is an accepted first-draft direction. Follow-up work includes better visuals, Canvas/control hierarchy and sizing, selected-tab contrast, richer contextual suggestions, accessibility and the remaining P0 release gates. Claude's Android/mobile UI branches were neither checked out nor modified. No production deployment or merge of PR #31 was performed.

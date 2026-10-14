@@ -19,7 +19,7 @@ export function wardrobeRecords(input, {canonical=false}={}) {
     }
     if(!slot) return []; // Unknown categories need My Wardrobe correction, not silent accessory classification.
     const revision=String(i.revision||i.itemRevision||fingerprint({name:i.name,category:i.category,type:i.type,colour:i.colour,status:i.status,archived:i.archived,imageVersion:i.imageVersion,material:i.material,image:i.image}));
-    return [{id,name:String(i.name).slice(0,150),slot,colour:i.colour||'',material:i.material||'',coverage:i.coverage||'',tags:Array.isArray(i.tags)?i.tags:[],
+    return [{id,name:String(i.name).slice(0,150),slot,colour:i.colour||i.art?.colour||'',material:i.material||'',coverage:i.coverage||'',tags:Array.isArray(i.tags)?i.tags:[],
       source:canonical?'wardrobe':'described',ownership:canonical?'confirmed':'user-described',...(canonical?{itemRevision:revision}:{}),
       available:i.available!==false&&(!i.status||i.status==='available'),assetVersion:String(i.imageVersion||revision),image:i.image||''}];
   });

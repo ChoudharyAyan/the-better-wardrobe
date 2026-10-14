@@ -9,8 +9,8 @@ const colours={white:'#eee9df',ivory:'#eee4c7',navy:'#273752',black:'#363039',ch
 const glyph=i=>{
  const name=String(i.name||'').toLowerCase();
  const shape=i.slot==='accessory'?( /watch/.test(name)?'M26 6h12v14H26Z M20 20h24v24H20Z M26 44h12v14H26Z':/glass|sunglass/.test(name)?'M8 26h19v15H8Z M37 26h19v15H37Z M27 31h10':/belt/.test(name)?'M8 27h48v10H8Z M14 24h12v16H14Z':/ring|bracelet/.test(name)?'M32 14a18 18 0 1 0 0 36a18 18 0 1 0 0-36Z M32 20a12 12 0 1 1 0 24a12 12 0 1 1 0-24Z':paths.accessory):paths[i.slot]||paths.accessory;
- const colour=String(i.colour||'').toLowerCase(),key=Object.keys(colours).find(c=>colour.includes(c));
- return `<svg class="sm-garment" viewBox="0 0 64 64" aria-hidden="true"><path d="${shape}" fill="${key?colours[key]:/silver/.test(colour)?'#bfc2c5':'#c9c4c1'}" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>`;
+ const colour=String(i.colour||'').toLowerCase(),hex=/^#[0-9a-f]{6}$/.test(colour)?colour:null,key=Object.keys(colours).find(c=>colour.includes(c));
+ return `<svg class="sm-garment" viewBox="0 0 64 64" aria-hidden="true"><path d="${shape}" fill="${hex||(key?colours[key]:/silver/.test(colour)?'#bfc2c5':'#c9c4c1')}" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>`;
 };
 const uuid=()=>crypto.randomUUID();
 
@@ -36,7 +36,7 @@ export function createStyleUI({refresh,wardrobe=()=>[],notify=()=>{}}) {
  const remember=()=>{try{localStorage.setItem('wos-style-session',session.id);}catch{announce('This browser cannot remember the session. Keep its URL to resume.');}};
  const draw=()=>{
   const el=document.activeElement,previousPanel=document.querySelector('.sm-canvas');
-  const panelScroll=previousPanel?.dataset.session===session?.id?previousPanel.scrollTop:0;
+  const panelScroll=previousPanel && session && previousPanel.dataset?.session===session.id?previousPanel.scrollTop:0;
   const selector=el?.hasAttribute?.('data-sm-transform')?`[data-sm-transform="${el.dataset.smTransform}"]`:el?.hasAttribute?.('data-sm-layer')?`[data-sm-layer="${el.dataset.smLayer}"]`:el?.dataset?.sm?`[data-sm="${el.dataset.sm}"]${el.dataset.id?`[data-id="${el.dataset.id}"]`:''}`:el?.hasAttribute?.('data-sm-photo')?'[data-sm-photo]':null;
   const compose=document.querySelector('[data-sm-form="chat"] [name="prompt"]');const typed=compose?.value;refresh();if(typed!=null){const nextCompose=document.querySelector('[data-sm-form="chat"] [name="prompt"]');if(nextCompose)nextCompose.value=typed;}const nextPanel=document.querySelector('.sm-canvas');if(nextPanel)nextPanel.scrollTop=panelScroll;if(selector)document.querySelector(selector)?.focus({preventScroll:true});
  };
@@ -55,7 +55,7 @@ export function createStyleUI({refresh,wardrobe=()=>[],notify=()=>{}}) {
  const garmentImage=i=>{
   const original=wardrobeProvider().find(x=>String(x.id)===i.id);
   const src=i.isFrozen?i.image:i.image||session?.assets?.[i.id]?.image||original?.image;
-  return src&&/^(?:\/api\/wardrobe\/image\/|assets\/|https:\/\/|data:image\/(?:png|jpeg|webp);base64,)/.test(src)?`<img src="${esc(src)}" alt="${esc(i.name)}" loading="lazy">`:glyph(i);
+  return src&&/^(?:\/api\/wardrobe\/image\/|assets\/|https:\/\/|data:image\/(?:png|jpeg|webp);base64,|data:image\/svg\+xml[;,])/.test(src)?`<img src="${esc(src)}" alt="${esc(i.name)}" loading="lazy">`:glyph(i);
  };
  const badge=i=>i.source==='product'?'Selected product · unowned':i.ownership==='confirmed'?'My Wardrobe · owned':i.ownership==='unowned'?'Suggested concept':'You described as owned';
  const piece=i=>`<div class="sm-piece" draggable="true" data-sm-drag="${esc(i.id)}">${garmentImage(i)}<strong>${esc(i.name)}</strong><span>${badge(i)}</span></div>`;
@@ -209,5 +209,5 @@ export function createStyleUI({refresh,wardrobe=()=>[],notify=()=>{}}) {
  document.addEventListener('drop',e=>{const board=e.target.closest('[data-sm-board]');if(!board)return;e.preventDefault();const id=e.dataTransfer.getData('application/x-wos-garment');add(id).catch(onError);});
  window.addEventListener('account-change',async()=>{try{await editor.flush();}catch(e){onError(e);return;}const id=session?.id,version=loadVersion;editor.reset();if(id)api('sessions/'+id).then(data=>{if(session?.id===id&&version===loadVersion){session=data;draw();}}).catch(()=>{if(session?.id===id&&version===loadVersion){session=null;init();}});});
  setTimeout(init,0);
- return {render,async styleItem(item){try{if(loading)await init();canvasOpen=true;const piece=normalize(item);if(!piece)throw new Error('This garment needs a supported category before styling.');const existing=session.canvas.items.find(i=>i.slot===piece.slot);await edit(existing?{type:'replace',itemId:existing.id,item:piece}:{type:'add',item:piece});draw();}catch(e){onError(e);}},registerWardrobeAdapter(provider,{schemaVersion=1,canonical=false}={}){if(schemaVersion!==1||typeof provider!=='function')throw new Error('Use wardrobe adapter schema version 1 and a record provider.');wardrobeProvider=provider;canonicalWardrobe=canonical;draw();}};
+ return {render,async styleItem(item){try{if(loading)await init();canvasOpen=true;const projected=normalize(item);if(!projected)throw new Error('This garment needs a supported category before styling.');const piece=inventory().find(i=>i.id===String(item.id))||{...projected,source:'concept',ownership:'unowned'};const existing=session.canvas.items.find(i=>i.slot===piece.slot);await edit(existing?{type:'replace',itemId:existing.id,item:piece}:{type:'add',item:piece});draw();}catch(e){onError(e);}},registerWardrobeAdapter(provider,{schemaVersion=1,canonical=false}={}){if(schemaVersion!==1||typeof provider!=='function')throw new Error('Use wardrobe adapter schema version 1 and a record provider.');wardrobeProvider=provider;canonicalWardrobe=canonical;draw();}};
 }

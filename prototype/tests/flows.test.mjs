@@ -8,13 +8,17 @@ import {createDraftEditor} from '../dist/style-me/draft-editor.js';
 import {wardrobeRecords} from '../dist/style-me/wardrobe-adapter.js';
 const uiSource=readFileSync(new URL('../dist/style-me/style-me.js',import.meta.url),'utf8').replace(/^import .*;\n/gm,'').replace('export function createStyleUI','function createStyleUI');
 const source='const createStyleUI=(()=>{'+uiSource+';return createStyleUI;})();\n'+readFileSync(new URL('../dist/app.js',import.meta.url),'utf8').replace(/^import .*;\n/gm,'');
+const intake=readFileSync(new URL('../dist/wardrobe-intake.js',import.meta.url),'utf8')+readFileSync(new URL('../dist/wardrobe-insights.js',import.meta.url),'utf8');
 // Code-level flow checks. These do not launch or automate a browser.
-function app(discovery){
+function app(discovery,{sample=true}={}){
   const nodes=new Map(),listeners={};
   function node(key){if(!nodes.has(key))nodes.set(key,{innerHTML:'',textContent:'',open:false,disabled:false,classList:{add(){},remove(){},toggle(){}},showModal(){this.open=true},close(){this.open=false},addEventListener(){},focus(){},click(){},setSelectionRange(){}});return nodes.get(key);}
   const storage=new Map();
-  const context=vm.createContext({console,createDraftEditor,wardrobeRecords,crypto:webcrypto,Date,Intl,URL,Set,Map,Promise,setTimeout:()=>1,clearTimeout(){},localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)},location:{hash:''},history:{replaceState(){}},window:{Discovery:discovery,scrollY:0,scrollTo(){},addEventListener:(k,fn)=>listeners['window:'+k]=fn},document:{querySelector:node,activeElement:null,addEventListener:(k,fn)=>listeners[k]=fn},FormData:class{constructor(f){this.data=f.data}get(k){return this.data[k]??''}getAll(k){return Array.isArray(this.data[k])?this.data[k]:[this.data[k]].filter(Boolean)}}});
+  const context=vm.createContext({console,createDraftEditor,wardrobeRecords,crypto:webcrypto,Date,Intl,URL,Set,Map,Promise,setTimeout:()=>1,clearTimeout(){},localStorage:{getItem:k=>storage.get(k)||null,setItem:(k,v)=>storage.set(k,v)},location:{hash:''},history:{replaceState(){}},window:{Discovery:discovery,scrollY:0,scrollTo(){},addEventListener:(k,fn)=>listeners['window:'+k]=fn},document:{querySelector:key=>key==='.sm-canvas'?null:node(key),activeElement:null,addEventListener:(k,fn)=>listeners[k]=fn},FormData:class{constructor(f){this.data=f.data}get(k){return this.data[k]??''}getAll(k){return Array.isArray(this.data[k])?this.data[k]:[this.data[k]].filter(Boolean)}}});
+  vm.runInContext(intake,context);
   vm.runInContext(source,context);
+  // New people start empty; these walkthrough checks run on the five-piece sample wardrobe.
+  if(sample)vm.runInContext('state=seed()',context);
   return {run:c=>vm.runInContext(c,context),nodes,listeners,context,submit:(id,data,extra={})=>listeners.submit({preventDefault(){},target:{id,data,dataset:extra}}),action:(name,data={})=>vm.runInContext(`actions[${JSON.stringify(name)}]({dataset:${JSON.stringify(data)}})`,context),visit:r=>vm.runInContext(`route=${JSON.stringify(r)};render()`,context)};
 }
 test('all seven screens render with existing local media',()=>{
@@ -83,4 +87,89 @@ test('navigation follows the funnel: Discover, My Wardrobe, Style Me, then Profi
   const a=app();
   assert.equal(a.run('JSON.stringify(tabs.map(t=>t[1]))'),JSON.stringify(['Discover','My Wardrobe','Style Me','My Profile']));
   assert.equal(a.run('route'),'discover','a fresh visit with no hash lands on Discover');
+});
+
+test('My Wardrobe is open to everyone and a new person starts with an empty almirah',()=>{
+  const a=app(undefined,{sample:false});
+  assert.equal(a.run('state.items.length'),0);
+  a.visit('wardrobe');const html=a.nodes.get('main').innerHTML;
+  assert.doesNotMatch(html,/Coming soon/);assert.match(html,/Import your wardrobe/);assert.match(html,/data-action="basics"/);assert.match(html,/data-action="link-paste"/);
+  assert.doesNotMatch(a.nodes.get('#desktop-nav').innerHTML,/My Wardrobe<em class="soon-tag"/);
+  assert.match(html,/data-id="myntra"[^>]*>Myntra<\/button>[\s\S]*data-id="flipkart"/,'Myntra leads the store row');
+  a.visit('style');assert.doesNotMatch(a.nodes.get('main').innerHTML,/soon-card/,'Style Me opens its first-draft studio');assert.match(a.nodes.get('main').innerHTML,/Style Me/);
+});
+test('earlier visitors lose only the untouched sample pieces',()=>{
+  const a=app();
+  const s=a.run('JSON.stringify(migrate({items:[{id:"black",source:"Sample wardrobe"},{id:"mine",source:"Your photo"}],wears:[{id:"seed-1",items:["black"]},{id:"w1",items:["mine"]}]}))');
+  const m=JSON.parse(s);assert.deepEqual(m.items.map(p=>p.id),['mine']);assert.deepEqual(m.wears.map(w=>w.id),['w1']);assert.equal(m.v,2);assert.deepEqual(m.shops,[]);
+});
+test('the review queue hides innerwear and likely gifts until asked, and saves clean pieces',()=>{
+  const a=app(undefined,{sample:false});
+  a.run(`window.TBWAccount={profile:{gender:'male'}};addDraft([{id:'order-myntra-1',name:'Roadster kurta',category:'Ethnic wear',selected:true,gender:'Men',image:'https://assets.myntassets.com/1.jpg'},{id:'order-myntra-2',name:'Floral dress',category:'Dresses',selected:true,gender:'Women'},{id:'order-myntra-3',name:'Briefs',category:'Accessories',selected:true,innerwear:true}],'Myntra','Myntra orders')`);
+  assert.equal(a.run('importDraft.filter(p=>p.selected).length'),1);
+  a.visit('wardrobe/import');let html=a.nodes.get('main').innerHTML;
+  assert.equal((html.match(/class="import-card /g)||[]).length,1);assert.match(html,/Show 2 hidden · looks like a gift, innerwear/);
+  assert.match(a.nodes.get('#desktop-nav').innerHTML,/tab-badge[^>]*>1</,'the tab shows what is waiting');
+  a.action('toggle-hidden');html=a.nodes.get('main').innerHTML;assert.equal((html.match(/class="import-card /g)||[]).length,3);assert.match(html,/Hidden: looks like a gift/);
+  a.action('save-import');
+  const saved=JSON.parse(a.run('JSON.stringify(state.items)'));
+  assert.deepEqual(saved.map(p=>p.id),['order-myntra-1']);
+  for(const k of ['draftId','selected','hidden','warning','cutting','needsCutout'])assert.equal(k in saved[0],false,k);
+  assert.match(saved[0].addedAt,/^\d{4}-/);assert.equal(a.run('importDraft.length'),0);
+});
+test('basics are drawn, added in one tap, and hang on the rail with Ethnic wear',()=>{
+  const a=app(undefined,{sample:false});
+  a.run(`addBasics(window.WardrobeIntake.BASICS.filter(b=>['basic-white-kurta','basic-white-sneakers'].includes(b.id)))`);
+  assert.equal(a.run('state.items.length'),2);assert.equal(a.run('state.items[0].art.shape'),'kurta');
+  a.visit('wardrobe/open');const html=a.nodes.get('main').innerHTML;
+  assert.match(html,/On the rail[\s\S]*White kurta[\s\S]*Folded shelf[\s\S]*White sneakers/);assert.match(html,/Ethnic wear 1/);
+});
+test('the open almirah can be searched by name, brand or colour',()=>{
+  const a=app();
+  a.run(`state.items[0].brand='Roadster';query='roadster';route='wardrobe/open';render()`);
+  let html=a.nodes.get('main').innerHTML;assert.equal((html.match(/data-action="wardrobe-look"/g)||[]).length,1);
+  a.run(`query='nothing like this';render()`);html=a.nodes.get('main').innerHTML;assert.match(html,/Nothing matches/);
+  a.action('clear-search');assert.equal(a.run('query'),'');
+});
+test('levels, XP and streaks come from what was recorded',()=>{
+  const a=app(undefined,{sample:false});
+  a.run(`addBasics(window.WardrobeIntake.BASICS.slice(0,6));const t=new Date().toISOString().slice(0,10);state.wears.push({id:'w',date:t,items:[state.items[0].id]});route='wardrobe';render()`);
+  const html=a.nodes.get('main').innerHTML;
+  assert.match(html,/Level 1 · Collector/);assert.match(html,/1-day streak/);assert.match(html,/75 XP/);assert.match(html,/6 pieces/);
+});
+test('the item page shows wears, cost per wear and completes a look from the wardrobe',()=>{
+  const a=app();
+  a.action('item',{id:'black'});assert.equal(a.run('location.hash'),'wardrobe/item/black','owned pieces open their own page');
+  a.visit('wardrobe/item/black');let html=a.nodes.get('main').innerHTML;
+  assert.match(html,/Complete this look/);assert.match(html,/20<\/strong><span>wears/);assert.match(html,/Mark as worn today/);assert.match(html,/id="item-form"/);
+  a.action('worn-today',{id:'black'});assert.equal(a.run('itemStats("black").logs.length'),21);
+  a.visit('wardrobe/item/black');assert.match(a.nodes.get('main').innerHTML,/Worn today ✓/);
+  a.action('worn-today',{id:'black'});assert.equal(a.run('itemStats("black").logs.length'),21,'the same wear is not logged twice in a day');
+  a.submit('item-form',{name:'Black chinos',category:'Trousers',brand:'Uniqlo',colour:'black',size:'32',price:'2500',purchased:'2026-02-14',status:'laundry'},{id:'black'});
+  assert.equal(a.run('item("black").brand'),'Uniqlo');assert.equal(a.run('item("black").status'),'laundry');assert.equal(a.run('item("black").price'),2500);
+  a.action('archive-item',{id:'tee'});a.visit('wardrobe/open');html=a.nodes.get('main').innerHTML;assert.match(html,/Archived 1/);assert.doesNotMatch(html,/aria-label="Open White tee"/);
+  a.action('duplicate-item',{id:'shoes'});assert.equal(a.run('state.items.filter(p=>p.id.startsWith("shoes-copy-")).length'),1);
+  a.visit('wardrobe/item/missing');assert.match(a.nodes.get('main').innerHTML,/not in your wardrobe/);
+});
+test('the snapshot is never empty, keeps gaps for 20 pieces, and recaps the season',()=>{
+  const a=app();
+  a.visit('wardrobe/snapshot');let html=a.nodes.get('main').innerHTML;
+  assert.match(html,/Your colours/);assert.match(html,/What it is made of/);assert.match(html,/Add 15 more pieces/);assert.match(html,/recap/);
+  a.run(`addBasics(window.WardrobeIntake.BASICS.slice(0,16));render()`);html=a.nodes.get('main').innerHTML;
+  assert.match(html,/Nothing for a wedding|No formal shoes/);assert.match(html,/data-action="discover-search"/);
+});
+test('the same piece from an email and a store import is listed once',()=>{
+  const a=app(undefined,{sample:false});
+  a.run(`addDraft([{id:'order-myntra-9',name:'Roadster Men Navy Checked Casual Shirt',retailer:'myntra',orderedAt:'2026-10-01',category:'Shirts',selected:true}],'Myntra','Myntra orders')`);
+  a.run(`addDraft([{id:'email-abc',name:'Roadster Men Navy Checked Casual Shirt',retailer:'Myntra',orderedAt:'2026-10-02',category:'Shirts',selected:true}],'Email','Email receipts')`);
+  assert.equal(a.run('importDraft.length'),1);
+  a.action('save-import');
+  a.run(`addDraft([{id:'shot-1',name:'Roadster Navy Checked Casual Shirt',retailer:'myntra',orderedAt:'2026-10-03',category:'Shirts',selected:true}],'screenshots','Order screenshot')`);
+  assert.equal(a.run('importDraft[0].duplicate'),'order-myntra-9');assert.equal(a.run('importDraft[0].selected'),false);
+});
+test('store imports remember when they ran and suggest the next store',()=>{
+  const a=app(undefined,{sample:false});
+  a.run(`noteSync('myntra',42);route='wardrobe/add';render()`);
+  const html=a.nodes.get('main').innerHTML;assert.match(html,/42 pieces found · today/);assert.match(html,/Import again/);
+  assert.equal(a.run('nextStore()'),'Amazon','on the web the next importable store is Amazon\'s order file');
 });

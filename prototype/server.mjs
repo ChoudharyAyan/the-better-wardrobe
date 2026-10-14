@@ -4,7 +4,7 @@ import {createPhotos} from './lib/photos.mjs';
 import {readFile} from 'node:fs/promises';
 import {fileURLToPath,pathToFileURL} from 'node:url';
 import path from 'node:path';
-import {createDiscovery,ApiError,modelKey} from './lib/discovery.mjs';
+import {createDiscovery,ApiError,modelKey,safeURL} from './lib/discovery.mjs';
 import {createCredits} from './lib/credits.mjs';
 import {createChats} from './lib/chats.mjs';
 import {createAccounts,departmentFor} from './lib/accounts.mjs';
@@ -14,12 +14,20 @@ import {createQaStore} from './lib/qa.mjs';
 import {createConnectorStore,STORES} from './lib/connectors.mjs';
 import {readFeed} from './lib/mall-feed.mjs';
 import {createCommunity} from './lib/community.mjs';
+import {createWardrobe,productFromPage} from './lib/wardrobe.mjs';
+import {createCutout} from './lib/cutout.mjs';
+import {createInbox} from './lib/inbox.mjs';
+import {retailerPage} from './lib/discovery.mjs';
 import mallSnapshot from './dist/assets/mall-updates.json' with {type:'json'};
 try{process.loadEnvFile(fileURLToPath(new URL('./.env',import.meta.url)));}catch(e){if(e.code!=='ENOENT')throw e;}
 const root=fileURLToPath(new URL('./dist/',import.meta.url));
 const mime={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.svg':'image/svg+xml','.jpg':'image/jpeg','.png':'image/png','.webp':'image/webp','.woff2':'font/woff2','.ttf':'font/ttf'};
 // The bare (req,res) listener is what Vercel's Node runtime invokes; createServer wraps it for local runs.
-export function createHandler(discovery=createDiscovery(),qaStore=createQaStore(),photos=createPhotos(),connectors=createConnectorStore(),community=createCommunity(),credits=createCredits(),chats=createChats(),accounts=createAccounts(),styleMe=createStyleMe()){
+export function createHandler(discovery=createDiscovery(),qaStore=createQaStore(),photos=createPhotos(),connectors=createConnectorStore(),community=createCommunity(),credits=createCredits(),chats=createChats(),accounts=createAccounts(),wardrobe=createWardrobe(),cutout=createCutout(),pageFetcher=retailerPage,inbox=createInbox(),styleMe=createStyleMe()){
+// Wardrobe AI (cutouts, link reading) per guest per hour: a backstop on a shared preview, generous
+// enough for a 100-piece first import. Per instance, like Discover's hourly cap.
+const wardrobeUse=new Map();
+const wardrobeAllowance=who=>{const hour=Math.floor(Date.now()/3600000),key=who+'|'+hour,n=(wardrobeUse.get(key)||0)+1;if(wardrobeUse.size>5000)wardrobeUse.clear();wardrobeUse.set(key,n);return n<=Number(process.env.WARDROBE_GUEST_HOURLY||400);};
 return async(req,res)=>{
  const send=(status,data)=>{res.writeHead(status,{'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff'});res.end(JSON.stringify(data));};
  try{const pathname=decodeURIComponent(new URL(req.url,'http://localhost').pathname);
@@ -138,6 +146,42 @@ return async(req,res)=>{
   const {id,onboarded}=await accounts.authFinish({code:q.get('code'),state:q.get('state'),cookie:cookie('tbw_oauth'),redirectUri:origin()+'/api/auth/google/callback'});
   startSession(id);return redirect(onboarded?'/#discover':'/#onboarding');
  }
+ // My Wardrobe (PRD NFR#2): the signed-in person's pieces, wear log and picks, kept on the server.
+ if(pathname==='/api/wardrobe'||pathname.startsWith('/api/wardrobe/')){
+  // Forwarded order emails arrive from the mail service, not the app, so this sits before the
+  // same-site check and is guarded by the shared webhook secret instead (PRD FR#6).
+  if(req.method==='POST'&&pathname==='/api/wardrobe/inbound'){
+   if(!inbox.authorized(String(req.headers.authorization||''),String(req.headers['x-inbound-secret']||'')))return send(401,{error:'Not allowed'});
+   await credits.budgetOk?.();
+   return send(200,await inbox.receive(await readJson(4_500_000)));
+  }
+  if(!sameSite())return send(403,{error:'Open the app to use your wardrobe.'});
+  if(req.method==='POST'&&pathname==='/api/wardrobe/cutout'){
+   if(!wardrobeAllowance(guest()))return send(429,{error:'Cutouts are paused for this hour. Your photos are kept as they are.'});
+   await credits.budgetOk?.();
+   return send(200,await cutout.cut(await readJson(4_500_000)));
+  }
+  if(req.method==='POST'&&pathname==='/api/wardrobe/link'){
+   if(!wardrobeAllowance(guest()))return send(429,{error:'Try again in a little while.'});
+   const {url}=await readJson(4096);const target=safeURL(String(url||''));
+   if(!target)return send(400,{error:'Paste a product link that starts with https://'});
+   let html;try{html=await pageFetcher(target);}catch{return send(422,{error:'We can read links from Myntra, AJIO, Flipkart, Amazon, Nykaa Fashion and other major Indian stores. Try a link from one of them.'});}
+   const product=productFromPage(html,target);
+   return product?send(200,{product}):send(422,{error:'That page does not show a product we can read. Add it with a photo instead.'});
+  }
+  if(req.method==='GET'&&pathname==='/api/wardrobe/status')return send(200,{signedIn:Boolean(accountId),cutouts:cutout.configured(),email:inbox.configured()});
+  if(!accountId)return send(401,{error:'Sign in to keep your wardrobe on every device.',signIn:true});
+  if(req.method==='GET'&&pathname==='/api/wardrobe')return send(200,await wardrobe.list(accountId));
+  if(req.method==='GET'&&pathname==='/api/wardrobe/inbox')return send(200,{address:await inbox.address(accountId),items:await inbox.pending(accountId)});
+  if(req.method==='POST'&&pathname==='/api/wardrobe/inbox/ack'){const {ids}=await readJson(60_000);return send(200,{removed:await inbox.ack(accountId,ids)});}
+  if(req.method==='PUT'&&pathname==='/api/wardrobe/meta')return send(200,{meta:await wardrobe.putMeta(accountId,await readJson(450_000))});
+  const imagePath=pathname.match(/^\/api\/wardrobe\/image\/([^/]+)$/);
+  if(req.method==='GET'&&imagePath){const img=await wardrobe.image(accountId,imagePath[1]);if(!img)return send(404,{error:'Not found'});res.writeHead(200,{'Content-Type':img.type,'Cache-Control':'private, max-age=31536000, immutable','X-Content-Type-Options':'nosniff'});return res.end(img.data);}
+  const itemPath=pathname.match(/^\/api\/wardrobe\/items\/([^/]+)$/);
+  if(itemPath&&req.method==='PUT')return send(200,{item:await wardrobe.putItem(accountId,itemPath[1],await readJson(1_700_000))});
+  if(itemPath&&req.method==='DELETE'){await wardrobe.removeItem(accountId,itemPath[1]);return send(200,{ok:true});}
+  return send(404,{error:'Not found'});
+ }
  if(req.method==='GET'&&pathname==='/api/discover/looks')return send(200,{looks:lookCards()});
  const ip=()=>String(req.headers['x-forwarded-for']||'').split(',')[0].trim()||req.socket?.remoteAddress||'unknown';
  // Saved Discover chats (three per guest in the beta).
@@ -202,5 +246,5 @@ return async(req,res)=>{
  const content=await readFile(target);res.writeHead(200,{'Content-Type':mime[path.extname(target)]||'application/octet-stream','Cache-Control':'no-cache','X-Content-Type-Options':'nosniff','Referrer-Policy':'no-referrer'});res.end(req.method==='HEAD'?undefined:content);
  }catch(e){const status=e.status||(e.code==='ENOENT'?404:500);if(status>=500&&!e.status)console.error('Unhandled',req.method,String(req.url||'').split('?')[0],e?.code||'',String(e?.message||e).replace(/postgres(ql)?:\/\/\S+/gi,'<db-url>').slice(0,300));send(status,{error:e instanceof ApiError||e.status?e.message:'Unable to complete this request.'});}
 };}
-export function createServer(discovery,qaStore,photos,connectors,community,credits,chats,accounts,styleMe){return http.createServer(createHandler(discovery,qaStore,photos,connectors,community,credits,chats,accounts,styleMe));}
+export function createServer(discovery,qaStore,photos,connectors,community,credits,chats,accounts,wardrobe,cutout,pageFetcher,inbox,styleMe){return http.createServer(createHandler(discovery,qaStore,photos,connectors,community,credits,chats,accounts,wardrobe,cutout,pageFetcher,inbox,styleMe));}
 if(process.argv[1]&&import.meta.url===pathToFileURL(path.resolve(process.argv[1])).href){const port=Number(process.env.PORT||5173),host=process.env.HOST||'0.0.0.0';createServer().listen(port,host,()=>console.log(`The Wardrobe OS: http://127.0.0.1:${port} · network enabled`));}

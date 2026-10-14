@@ -1,0 +1,19 @@
+{
+  "name": "the-wardrobe-os-mobile",
+  "private": true,
+  "description": "The Wardrobe OS phone app: a Capacitor shell around app.thewardrobeos.com with an in-app browser for store order imports.",
+  "scripts": {
+    "sync": "cap sync",
+    "android": "cap add android && cap sync android && cap open android",
+    "ios": "cap add ios && cap sync ios && cap open ios"
+  },
+  "dependencies": {
+    "@capacitor/android": "8.5.3",
+    "@capacitor/core": "8.5.3",
+    "@capacitor/ios": "8.5.3",
+    "@capgo/inappbrowser": "8.6.14"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "8.5.3"
+  }
+}

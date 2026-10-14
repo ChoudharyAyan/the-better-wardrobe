@@ -2,14 +2,16 @@
 // Runs in the browser only: order files are parsed on the device, and only the
 // product fields below are kept. Addresses, payment and contact columns are never read.
 
-export const CATEGORIES=['Shirts','Trousers','Footwear','Accessories','Belts','Dresses','Suits','Outerwear','Jewellery'];
+// Ethnic wear is its own shelf (PRD FR#11): a kurta is not a shirt and a saree is not a dress.
+export const CATEGORIES=['Shirts','Trousers','Ethnic wear','Footwear','Accessories','Belts','Dresses','Suits','Outerwear','Jewellery'];
 
 // Order matters: the first rule that matches wins, so specific types sit above generic ones.
 const RULES=[
  [/perfume|deodorant|fragrance|serum|shampoo|lipstick|makeup|skin ?care|personal care|grooming|blanket|quilt|dohar|bedsheet|cushion|towel|free ?gift|voucher|gift ?card|protection ?plan|charger|handset|mobile|book|suitcase|trolley|luggage|playgym|baby/i,null],
  [/trunk|brief|boxer|bra\b|panty|panties|innerwear|vest|socks?\b|thermal|camisole|shapewear/i,'innerwear'],
- [/kurta ?set|salwar ?suit|churidar ?set|co-?ords?|\bsuits?\b|sherwani|nehru/i,'Suits'],
- [/sari|saree|lehenga|dress|gown|jumpsuit|anarkali/i,'Dresses'],
+ [/kurta|kurti|salwar|churidar|sherwani|nehru|bandhgala|sari\b|saree|lehenga|anarkali|dhoti|ethnic|achkan|ghagra|patiala/i,'Ethnic wear'],
+ [/co-?ords?|\bsuits?\b/i,'Suits'],
+ [/dress|gown|jumpsuit/i,'Dresses'],
  [/blazer|jacket|coat|sweat ?shirt|hoodie|sweater|cardigan|pullover|shrug|waistcoat|gilet/i,'Outerwear'],
  [/shoe|sneaker|sandal|flip ?flop|slipper|slider|loafer|heel|boot|mojari|jutti|kolhapuri|flats\b|clogs?/i,'Footwear'],
  [/belts?\b/i,'Belts'],
@@ -28,7 +30,10 @@ export function classify(...texts){
 }
 
 const https=url=>{if(typeof url!=='string'||!url)return '';const u=url.startsWith('//')?'https:'+url:url.replace(/^http:\/\//,'https://');try{return new URL(u).protocol==='https:'?u:'';}catch{return '';}};
-const isoDate=v=>{if(v==null||v==='')return null;const n=Number(v);const d=new Date(Number.isFinite(n)&&String(v).trim()!==''?n:v);return Number.isNaN(d.getTime())?null:d.toISOString().slice(0,10);};
+const isoDate=v=>{if(v==null||v==='')return null;const n=Number(v),num=Number.isFinite(n)&&String(v).trim()!=='';const d=new Date(num?n:v);if(Number.isNaN(d.getTime()))return null;
+ // A written-out date with no time ("14 October 2026", Amazon) parses as local midnight: read it back in local time, or it slips a day east of UTC.
+ if(!num&&!/\d:\d/.test(String(v))&&!/^\d{4}-\d{2}-\d{2}$/.test(String(v).trim()))return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+ return d.toISOString().slice(0,10);};
 const clean=(s,max=120)=>typeof s==='string'?s.replace(/\s+/g,' ').trim().slice(0,max):'';
 
 function toItem({retailer,productId,name,brand,type,size,color,image,productUrl,orderedAt,gender,category,flag,price=null}){
@@ -83,6 +88,23 @@ export function normalizeFlipkart(orders){
   }
  }
  return dedupe(out);
+}
+
+// Amazon (in-app connector): orders read from the order-history pages. Amazon sells everything,
+// so only lines that are clearly clothing are kept, as with the order file below.
+export function normalizeAmazonOrders(orders){
+ const out=[];
+ for(const order of Array.isArray(orders)?orders:[]){
+  if(order?.returned||order?.cancelled)continue;
+  for(const p of Array.isArray(order?.products)?order.products:[]){
+   if(!/^[A-Z0-9]{10}$/.test(String(p?.id||'')))continue;
+   const category=classify(p.title);if(!category||category==='unknown')continue;
+   // Amazon image URLs take a size token before the extension; ask for a tile-sized one.
+   const image=String(p.image||'').replace(/\._[^/]*_\.(jpg|png)$/i,'._AC_UL480_.$1');
+   out.push({...toItem({retailer:'amazon',productId:p.id,name:p.title,image,productUrl:'https://www.amazon.in/dp/'+p.id,orderedAt:isoDate(order.orderDate),category}),unverified:true});
+  }
+ }
+ return dedupe(out).map(i=>({...i,warning:i.warning||'Read with a new connector · check the name and category.'}));
 }
 
 // RFC 4180 CSV: quoted fields may hold commas, doubled quotes and newlines (Amazon's address columns do).
@@ -176,6 +198,7 @@ export const normalizers={myntra:normalizeMyntra,flipkart:normalizeFlipkart,amaz
 // Store connector batches (extension → /api/connectors) keyed by store id.
 export const connectorNormalizers={
  myntra:d=>normalizeMyntra(d?.lines),flipkart:d=>normalizeFlipkart(d?.orders),slikk:d=>normalizeSlikk(d?.orders),
- ajio:d=>normalizeGeneric('ajio',d?.pages),tatacliq:d=>normalizeGeneric('tatacliq',d?.pages),nykaafashion:d=>normalizeGeneric('nykaafashion',d?.pages)
+ ajio:d=>normalizeGeneric('ajio',d?.pages),tatacliq:d=>normalizeGeneric('tatacliq',d?.pages),nykaafashion:d=>normalizeGeneric('nykaafashion',d?.pages),
+ amazon:d=>normalizeAmazonOrders(d?.orders),meesho:d=>normalizeGeneric('meesho',d?.pages)
 };
 if(typeof window!=='undefined')window.OrderImport={classify,normalizeAmazon,normalizeMyntra,normalizeFlipkart,connectorNormalizers,CATEGORIES};

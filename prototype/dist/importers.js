@@ -69,51 +69,65 @@ function mergeScreenshots(pages){
  return {entries:[...byKey.values()].flat(),skipped};
 }
 
-// Order-history screenshots: one vision call per screenshot, then each product thumbnail is cropped on the phone.
+// Up to four photos are read at once; the server gives wardrobe imports their own lane.
+const PARALLEL=4;
+const runPool=(list,worker,onResult)=>window.WardrobeIntake?window.WardrobeIntake.pool(list,PARALLEL,worker,onResult):Promise.all(list.map((x,i)=>worker(x,i).then(value=>({ok:true,value}),error=>({ok:false,error}))));
+
+// Order-history screenshots: one vision call per screenshot (in parallel), then each product thumbnail is cropped on the phone.
 // A screenshot that times out is skipped and reported, not allowed to sink the whole batch.
 async function screenshots(files,progress=()=>{}){
- const list=imageFiles(files).slice(0,10),pages=[];let failed=0,lastError=null;
+ const list=imageFiles(files).slice(0,10),pages=[];let failed=0,lastError=null,done=0,fatal=null;
  if(!list.length)throw new Error('Choose PNG or JPG screenshots of your orders.');
- for(const [i,file] of list.entries()){
-  progress(`Reading screenshot ${i+1} of ${list.length}…`);
+ progress(`Reading ${list.length} ${list.length===1?'screenshot':'screenshots'}…`);
+ await runPool(list,async file=>{
+  if(fatal)return;
   try{const image=await toDataUrl(file);const r=await post('orders',{image});pages.push({image,retailer:r.retailer,items:r.items});}
-  catch(e){if(e.status===429||e.unconfigured)throw e;failed++;lastError=e;}
- }
+  catch(e){if(e.status===429||e.unconfigured)fatal=e;failed++;lastError=e;}
+  finally{done++;progress(`Read ${done} of ${list.length}…`);}
+ });
+ if(fatal&&!pages.length)throw fatal;
  if(!pages.length)throw lastError;
  const {entries,skipped}=mergeScreenshots(pages),items=[];
  for(const it of entries){
   const unclear=it.category==='unknown'||it.category==='innerwear';
-  items.push({id:'shot-'+crypto.randomUUID(),name:it.name,brand:it.brand,size:it.size,color:it.colour,price:it.price,priceFromScreenshot:it.price!=null,orderedAt:it.date||null,
-   category:unclear?'Accessories':it.category,image:it.crop?await crop(it.image,it.crop):'',retailer:it.retailer||'',
+  items.push({id:'shot-'+crypto.randomUUID(),name:it.name,brand:it.brand,size:it.size,colour:it.colour,price:it.price,priceFromScreenshot:it.price!=null,orderedAt:it.date||null,type:it.type||'',
+   category:unclear?'Accessories':it.category,innerwear:it.category==='innerwear',image:it.crop?await crop(it.image,it.crop):'',retailer:it.retailer||'',
    selected:!unclear&&it.status!=='in_progress',warning:it.status==='in_progress'?'Not delivered yet · select once it arrives.':unclear?'Category unclear · check before saving.':''});
  }
  return {items,skipped,failed};
 }
 
-// Outfit photos (Instagram, Google Photos, camera): detect each garment, crop it, name it.
+// Outfit photos (Instagram, Google Photos, camera, gallery): detect each garment, crop it, name it.
 // Each image is a src string, or {src,focus} where focus is the point the user tapped on themselves.
-async function pieces(images,progress=()=>{}){
- const items=[];let empty=0,manual=0;
- for(const [i,entry] of images.entries()){
+// Photos are read in parallel and onItems() receives each photo's pieces as soon as they are found,
+// so the review queue fills while the rest are still being read.
+async function pieces(images,progress=()=>{},onItems=()=>{}){
+ const items=[];let empty=0,manual=0,done=0,fatal=null;
+ progress(`Finding clothes in ${images.length} ${images.length===1?'photo':'photos'}…`);
+ const results=await runPool(images,async entry=>{
+  if(fatal)return [];
   const src=typeof entry==='string'?entry:entry.src,focus=typeof entry==='string'?null:entry.focus;
-  progress(`Finding clothes in photo ${i+1} of ${images.length}…`);
   const image=src.startsWith('data:')?src:await toDataUrl(await (await fetch(src)).blob());
-  let found=[];
+  let found=[];const mine=[];
   try{found=(await post('detect',focus?{image,focus}:{image})).items||[];}
   catch(e){
    // No vision provider (or quota hit): keep the photo so the user can name it by hand.
-   if(e.unconfigured){manual++;items.push({id:'photo-'+crypto.randomUUID(),name:'',category:'Shirts',image,selected:false,warning:'Automatic detection is unavailable · name this piece to keep it.'});continue;}
+   if(e.unconfigured){manual++;mine.push({id:'photo-'+crypto.randomUUID(),name:'',category:'Shirts',image,selected:false,warning:'Automatic detection is unavailable · name this piece to keep it.'});return mine;}
+   if(e.status===429)fatal=e;
    throw e;
   }
-  if(!found.length){empty++;continue;}
+  if(!found.length){empty++;return mine;}
   for(const f of found){
    const category=classify(f.label);
    if(!category)continue;
    const unclear=category==='unknown'||category==='innerwear';
-   items.push({id:'photo-'+crypto.randomUUID(),name:title(f.label),category:unclear?'Accessories':category,image:await crop(image,f.crop),selected:!unclear,warning:unclear?'Category unclear · check before saving.':''});
+   mine.push({id:'photo-'+crypto.randomUUID(),name:title([f.colour&&!/unknown/i.test(f.colour)?f.colour:'',f.label].filter(Boolean).join(' ')),type:f.label,colour:f.colour||'',pattern:f.pattern||'',category:unclear?'Accessories':category,innerwear:category==='innerwear',image:await crop(image,f.crop),needsCutout:true,selected:!unclear,warning:unclear?'Category unclear · check before saving.':''});
   }
- }
- return {items,empty,manual};
+  return mine;
+ },(result)=>{done++;progress(`Read ${done} of ${images.length}…`);if(result.ok&&result.value?.length){items.push(...result.value);onItems(result.value);}});
+ const failures=results.filter(r=>!r.ok);
+ if(failures.length===images.length&&images.length)throw failures[0].error;
+ return {items,empty,manual,failed:failures.length};
 }
 
 // Instagram "Download your information" ZIP, read in the browser with the native

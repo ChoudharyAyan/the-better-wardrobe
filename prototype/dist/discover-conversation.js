@@ -316,5 +316,6 @@
   // Signing in or out changes whose chats these are.
   if(typeof window.addEventListener==='function')window.addEventListener('account-change',()=>{chatsRequested=false;if(!signedIn()){state.chats=[];}else loadChats();shuffleLooks();});
   const creditsCard = () => {loadWallet();if(!state.wallet)return '';const max=models().find(m=>m.label==='Max')||models()[0],lite=models().find(m=>m.label==='Lite');return `<section class="dc-credits-card"><span class="dc-kicker">Discover credits</span><strong>${state.wallet.remaining} credits left</strong><small>${searchesLeft(max)} ${max.label} searches${lite?` or ${searchesLeft(lite)} ${lite.label}`:''} · free questions don’t count</small></section>`;};
-  window.DiscoverConversation={render:()=>{loadWallet();loadChats();loadLooks();return content();},creditsCard};
+  // search(text): My Wardrobe's gaps and "complete this look" open Discover with a search already asked.
+  window.DiscoverConversation={render:()=>{loadWallet();loadChats();loadLooks();return content();},creditsCard,search:text=>{if(state.busy||!text)return;state.draft=String(text).slice(0,200);send();}};
 })();
