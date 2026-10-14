@@ -93,7 +93,7 @@ test('My Wardrobe is open to everyone and a new person starts with an empty almi
   const a=app(undefined,{sample:false});
   assert.equal(a.run('state.items.length'),0);
   a.visit('wardrobe');const html=a.nodes.get('main').innerHTML;
-  assert.doesNotMatch(html,/Coming soon/);assert.match(html,/Import your wardrobe/);assert.match(html,/data-action="basics"/);assert.match(html,/data-action="link-paste"/);
+  assert.doesNotMatch(html,/Coming soon/);assert.match(html,/Import your wardrobe/);assert.match(html,/data-action="basics"/);assert.doesNotMatch(html,/data-action="link-paste"/,"product links are switched off for now: stores refuse server requests");
   assert.doesNotMatch(a.nodes.get('#desktop-nav').innerHTML,/My Wardrobe<em class="soon-tag"/);
   assert.match(html,/data-id="myntra"[^>]*>(<img class="store-logo"[^>]*>)?<span>Myntra<\/span><\/button>[\s\S]*data-id="flipkart"/,'Myntra leads the store row');
   a.visit('style');assert.doesNotMatch(a.nodes.get('main').innerHTML,/soon-card/,'Style Me opens its first-draft studio');assert.match(a.nodes.get('main').innerHTML,/Style Me/);
