@@ -4,7 +4,8 @@ import vm from 'node:vm';
 import {readFileSync} from 'node:fs';
 import sharp from 'sharp';
 import {createWardrobe,cleanItem,productFromPage} from '../lib/wardrobe.mjs';
-import {createCutout,parseMasks,applyMask} from '../lib/cutout.mjs';
+import {createCutout,parseMasks,applyMask,whiteToClear} from '../lib/cutout.mjs';
+import {keepMainRegions,findBox} from '../lib/garment-sam.mjs';
 import {createAccounts} from '../lib/accounts.mjs';
 import {createServer} from '../server.mjs';
 
@@ -70,35 +71,56 @@ test('cutouts apply the Gemini mask to the real pixels, then fall back to OpenAI
  await assert.rejects(applyMask(await photo(),{box:[0,0,1000,1000],mask:empty}),/separate/);
 
  const calls=[];
- const gemini=createCutout({env:{GEMINI_API_KEY:'g'},fetcher:async(url,init)=>{calls.push(url);const body=JSON.parse(init.body);assert.equal(body.generationConfig.thinkingConfig.thinkingBudget,0);return {ok:true,status:200,json:async()=>({candidates:[{content:{parts:[{text:JSON.stringify([{box_2d:[250,250,750,750],mask:'data:image/png;base64,'+mask.toString('base64'),label:'x'}])}]}}]})};}});
+ const gemini=createCutout({env:{GEMINI_API_KEY:'g',WARDROBE_CUTOUT_PROVIDERS:'gemini'},fetcher:async(url,init)=>{calls.push(url);const body=JSON.parse(init.body);assert.equal(body.generationConfig.thinkingConfig.thinkingBudget,0);return {ok:true,status:200,json:async()=>({candidates:[{content:{parts:[{text:JSON.stringify([{box_2d:[250,250,750,750],mask:'data:image/png;base64,'+mask.toString('base64'),label:'x'}])}]}}]})};}});
  assert.equal(gemini.configured(),true);
  const r=await gemini.cut({image,label:'red top'});assert.equal(r.provider,'gemini');assert.match(r.image,/^data:image\/webp;base64,/);
  await gemini.cut({image,label:'red top'});assert.equal(calls.length,1,'the same photo is cut once');
 
- const fallback=createCutout({env:{GEMINI_API_KEY:'g',OPENAI_API_KEY:'o'},fetcher:async url=>{
+ const fallback=createCutout({env:{GEMINI_API_KEY:'g',OPENAI_API_KEY:'o',WARDROBE_CUTOUT_PROVIDERS:'gemini,openai'},fetcher:async url=>{
   if(url.includes('googleapis'))return {ok:true,status:200,json:async()=>({candidates:[{content:{parts:[{text:'[]'}]}}]})};
   const png=await sharp({create:{width:40,height:40,channels:4,background:{r:200,g:0,b:0,alpha:1}}}).png().toBuffer();
   return {ok:true,status:200,json:async()=>({data:[{b64_json:png.toString('base64')}]})};
  }});
  assert.equal((await fallback.cut({image,label:'red top'})).provider,'openai');
 
- const limited=createCutout({env:{GEMINI_API_KEY:'g'},fetcher:async()=>({ok:false,status:429,json:async()=>({})})});
+ const limited=createCutout({env:{GEMINI_API_KEY:'g',WARDROBE_CUTOUT_PROVIDERS:'gemini'},fetcher:async()=>({ok:false,status:429,json:async()=>({})})});
  await assert.rejects(limited.cut({image}),e=>e.status===429);
  assert.equal(createCutout({env:{}}).configured(),false);
+});
+
+test('SAM cutouts: the box comes from Gemini, stray specks are dropped, and studio shots lose only their background',async()=>{
+ // A 6x4 mask: a big region, a fifth-sized region and a one-pixel speck.
+ const W=6,H=4,m=new Uint8Array([1,1,1,0,0,1, 1,1,1,0,0,0, 1,1,1,0,1,1, 0,0,0,0,0,0]);
+ assert.deepEqual([...keepMainRegions(m,W,H)],[1,1,1,0,0,0, 1,1,1,0,0,0, 1,1,1,0,1,1, 0,0,0,0,0,0],'the speck goes, the second region stays');
+ const reply=text=>async()=>({ok:true,status:200,json:async()=>({candidates:[{content:{parts:[{text}]}}]})});
+ const env={GEMINI_API_KEY:'g',GEMINI_BACKEND:'vertex'};
+ assert.deepEqual(await findBox(env,reply('{"box_2d":[100,200,900,800]}'),Buffer.from('x'),'shirt',1000),[100,200,900,800]);
+ assert.deepEqual(await findBox(env,reply('[{"box_2d":[100,200,900,800]}]'),Buffer.from('x'),'shirt',1000),[100,200,900,800],'a list is fine too');
+ assert.equal(await findBox(env,reply('{"box_2d":null}'),Buffer.from('x'),'shirt',1000),null,'not there');
+ assert.equal(await findBox(env,reply('{"box_2d":[1,1,5,5]}'),Buffer.from('x'),'shirt',1000),null,'too small to trust');
+ // A white T-shirt drawn on white: the background goes, the shirt's own white stays (it doesn't touch the edge).
+ const tee=await sharp(Buffer.from('<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200"><rect width="200" height="200" fill="#fff"/><rect x="50" y="50" width="100" height="100" fill="#222"/><rect x="70" y="70" width="60" height="60" fill="#fff"/></svg>')).png().toBuffer();
+ const {data,info}=await sharp(await whiteToClear(tee)).ensureAlpha().raw().toBuffer({resolveWithObject:true});
+ const at=(x,y)=>data[(y*info.width+x)*4+3];
+ assert.ok(info.width<=110,'trimmed to the piece');assert.equal(at(info.width>>1,info.height>>1),255,'white inside the piece is kept');assert.equal(at(1,1),255,'the dark edge stays');
+ // The studio fallback asks Gemini's image model and returns a clear-background webp.
+ const studio=createCutout({env:{...env,WARDROBE_CUTOUT_PROVIDERS:'studio'},fetcher:async url=>{assert.match(String(url),/aiplatform.*gemini-3\.1-flash-image/);return {ok:true,status:200,json:async()=>({candidates:[{content:{parts:[{inlineData:{mimeType:'image/png',data:tee.toString('base64')}}]}}]})};}});
+ const r=await studio.cut({image:'data:image/png;base64,'+tee.toString('base64'),label:'tee'});assert.equal(r.provider,'studio');assert.match(r.image,/^data:image\/webp;base64,/);
+ assert.equal(createCutout({env:{GEMINI_API_KEY:'g'}}).configured(),true,'SAM and studio need only the Gemini key');
 });
 
 test('saved store pieces are cut out from the store photo, fetched only from store image hosts',async()=>{
  const mask=await squareMask(),jpeg=await photo(),asked=[];
  const maskReply={ok:true,status:200,json:async()=>({candidates:[{content:{parts:[{text:JSON.stringify([{box_2d:[250,250,750,750],mask:'data:image/png;base64,'+mask.toString('base64')}])}]}}]})};
- const c=createCutout({env:{GEMINI_API_KEY:'g'},fetcher:async(url)=>{asked.push(String(url));if(String(url).includes('googleapis'))return maskReply;
+ const c=createCutout({env:{GEMINI_API_KEY:'g',WARDROBE_CUTOUT_PROVIDERS:'gemini'},fetcher:async(url)=>{asked.push(String(url));if(String(url).includes('googleapis'))return maskReply;
   return {ok:true,status:200,url:String(url),headers:{get:()=>'image/jpeg'},arrayBuffer:async()=>jpeg.buffer.slice(jpeg.byteOffset,jpeg.byteOffset+jpeg.byteLength)};}});
  const r=await c.cut({image:'https://assets.myntassets.com/w_540,q_85/v1/assets/images/shirt.jpg',label:'shirts'});
  assert.equal(r.provider,'gemini');assert.equal(asked[0],'https://assets.myntassets.com/w_540,q_85/v1/assets/images/shirt.jpg');
  for(const bad of ['https://169.254.169.254/latest/meta-data','https://evil.example/x.jpg','http://assets.myntassets.com/x.jpg','https://user:pw@assets.myntassets.com/x.jpg','https://myntassets.com.evil.example/x.jpg'])
   await assert.rejects(c.cut({image:bad}),e=>e.status===400,bad);
- const html=createCutout({env:{GEMINI_API_KEY:'g'},fetcher:async url=>({ok:true,status:200,url:String(url),headers:{get:()=>'text/html'},arrayBuffer:async()=>new ArrayBuffer(8)})});
+ const html=createCutout({env:{GEMINI_API_KEY:'g',WARDROBE_CUTOUT_PROVIDERS:'gemini'},fetcher:async url=>({ok:true,status:200,url:String(url),headers:{get:()=>'text/html'},arrayBuffer:async()=>new ArrayBuffer(8)})});
  await assert.rejects(html.cut({image:'https://rukminim1.flixcart.com/image/480/480/x.jpeg'}),e=>e.status===422,'only images');
- const moved=createCutout({env:{GEMINI_API_KEY:'g'},fetcher:async()=>({ok:true,status:200,url:'https://evil.example/x.jpg',headers:{get:()=>'image/jpeg'},arrayBuffer:async()=>new ArrayBuffer(8)})});
+ const moved=createCutout({env:{GEMINI_API_KEY:'g',WARDROBE_CUTOUT_PROVIDERS:'gemini'},fetcher:async()=>({ok:true,status:200,url:'https://evil.example/x.jpg',headers:{get:()=>'image/jpeg'},arrayBuffer:async()=>new ArrayBuffer(8)})});
  await assert.rejects(moved.cut({image:'https://m.media-amazon.com/images/I/x.jpg'}),e=>e.status===422,'a redirect off the store host is refused');
 });
 
