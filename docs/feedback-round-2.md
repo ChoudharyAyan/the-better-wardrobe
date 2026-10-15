@@ -236,3 +236,5 @@ instead of speech bubbles (`guide()`), and no tilted tags or wobble.
   - the onboarding and credits cards aligned.
 - Check each at 412px and 1280px, and keep `npm test` green; many tests
   match on these routes' text.
+
+- **15 Oct, #49:** the almirah rails scroll sideways again. `.almirah.interior` is a grid; without `grid-template-columns:minmax(0,1fr)` and `min-width:0` on its children, the column grew to the full width of the clothes, so the rails never overflowed and could not be swiped (`dist/styles.css`).
