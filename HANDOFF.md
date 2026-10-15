@@ -1,3 +1,22 @@
+# Current state — 15 October 2026 (read first)
+
+The owner is switching between Claude Code and Codex. The live backlog with
+specs, file pointers and known root causes is **`docs/feedback-round-2.md`**.
+Pick up from there. Status of its items:
+
+| # | Item | Status |
+|---|---|---|
+| 1 | Remove "How I searched" | not started |
+| 2 | Obvious mode picker (segmented Fast/Balanced/Thinking) | not started |
+| 3 | Cart under My Profile (Discover + Mall items) | not started |
+| 4 | Mall and Community in the Ask Bao visual style | not started |
+| 5 | Tapping a suggestion or trending look starts the search | not started |
+| 6 | For: All · Women · Men filter in Ask Bao | not started |
+| 7 | Back from a store returns to the app | not started |
+| 8 | Mall: a daily refresh that publishes + "Today in the Mall" | not started |
+
+Update this table in each PR that lands one of them.
+
 # Current state — 8 October 2026
 
 Read this section first. Everything below "Development Handoff (16 September
