@@ -8,11 +8,11 @@ Pick up from there. Status of its items:
 |---|---|---|
 | 1 | Remove "How I searched" | done (#43) |
 | 2 | Obvious mode picker (segmented Fast/Balanced/Thinking) | done (#43): `renderModeBar()` above the composer |
-| 3 | Cart under My Profile (Discover + Mall items) | not started |
+| 3 | Cart under My Profile (Discover + Mall items) | Ask Bao part done (#44): `dist/cart.js`, `TBWCart.button(item)` for any card; Mall cards still to add (item 8) |
 | 4 | Mall and Community in the Ask Bao visual style | not started |
 | 5 | Tapping a suggestion or trending look starts the search | done (#43) |
 | 6 | For: All · Women · Men filter in Ask Bao | done (#43): `body.audience` → `audienceLocked` in `lib/discovery.mjs` |
-| 7 | Back from a store returns to the app | not started |
+| 7 | Back from a store returns to the app | done (#44): web = same tab + sessionStorage restore; Android = in-app browser tab (`dist/native-auth.js`), not yet seen on a phone |
 | 8 | Mall: a daily refresh that publishes + "Today in the Mall" | not started |
 
 Update this table in each PR that lands one of them.

@@ -8,6 +8,14 @@
   if(!cap?.isNativePlatform?.())return;
   const {Browser,App}=cap.Plugins||{};
   if(!Browser||!App)return;
+  // Store pages (Ask Bao results, the Mall, the cart) open in an in-app browser tab: closing it or pressing
+  // Back returns to The Wardrobe OS (user feedback, 15 Oct 2026).
+  document.addEventListener('click',event=>{
+    const a=event.target.closest?.('a[href^="http"]');if(!a||event.defaultPrevented)return;
+    let url;try{url=new URL(a.href);}catch{return;}
+    if(url.origin===location.origin)return;
+    event.preventDefault();Browser.open({url:url.href,toolbarColor:'#FBF5EC'}).catch(()=>{location.href=url.href;});
+  });
   const KEY='tbw-app-verifier',LINK=/^com\.thewardrobeos\.app:\/\/auth\?(.*)$/;
   const b64=bytes=>btoa(String.fromCharCode(...bytes)).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,'');
   const store={get:()=>{try{return localStorage.getItem(KEY);}catch{return null;}},set:v=>{try{v?localStorage.setItem(KEY,v):localStorage.removeItem(KEY);}catch{}}};
