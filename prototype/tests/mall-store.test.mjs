@@ -19,3 +19,16 @@ test('the Mall feed store saves and reads back the latest crawl',async()=>{
  const s=createMallStore({env:{}});assert.equal(await s.latest(),null);
  await s.save({generatedAt:'2026-10-15T00:00:00Z',brands:{}});assert.equal((await s.latest()).generatedAt,'2026-10-15T00:00:00Z');
 });
+
+test('the Mall board pages endlessly by kind and audience, mixing stores',async()=>{
+ const {mallBoard,audienceOf}=await import('../lib/mall-store.mjs');
+ assert.equal(audienceOf({title:'Rose silk saree'},{}),'womenswear');assert.equal(audienceOf({title:"Men's linen shirt"},{}),'menswear');
+ assert.equal(audienceOf({title:'Oversized tee'},{category:'Menswear and smart casual'}),'menswear');assert.equal(audienceOf({title:'Oversized tee'},{category:'Streetwear and denim'}),'unisex');
+ const mk=(n,title)=>({url:'https://s.example/'+n,image:'https://s.example/'+n+'.jpg',title});
+ const feed={brands:{1:{status:'ok',designs:Array.from({length:30},(_,i)=>mk('a'+i,'Oversized tee '+i)),offers:[{...mk('o','Saree'),discountPercent:40}]},2:{status:'ok',designs:Array.from({length:30},(_,i)=>mk('b'+i,"Men's shirt "+i)),offers:[]}}};
+ const p0=mallBoard(feed,[],{page:0});assert.equal(p0.total,61);assert.equal(p0.items.length,24);assert.equal(p0.next,1);
+ assert.notEqual(p0.items[0].brandId,p0.items[1].brandId,'stores alternate');
+ assert.equal(mallBoard(feed,[],{page:2}).next,null);
+ assert.equal(mallBoard(feed,[],{audience:'womenswear'}).total,31,"men's pieces drop out for Women; unisex stays");
+ assert.deepEqual(mallBoard(feed,[],{kind:'offers'}).items.map(i=>i.discountPercent),[40]);
+});

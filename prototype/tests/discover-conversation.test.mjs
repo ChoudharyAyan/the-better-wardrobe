@@ -236,13 +236,14 @@ test('Ask Bao in the app: one bounded panel, a growing composer, three modes and
  assert.match(html,/class="dc-pro-cue dc-pro-cue-(compliment|quote|tip)"/,'a cue: a compliment, a fashion quote or a tip');
  assert.match(html,/data-conversation="explore-mall"/,'the Mall is one of the suggestions');
  assert.match(html,/<textarea id="dc-text" rows="1"[^>]*enterkeyhint="send"/,'starts one line high and grows');
- assert.match(html,/10 searches left · 120 credits/);
- assert.match(html,/class="dc-pro-modebar" role="radiogroup"/,'the three modes are always visible');assert.equal((html.match(/data-conversation="pick-model"/g)||[]).length,3);
+ assert.match(html,/10 searches left/);
+ assert.doesNotMatch(html,/class="dc-pro-modebar"/,'modes stay folded until asked for');assert.match(html,/data-conversation="modes-toggle"[^>]*>Balanced/);
+ h.click('modes-toggle');await h.settle();html=h.latest();assert.match(html,/class="dc-pro-modebar" role="radiogroup"/);assert.equal((html.match(/data-conversation="pick-model"/g)||[]).length,3);
  assert.match(html,/aria-checked="true" data-conversation="pick-model" data-id="balanced"/);
- h.click('pick-model',{id:'thinking'});await h.settle();assert.match(h.latest(),/aria-checked="true" data-conversation="pick-model" data-id="thinking"/);assert.match(h.latest(),/8 searches left/);
+ h.click('pick-model',{id:'thinking'});await h.settle();assert.doesNotMatch(h.latest(),/class="dc-pro-modebar"/,'picking a mode folds the switch');assert.match(h.latest(),/data-conversation="modes-toggle"[^>]*>Thinking/);assert.match(h.latest(),/8 searches left/);
  assert.match(h.latest(),/class="dc-pro-audience"/);h.click('audience',{value:'womenswear'});await h.settle();
  await h.ask('black linen shirt');
  const asked=h.calls.find(c=>c.action==='interpret').body;assert.equal(asked.model,'thinking');assert.equal(asked.audience,'womenswear','the For filter travels with the question');
- assert.doesNotMatch(h.latest(),/How I searched/);
+ assert.doesNotMatch(h.latest(),/How I searched/);assert.match(h.latest(),/class="dc-shell dc-pro dc-flow"/,'after a question the page scrolls like a chat');
  assert.match(h.latest(),/dc-pro-loader|Pieces that match/);
 });
