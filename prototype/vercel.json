@@ -6,7 +6,8 @@
   "outputDirectory": "dist",
   "functions": {
     "api/index.mjs": {
-      "maxDuration": 300
+      "maxDuration": 300,
+      "includeFiles": "dist/discover-brands.js"
     }
   },
   "rewrites": [
@@ -48,6 +49,16 @@
           "value": "same-origin-allow-popups"
         }
       ]
+    }
+  ],
+  "crons": [
+    {
+      "path": "/api/mall/refresh",
+      "schedule": "30 21 * * *"
+    },
+    {
+      "path": "/api/mall/refresh",
+      "schedule": "30 22 * * *"
     }
   ]
 }

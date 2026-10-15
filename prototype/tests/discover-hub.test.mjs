@@ -55,7 +55,8 @@ test('the mall exposes all 100 sources through nine districts and a direct-link 
   assert.equal(brands.length, 100);
   assert.equal(new Set(brands.map((brand) => brand.id)).size, 100);
   assert.equal(new Set(brands.map((brand) => brand.category)).size, 9);
-  assert.match(p.root.outerHTML, /Explore the mall/);
+  assert.match(p.root.outerHTML, /<h2 id="mall-title">The Mall<\/h2>/);
+  assert.match(p.root.outerHTML, /Today in the Mall/,'opens on what is new and on offer');
   assert.match(p.root.outerHTML, /Find it, together/);
   assert.equal((p.mallRoot.outerHTML.match(/data-mall="category"/g) || []).length, 9);
   assert.equal((p.mallRoot.outerHTML.match(/target="_blank"/g) || []).length, 100);

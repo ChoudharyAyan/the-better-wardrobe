@@ -307,3 +307,27 @@ main .ss-hero h1 br{display:none}
 .tbw-cart-actions{display:flex;gap:8px;align-items:center}
 .tbw-cart-actions a,.tbw-cart-actions button{min-height:30px;display:inline-flex;align-items:center;padding:0 12px;border:1px solid var(--ss-line);border-radius:999px;background:#fff;color:var(--ss-ink);font:700 12px/1 Montserrat,system-ui,sans-serif;text-decoration:none}
 .tbw-cart-note,.tbw-cart-empty{margin:8px 0 0;font-size:12px;color:var(--ss-muted)}
+/* ===== The Mall in the Ask Bao framework (owner, 15 Oct 2026) ===== */
+.mall-pro-head{display:flex;align-items:center;gap:12px;margin:4px 0 14px}
+.mall-pro-head h2{font-size:22px!important;font-weight:800;letter-spacing:-.02em;margin:0!important}
+.mall-pro-head p{margin:2px 0 0;font-size:13px;color:var(--ss-body)}
+.mall-pro .ss-bao{animation:none!important}
+.mall-today{margin:0 0 18px;padding:14px;background:#fff;border:1px solid var(--ss-line);border-radius:20px}
+.mall-today-head{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:6px}
+.mall-today-head h2{font-size:17px!important;font-weight:800;margin:0!important}.mall-today-head span{font-size:11px;color:var(--ss-muted)}
+.mall-today-block h3{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--ss-muted);margin:10px 0 6px}
+.mall-today-strip{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:4px;scrollbar-width:none}
+.mall-today-strip::-webkit-scrollbar{display:none}
+.mall-today-card{position:relative;flex:0 0 150px;scroll-snap-align:start}
+.mall-today-card.skeleton{height:230px;border-radius:14px;background:linear-gradient(90deg,#F6EEE8,#FBF7F3,#F6EEE8);background-size:200% 100%;animation:ss-shimmer 1.4s infinite}
+.mall-today-card a{display:flex;flex-direction:column;gap:3px;color:var(--ss-ink);text-decoration:none}
+.mall-today-img{position:relative;display:block;width:150px;height:186px;border-radius:14px;overflow:hidden;background:#F6EEE8;border:1px solid var(--ss-line)}
+.mall-today-img img{width:100%;height:100%;object-fit:cover}
+.mall-today-img em{position:absolute;left:8px;bottom:8px;padding:3px 8px;border-radius:999px;background:var(--ss-plum);color:#fff;font:800 11px/1.3 Montserrat,system-ui,sans-serif;font-style:normal}
+.mall-today-img em.new{background:#2E7D5B}
+.mall-today-card small{font-size:11px;font-weight:700;color:var(--ss-plum);margin-top:4px}
+.mall-today-card strong{font-size:12.5px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.mall-today-card span:last-child{font-size:12.5px;font-weight:800}.mall-today-card s{font-weight:500;color:var(--ss-muted)}
+.mall-walk-title{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--ss-muted);margin:4px 0 8px}
+@keyframes ss-shimmer{to{background-position:-200% 0}}
+@media(prefers-reduced-motion:reduce){.mall-today-card.skeleton{animation:none}}

@@ -8,12 +8,12 @@ Pick up from there. Status of its items:
 |---|---|---|
 | 1 | Remove "How I searched" | done (#43) |
 | 2 | Obvious mode picker (segmented Fast/Balanced/Thinking) | done (#43): `renderModeBar()` above the composer |
-| 3 | Cart under My Profile (Discover + Mall items) | Ask Bao part done (#44): `dist/cart.js`, `TBWCart.button(item)` for any card; Mall cards still to add (item 8) |
-| 4 | Mall and Community in the Ask Bao visual style | not started |
+| 3 | Cart under My Profile (Discover + Mall items) | done (#44, #45): Ask Bao results and Today in the Mall cards |
+| 4 | Mall and Community in the Ask Bao visual style | Mall done (#45): calm header, no Kitsu bubble. Community not started (visual only) |
 | 5 | Tapping a suggestion or trending look starts the search | done (#43) |
 | 6 | For: All · Women · Men filter in Ask Bao | done (#43): `body.audience` → `audienceLocked` in `lib/discovery.mjs` |
 | 7 | Back from a store returns to the app | done (#44): web = same tab + sessionStorage restore; Android = in-app browser tab (`dist/native-auth.js`), not yet seen on a phone |
-| 8 | Mall: a daily refresh that publishes + "Today in the Mall" | not started |
+| 8 | Mall: a daily refresh that publishes + "Today in the Mall" | done (#45): Vercel cron → `/api/mall/refresh` → Postgres `tbw_mall_feed`; `/api/mall/today`; `CRON_SECRET` set in production |
 
 Update this table in each PR that lands one of them.
 
