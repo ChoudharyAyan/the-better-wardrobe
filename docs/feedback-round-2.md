@@ -238,3 +238,5 @@ instead of speech bubbles (`guide()`), and no tilted tags or wobble.
   match on these routes' text.
 
 - **15 Oct, #49:** the almirah rails scroll sideways again. `.almirah.interior` is a grid; without `grid-template-columns:minmax(0,1fr)` and `min-width:0` on its children, the column grew to the full width of the clothes, so the rails never overflowed and could not be swiped (`dist/styles.css`).
+
+- **15 Oct, after #49:** the fix did not reach users at first. Production deployment of #49 failed in `npm ci` (a transient ETIMEDOUT on Vercel), so the site kept the old CSS. It was fixed with `vercel redeploy <failed-url> --target production`. **After every merge, check that production deployed:** `vercel ls the-better-wardrobe --prod` must show READY for the merged commit; a green CI does not mean it is live. Verified on the Pixel afterwards: the hanger rail scrolled 319 px on a real right-to-left swipe.
