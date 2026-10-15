@@ -17,6 +17,8 @@ Pick up from there. Status of its items:
 
 Update this table in each PR that lands one of them.
 
+End of Claude's session (15 Oct): see "Status at end of Claude's session" and "Next, in priority order" at the bottom of `docs/feedback-round-2.md`.
+
 # Current state — 8 October 2026
 
 Read this section first. Everything below "Development Handoff (16 September

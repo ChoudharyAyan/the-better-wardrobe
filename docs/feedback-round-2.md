@@ -163,3 +163,43 @@ Branch in progress: `claude/feedback-round-2` (see "Status" per item).
     `mobile/android/app/src/main/assets/capacitor.config.json` after
     `npx cap sync`).
   - Reinstall `~/Downloads/TheWardrobeOS.apk` afterwards.
+
+## Status at end of Claude's session (15 Oct 2026, ~12:30 IST)
+
+Shipped and live on https://app.thewardrobeos.com:
+
+| PR | What |
+|---|---|
+| #43 | No "How I searched"; tap-to-search on suggestions and trending looks; Fast/Balanced/Thinking switch above the composer (`renderModeBar`); For: All · Women · Men (`renderAudience`, `body.audience` → `audienceLocked`) |
+| #44 | Cart (`dist/cart.js`, `TBWCart`), "My cart" at the top of My Profile, count badge on the tab; Back from a store restores Ask Bao (web: same tab + `sessionStorage` `tbw-ask-restore`; Android: in-app browser tab in `dist/native-auth.js`) |
+| #45 | Mall daily refresh: Vercel cron → `/api/mall/refresh` (Bearer `CRON_SECRET`) → Postgres `tbw_mall_feed`; `GET /api/mall/today`; "Today in the Mall" strips with + Cart; calm Mall header; GitHub schedule removed |
+
+Production check: the first manual refresh covered 100/100 stores in 100 s;
+Today had 4 offers and 6 new arrivals.
+
+## Next, in priority order
+
+1. **Community visual pass (item 4, second half).** Replace Miso's speech
+   bubble (`StickerStudio.communityIntro()`, used by the `discover/community`
+   route in `dist/app.js`) with the same calm header as the Mall
+   (`.mall-pro-head`). The owner said no functional change for Community.
+2. **More verified offers.** Only stores whose pages expose a compare-at
+   price count. `crawlBrand()` in `lib/mall-feed.mjs` looks at 4 candidates
+   per section; raising it to 8 and adding sale-section URLs to
+   `VERIFIED_SECTIONS` would surface more. Never show an unverified discount.
+3. **Check on the Android phone:** the in-app browser tab for store links
+   (`dist/native-auth.js`) and the cart badge. They were only verified in
+   headless Chromium.
+4. **Cart sync for signed-in users** (today it is per device). Add a small
+   account-keyed table like `tbw_discover_chats` in `lib/chats.mjs`.
+5. **Kids' results for adult searches** ("Junior Boys" showed up). Consider
+   filtering kids' items in `lib/discovery.mjs` unless the words ask for kids.
+
+## Owner to-dos (not code)
+
+- **SerpApi:** the free plan has about 55 searches left this month, and each
+  Ask Bao search uses 2–4. Upgrade before more user testing.
+- **Delete the old Gemini key "API key 1"** in Google Cloud project Teardown
+  Labs. It was rotated, but deletion needs you to type DELETE in the console.
+- **Pixel screen timeout:** an agent set it to 30 min by mistake. Set it back
+  in Settings → Display.
