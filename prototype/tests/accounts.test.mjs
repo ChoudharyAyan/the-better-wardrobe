@@ -35,7 +35,7 @@ test('Google sign-in: PKCE + state, verified account, and a tamper-proof session
 });
 
 test('server: onboarding over HTTP, and the profile sets Discover’s default department',async()=>{
- const seen=[];const discovery={status:()=>({shopping:false,models:[],defaultModel:'gemini-3-flash'}),interpret:async body=>{seen.push(body.department);return {attributes:null,question:'?'};}};
+ const seen=[];const discovery={status:()=>({shopping:false,models:[],defaultModel:'balanced'}),interpret:async body=>{seen.push(body.department);return {attributes:null,question:'?'};}};
  const server=createServer(discovery,undefined,undefined,undefined,undefined,undefined,undefined,createAccounts({env:{}}));await new Promise(r=>server.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+server.address().port;
  try{
   const me=await fetch(base+'/api/me');let cookie=me.headers.get('set-cookie').split(';')[0];

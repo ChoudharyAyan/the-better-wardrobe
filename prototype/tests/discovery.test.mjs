@@ -30,7 +30,7 @@ test('metadata falls back to OpenGraph tags when JSON-LD is missing or incomplet
  assert.equal(productMetadata(schemaMissingPrice).price,1299);
 });
 test('missing credentials are explicit and no provider calls occur',async()=>{
- const d=createDiscovery({env:{},fetcher:()=>assert.fail('No network without keys')});assert.deepEqual(d.status(),{vision:false,visionProvider:'gemini',models:[{id:'gemini-3-flash',label:'Max',note:'Most accurate',credits:15},{id:'gpt-5-nano',label:'Lite',note:'More searches',credits:8}],defaultModel:'gemini-3-flash',shopping:false,lens:false,model:'gemini-3-flash-preview',developerDashboard:false,dataMode:'live'});await assert.rejects(d.analyze({image,category:'Shirt'}),/Gemini/);await assert.rejects(d.search({attributes:attr}),/SerpApi/);
+ const d=createDiscovery({env:{},fetcher:()=>assert.fail('No network without keys')});assert.deepEqual(d.status(),{vision:false,visionProvider:'gemini',models:[{id:'fast',label:'Fast',note:'Quick answers',credits:8},{id:'balanced',label:'Balanced',note:'Best for most searches',credits:12},{id:'thinking',label:'Thinking',note:'Slower, reads more detail',credits:15}],defaultModel:'balanced',shopping:false,lens:false,model:'gemini-3-flash-preview',developerDashboard:false,dataMode:'live'});await assert.rejects(d.analyze({image,category:'Shirt'}),/Gemini/);await assert.rejects(d.search({attributes:attr}),/SerpApi/);
 });
 test('conversation interpretation accepts text, screenshot, or both without inventing product facts',async()=>{
  const calls=[];const answer={...attr,category:'Blazer',colour:'brown',subtype:'blazer',features:'single button',department:'womenswear',query:'relaxed brown blazer',budget:4000,uncertainty:'Fabric is unclear',question:''};
@@ -216,19 +216,24 @@ test('OpenRouter runs both models with strict JSON, falls back to JSON mode, and
  const d=createDiscovery({env:{OPENROUTER_API_KEY:'or-test'},fetcher:async(url,opts)=>{
   const body=JSON.parse(opts.body);sent.push({url:String(url),auth:opts.headers.Authorization,body});
   if(mode==='broke')return {ok:false,status:402,json:async()=>({})};
+  if(mode==='primary-garbled'&&body.model.startsWith('google/'))return {ok:true,status:200,json:async()=>({choices:[{finish_reason:'stop',message:{content:'not json'}}]})};
   if(mode==='strict-rejected'&&body.response_format.type==='json_schema')return {ok:false,status:400,json:async()=>({error:{message:'schema not supported'}})};
   return {ok:true,status:200,json:async()=>({choices:[{finish_reason:'stop',message:{content:'```json\n'+JSON.stringify({category:'shirt',colour:'black',fit:'',pattern:'',details:'',subtype:'linen shirt',features:'',department:'menswear',query:'black linen shirt',budget:null,uncertainty:'',question:''})+'\n```'}}]})};
  }});
  assert.equal(d.status().visionProvider,'openrouter');assert.equal(d.status().vision,true);
  await d.interpret({text:'black linen shirt'});
  assert.equal(sent[0].url,'https://openrouter.ai/api/v1/chat/completions');assert.equal(sent[0].auth,'Bearer or-test');
- assert.equal(sent[0].body.model,'google/gemini-3-flash-preview','Gemini 3 Flash is the default');assert.equal(sent[0].body.response_format.type,'json_schema');
+ assert.equal(sent[0].body.model,'google/gemini-3-flash-preview','Balanced (Gemini 3 Flash) is the default');assert.deepEqual(sent[0].body.reasoning,{effort:'low'});assert.equal(sent[0].body.response_format.type,'json_schema');
  assert.match(sent[0].body.messages[0].content,/never write a person's name/);
- await d.interpret({text:'black linen shirt',model:'gpt-5-nano'});
- assert.equal(sent[1].body.model,'openai/gpt-5-nano');assert.deepEqual(sent[1].body.reasoning,{effort:'low'});
+ await d.interpret({text:'black linen shirt',model:'thinking'});
+ assert.equal(sent[1].body.model,'google/gemini-3.6-flash');assert.deepEqual(sent[1].body.reasoning,{effort:'medium'});
  await d.interpret({text:'black linen shirt',model:'claude-opus-everything'});assert.equal(sent[2].body.model,'google/gemini-3-flash-preview','unknown models fall back to the default');
  mode='strict-rejected';const r=await d.interpret({text:'black linen shirt'});assert.equal(r.attributes.category,'shirt');assert.equal(sent.at(-1).body.response_format.type,'json_object');
- mode='broke';await assert.rejects(d.interpret({text:'black linen shirt'}),/balance for this preview is used up/);
+ // The mode's model returns something unreadable: the same request goes once to its OpenAI fallback.
+ mode='primary-garbled';const before=sent.length;const fb=await d.interpret({text:'black linen shirt',model:'fast'});assert.equal(fb.attributes.category,'shirt');
+ assert.deepEqual(sent.slice(before).map(s=>s.body.model),['google/gemini-3.1-flash-lite','openai/gpt-5.4-mini']);
+ mode='broke';const broke=sent.length;await assert.rejects(d.interpret({text:'black linen shirt'}),/balance for this preview is used up/);
+ assert.equal(sent.length-broke,1,'an empty balance is not retried on the fallback');
 });
 test('shopping queries never carry "unknown" fields or a budget phrase',async()=>{
  const urls=[];

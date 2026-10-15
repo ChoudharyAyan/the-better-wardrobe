@@ -43,7 +43,7 @@ test('asking goes straight to results: one interpret, one search, no confirmatio
  assert.equal(h.calls[1].body.turn,'n.1.o.sig');
  const html=h.latest();
  assert.doesNotMatch(html,/Is this the right piece/);
- assert.match(html,/Max · 15 credits · 105 left/);
+ assert.match(html,/Balanced · 15 credits · 105 left/);
  assert.match(html,/Searched for/);assert.match(html,/under ₹2,000/);
  assert.match(html,/Pieces that match/);assert.match(html,/Black linen shirt/);
  assert.match(html,/Search it on/);assert.match(html,/https:\/\/www\.myntra\.com\/black-linen-shirt/);
@@ -61,17 +61,17 @@ test('Discover uses server progress instead of cycling through pretend search st
  assert.match(h.latest(),/Black linen shirt/);
 });
 
-test('the in-app model dropdown offers Max and Lite and the choice travels with the request',async()=>{
+test('the in-app mode picker offers Fast, Balanced and Thinking and the choice travels with the request',async()=>{
  const h=harness({interpret:{attributes:shirt,query:'black linen shirt',budget:null,uncertainty:'',question:'',credits:{remaining:112,cost:8},turn:'t'},search:found});
  let html=h.context.window.DiscoverConversation.render();
- assert.match(html,/Max · 15 credits/);assert.doesNotMatch(html,/<select/,'no native select sheet on phones');
+ assert.match(html,/Balanced · 12 credits/);assert.doesNotMatch(html,/<select/,'no native select sheet on phones');
  h.click('model-menu');await h.settle();html=h.latest();
- assert.match(html,/role="listbox"/);assert.match(html,/<b>Max<\/b><small>Most accurate/);assert.match(html,/<b>Lite<\/b><small>More searches/);
- h.click('pick-model',{id:'gpt-5-nano'});await h.settle();
- assert.match(h.latest(),/Lite · 8 credits/);assert.doesNotMatch(h.latest(),/role="listbox"/);
+ assert.match(html,/role="listbox"/);assert.match(html,/<b>Fast<\/b><small>Quick answers/);assert.match(html,/<b>Balanced<\/b><small>Best for most searches/);assert.match(html,/<b>Thinking<\/b><small>Slower, reads more detail/);
+ h.click('pick-model',{id:'fast'});await h.settle();
+ assert.match(h.latest(),/Fast · 8 credits/);assert.doesNotMatch(h.latest(),/role="listbox"/);
  await h.ask('black linen shirt');
- assert.equal(h.calls[0].body.model,'gpt-5-nano');assert.equal(h.calls[1].body.model,'gpt-5-nano');
- assert.match(h.latest(),/Lite · 8 credits · 112 left/);
+ assert.equal(h.calls[0].body.model,'fast');assert.equal(h.calls[1].body.model,'fast');
+ assert.match(h.latest(),/Fast · 8 credits · 112 left/);
 });
 
 test('editing what was understood re-runs the search for free with the same ticket',async()=>{
@@ -228,4 +228,24 @@ test('screenshot choices render with Sticker Studio and browser timers',async()=
  await h.listeners.change({target:{id:'dc-image-input',files:[{type:'image/jpeg',size:10}]}});
  h.listeners.submit({target:{id:'dc-compose'},preventDefault(){}});for(let i=0;i<4;i++)await h.settle();
  assert.match(h.latest(),/Which piece should I look for/);assert.match(h.latest(),/Jacket/);assert.match(h.latest(),/Trousers/);
+});
+
+test('Ask Bao in the app: one bounded panel, a growing composer, three modes and a cue instead of speech bubbles',async()=>{
+ const h=harness({credits:{remaining:120,models:[{id:'fast',label:'Fast',note:'Quick answers',credits:8},{id:'balanced',label:'Balanced',note:'Best for most searches',credits:12},{id:'thinking',label:'Thinking',note:'Slower, reads more detail',credits:15}],defaultModel:'balanced'},interpret:{attributes:shirt,query:'black linen shirt',question:'',credits:{remaining:105,cost:15},turn:'t'},search:found});
+ h.context.window.fetch=h.context.fetch;h.context.window.dispatchEvent=()=>{};h.context.Event=class {};
+ h.context.window.StickerStudio={friend:who=>`<span class="ss-bao" data-friend="${who}"></span>`,icon:name=>`<svg data-icon="${name}"></svg>`,guide:()=>'<div class="ss-guide">bubble</div>',lookArt:()=>'',skeletons:()=>''};
+ h.context.window.DiscoverConversation.render();for(let i=0;i<4;i++)await h.settle();
+ let html=h.latest();
+ assert.match(html,/class="dc-shell dc-pro"/);assert.match(html,/class="dc-pro-panel"/);assert.match(html,/<strong>Ask Bao<\/strong>/);
+ assert.doesNotMatch(html,/ss-guide/,'no comic speech bubble');
+ assert.match(html,/class="dc-pro-cue dc-pro-cue-(compliment|quote|tip)"/,'a cue: a compliment, a fashion quote or a tip');
+ assert.match(html,/data-conversation="explore-mall"/,'the Mall is one of the suggestions');
+ assert.match(html,/<textarea id="dc-text" rows="1"[^>]*enterkeyhint="send"/,'starts one line high and grows');
+ assert.match(html,/Balanced · 12 credits · 10 searches left/);
+ h.click('model-menu');await h.settle();html=h.latest();
+ assert.equal((html.match(/data-conversation="pick-model"/g)||[]).length,3);assert.match(html,/Thinking<\/b><small>Slower, reads more detail · 15 credits · 8 left/);
+ h.click('pick-model',{id:'thinking'});await h.settle();assert.match(h.latest(),/Thinking · 15 credits · 8 searches left/);
+ await h.ask('black linen shirt');
+ assert.equal(h.calls.find(c=>c.action==='interpret').body.model,'thinking');
+ assert.match(h.latest(),/dc-pro-loader|Pieces that match/);
 });
