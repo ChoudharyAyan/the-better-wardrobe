@@ -1,6 +1,6 @@
 (() => {
   // Discover search: ask in words, a screenshot or both, and get results straight away.
-  // One question costs the chosen model's credits (120 = 8 Max or 15 Lite searches) and unlocks two
+  // One question costs the chosen mode's credits (120 = 15 Fast, 10 Balanced or 8 Thinking searches) and unlocks two
   // shopping searches: the first, plus one free refine. Chats are saved per guest (three in the beta).
   const state = {
     messages:[],draft:'',pending:null,busy:false,stage:'start',choices:[],source:null,followup:null,
@@ -8,7 +8,9 @@
     model:'',wallet:null,menuOpen:false,editing:false,listening:false,
     chats:[],chatId:null,chatTitle:'',chatLimit:null,readyPill:false
   };
-  const FALLBACK_MODELS=[{id:'gemini-3-flash',label:'Max',note:'Most accurate',credits:15},{id:'gpt-5-nano',label:'Lite',note:'More searches',credits:8}];
+  const FALLBACK_MODELS=[{id:'fast',label:'Fast',note:'Quick answers',credits:8},{id:'balanced',label:'Balanced',note:'Best for most searches',credits:12},{id:'thinking',label:'Thinking',note:'Slower, reads more detail',credits:15}];
+  // Earlier versions remembered 'gemini-3-flash' or 'gpt-5-nano'.
+  const LEGACY={'gemini-3-flash':'balanced','gpt-5-nano':'fast'};
   // Loading lines speak to the person and their piece, never to which stores are searched (design QA #19):
   // the store links come at the end anyway.
   const firstName = () => String(globalThis.window?.TBWAccount?.profile?.name||'').trim().split(/\s+/)[0]||'';
@@ -38,10 +40,10 @@
   const root = () => document.getElementById('discover-conversation');
   const hasFetch = () => typeof window.fetch==='function';
   const uuid = () => globalThis.crypto?.randomUUID?.()||'xxxxxxxx-xxxx-4xxx-8xxx-xxxxxxxxxxxx'.replace(/x/g,()=>Math.floor(Math.random()*16).toString(16));
-  try{state.model=localStorage.getItem('tbw-discover-model')||'';}catch{}
+  try{const saved=localStorage.getItem('tbw-discover-model')||'';state.model=LEGACY[saved]||saved;}catch{}
 
   const models = () => state.wallet?.models?.length?state.wallet.models:FALLBACK_MODELS;
-  const currentModel = () => models().find(m=>m.id===state.model)||models().find(m=>m.id===state.wallet?.defaultModel)||models()[0];
+  const currentModel = () => models().find(m=>m.id===state.model)||models().find(m=>m.id===(state.wallet?.defaultModel||'balanced'))||models()[0];
   const searchesLeft = model => state.wallet?Math.floor(state.wallet.remaining/model.credits):null;
   // The subtype ("suede jacket") is what people asked for; the category ("outerwear") is the shelf it sits on.
   const describe = a => [known(a?.colour),known(a?.subtype)||[known(a?.fit),known(a?.category)].filter(Boolean).join(' ')].filter(Boolean).join(' ');
@@ -144,7 +146,7 @@
       const found=Math.min(distinct(state.results.results||[]).length,6);
       state.messages.push({role:'assistant',text:found?`Found ${found} ${found===1?'match':'matches'}. Tap a piece to open it at the store.`:'No exact product matched this time. The store searches below are a good next step.'});
     }catch(error){if(error.name!=='AbortError'){state.stage=state.results?'results':'start';state.messages.push({role:'assistant',text:error.status===403?'That search used its free refine. Ask a new question to search again.':error.message||'The product search did not finish. Please retry.'});}}
-    finally{stopLoading();state.controller=null;paint();if(state.stage==='results')flagReady();saveChat();}
+    finally{stopLoading();state.controller=null;paint();if(state.stage==='results'){flagReady();const thread=document.querySelector?.('.dc-pro .dc-thread'),found=thread?.querySelector('.dc-results');if(found)thread.scrollTop=Math.max(0,found.offsetTop-thread.offsetTop-12);}saveChat();}
   }
   let selectedLook=null;
   async function send(){
@@ -232,7 +234,7 @@
   };
   let mascot=Object.keys(MASCOTS)[Math.floor(Math.random()*4)];
   const pickMascot = () => {const keys=Object.keys(MASCOTS).filter(k=>k!==mascot);mascot=keys[Math.floor(Math.random()*keys.length)];};
-  const renderMascot = () => window.StickerStudio?window.StickerStudio.guide('I’m on it. Finding the pieces for you.',84):`<figure class="dc-mascot" aria-label="${escape(MASCOTS[mascot].name)} is searching with you"><svg viewBox="0 0 100 100" aria-hidden="true">${MASCOTS[mascot].svg}</svg><span class="dc-mascot-shadow" aria-hidden="true"></span><figcaption>${escape(MASCOTS[mascot].name)} is on it</figcaption></figure>`;
+  const renderMascot = () => window.StickerStudio?`<span class="dc-pro-loader" aria-hidden="true">${window.StickerStudio.friend?.('bao',40,'span')||''}</span>`:`<figure class="dc-mascot" aria-label="${escape(MASCOTS[mascot].name)} is searching with you"><svg viewBox="0 0 100 100" aria-hidden="true">${MASCOTS[mascot].svg}</svg><span class="dc-mascot-shadow" aria-hidden="true"></span><figcaption>${escape(MASCOTS[mascot].name)} is on it</figcaption></figure>`;
   // The same friend greets people on an empty Discover (design QA #20: a mascot instead of the star). Tap for another.
   const renderHello = () => {if(window.StickerStudio)return window.StickerStudio.guide('Words, a screenshot, or both. Your call.',84);const m=MASCOTS[mascot];return `<button type="button" class="dc-hello" data-conversation="mascot" aria-label="${escape(m.name)} says hi. Tap to meet another friend."><span class="dc-hello-bubble">Hi, I’m ${escape(m.name.split(' ')[0])} 👋</span><svg viewBox="0 0 100 100" aria-hidden="true">${m.svg}</svg><span class="dc-mascot-shadow" aria-hidden="true"></span></button>`;};
   window.TBWMascot={svg:()=>`<svg viewBox="0 0 100 100" aria-hidden="true">${MASCOTS[mascot].svg}</svg>`,name:()=>MASCOTS[mascot].name};
@@ -283,11 +285,79 @@
   };
   const renderWallet = () => {if(!state.wallet)return '';const m=currentModel(),left=searchesLeft(m);return `<span class="dc-wallet ${state.wallet.remaining<m.credits?'empty':''}"><b>${state.wallet.remaining}</b> credits · ${left} ${left===1?'search':'searches'} left${state.wallet.promoCredits?` · ${state.wallet.promoCredits} XP`:''}</span>`;};
   function content(){
+    if(window.StickerStudio?.friend)return proContent();
     const voice=voiceReady()?`<button type="button" class="dc-mic ${state.listening?'on':''}" data-conversation="voice" aria-pressed="${state.listening}" aria-label="${state.listening?'Stop listening':'Speak your search'}" ${state.busy?'disabled':''}>${window.StickerStudio?.icon(state.listening?'stop':'mic')||(state.listening?'■':'Mic')}</button>`:'';
     const empty=!state.messages.length;
     return `<section id="discover-conversation" class="dc-shell"><div class="dc-intro"><div><span class="dc-kicker">Discover / search</span><h1>${window.StickerStudio?'Ask Bao':'Describe a garment you want to find.'}</h1>${window.StickerStudio?'':'<p>Add details, a screenshot, or both.</p>'}</div></div>${window.StickerStudio?'':renderChats()}${renderChatLimit()}<div class="dc-panel"><div class="dc-thread" aria-live="polite">${empty?`<div class="dc-welcome">${renderHello()}<h2>What caught your eye?</h2><p>Choose an example or describe a garment in your own words.</p></div>${renderLooks()}`:state.messages.map(renderMessage).join('')}${renderChoices()}${renderResults()}${renderLoading()}${state.busy&&window.StickerStudio?window.StickerStudio.skeletons():''}</div><form id="dc-compose" class="dc-composer">${window.StickerStudio?window.StickerStudio.promptChips():''}<input id="dc-image-input" type="file" accept="image/jpeg,image/png,image/webp" hidden><div class="dc-attachment">${state.pending?`<div class="dc-pending"><img src="${escape(state.pending)}" alt="Screenshot ready to send"><span>Screenshot attached</span><button type="button" data-conversation="remove-image" aria-label="Remove screenshot">×</button></div>`:''}</div>${window.StickerStudio?'<div id="ss-prompt-photo" class="ss-prompt-photo" aria-live="polite"></div>':''}<div class="dc-compose-row"><button type="button" class="dc-attach" data-conversation="attach" aria-label="Attach a screenshot" title="Attach screenshot">＋</button><label class="dc-text-wrap"><span class="sr-only">Describe the garment you want to find</span><textarea id="dc-text" rows="2" maxlength="500" placeholder="${state.listening?'Listening… speak now':'Describe a garment, ask a question, or add a screenshot…'}" ${state.busy?'disabled':''}>${escape(state.draft)}</textarea></label>${voice}</div><div class="dc-compose-bar">${renderModelMenu()}${renderWallet()}<button type="submit" class="dc-send" ${state.busy||(state.wallet&&state.wallet.remaining<currentModel().credits)?'disabled':''}>Search <span aria-hidden="true">→</span></button></div><p class="dc-compose-help">${escape(currentModel().note)} · Your image is sent only when you search.</p></form></div><div class="dc-below"><span>01 / Search by conversation</span><span>Keep exploring the mall and community below ↓</span></div></section>`;
   }
-  function paint(focus=false){renderPill();if(window.StickerStudio)window.dispatchEvent(new Event("sticker-data"));const target=root();if(!target)return;target.outerHTML=content();const thread=document.querySelector?.('.dc-thread');if(thread&&state.stage!=='results')thread.scrollTop=thread.scrollHeight;if(focus)document.getElementById('dc-text')?.focus();}
+  // ---- Ask Bao, professional layout (owner's review, 15 Oct 2026) ------------------------------------
+  // One bounded panel that fills the screen, so the page itself never scrolls: a slim header with the
+  // mode picker, the conversation (the only part that scrolls), and a composer modelled on Gemini's that
+  // grows with the sentence. When the keyboard opens, the panel shrinks to the space above it (fitAsk).
+  const MONTH_CUES=[ // India's calendar: a season-aware nudge, so the first suggestion is something people need now.
+    ['Winter layers that still look sharp','A wool overshirt under ₹3,000'],['Wedding season is on','A pastel lehenga for a day wedding'],['Holi and spring brunches','White kurta set under ₹2,500'],
+    ['Summer is here','Breathable linen shirt under ₹2,000'],['Summer is here','Cotton co-ord set for hot days'],['Monsoon is close','Quick-dry sneakers under ₹3,000'],
+    ['Monsoon is here','A rain-proof jacket that still looks good'],['Monsoon is here','Dark-wash denim that hides splashes'],['Festive season starts soon','A silk kurta for Ganesh Chaturthi'],
+    ['Festive season is here','A festive kurta for Diwali under ₹3,000'],['Wedding season is coming','A bandhgala for a winter wedding'],['Party season is here','A black blazer for year-end parties']];
+  const CUES=[
+    {kind:'compliment',text:'You’re looking good today.'},
+    {kind:'compliment',text:'Good taste is half the outfit. You’ve got that part covered.'},
+    {kind:'compliment',text:'Your style, your rules. I’m just here to find the pieces.'},
+    {kind:'quote',text:'Fashion fades, only style remains the same.',by:'Coco Chanel'},
+    {kind:'quote',text:'Style is a way to say who you are without having to speak.',by:'Rachel Zoe'},
+    {kind:'quote',text:'Elegance is elimination.',by:'Cristóbal Balenciaga'},
+    {kind:'quote',text:'Buy less, choose well, make it last.',by:'Vivienne Westwood'},
+    {kind:'tip',text:'Tip: say your budget, like “under ₹2,000”, and I’ll stay within it.'},
+    {kind:'tip',text:'Tip: a screenshot works best when the piece fills most of the frame.'},
+    {kind:'tip',text:'Tip: Thinking mode reads small details like collars, prints and buttons.'}
+  ];
+  let cue=CUES[Math.floor(Math.random()*CUES.length)];
+  const greeting = () => {const h=new Date().getHours(),you=firstName();const part=h<5?'Up late':h<12?'Good morning':h<17?'Good afternoon':'Good evening';return you?`${part}, ${you}`:part;};
+  const CUE_ICON={compliment:'✦',quote:'❝',tip:'💡'};
+  const renderCue = () => `<p class="dc-pro-cue dc-pro-cue-${cue.kind}"><span aria-hidden="true">${CUE_ICON[cue.kind]}</span><span>${escape(cue.text)}${cue.by?` <em>${escape(cue.by)}</em>`:''}</span></p>`;
+  const suggestion = (icon,text,attrs) => `<button type="button" class="dc-pro-suggest" ${attrs}><span class="dc-pro-suggest-icon" aria-hidden="true">${window.StickerStudio.icon(icon)}</span><span>${escape(text)}</span></button>`;
+  const renderSuggestions = () => {
+    const [season,idea]=MONTH_CUES[new Date().getMonth()];
+    return `<div class="dc-pro-suggestions"><small class="dc-pro-label">${escape(season)}</small>${suggestion('sparkle',idea,`data-conversation="prompt" data-value="${escape(idea)}"`)}${suggestion('image','Find a look from a screenshot','data-conversation="attach"')}${suggestion('mall','Walk the Mall’s 9 districts','data-conversation="explore-mall"')}</div>`;
+  };
+  const renderTrending = () => !shown.length?'':`<div class="dc-pro-trending"><div class="dc-pro-row"><small class="dc-pro-label">Trending looks</small>${looks.length>3?'<button type="button" class="dc-pro-link" data-conversation="shuffle">Shuffle</button>':''}</div><div class="dc-pro-looks">${shown.map((x,i)=>`<button type="button" class="dc-pro-look" data-conversation="look" data-index="${i}">${window.StickerStudio.lookArt(x)}<span><small>${escape(x.who)}</small><strong>${escape(x.label)}</strong></span></button>`).join('')}</div></div>`;
+  const renderModes = () => {
+    const m=currentModel();
+    const menu=state.menuOpen?`<ul class="dc-pro-menu" role="listbox" aria-label="Search mode">${models().map(x=>{const left=searchesLeft(x);return `<li role="option" aria-selected="${x.id===m.id}"><button type="button" data-conversation="pick-model" data-id="${escape(x.id)}"><b>${escape(x.label)}</b><small>${escape(x.note)} · ${x.credits} credits${left!=null?` · ${left} left`:''}</small>${x.id===m.id?'<i aria-hidden="true">✓</i>':''}</button></li>`;}).join('')}</ul>`:'';
+    return `<div class="dc-model dc-pro-modes"><button type="button" class="dc-pro-mode" data-conversation="model-menu" aria-haspopup="listbox" aria-expanded="${state.menuOpen}" ${state.busy?'disabled':''}>${escape(m.label)} <span aria-hidden="true">▾</span></button>${menu}</div>`;
+  };
+  function proContent(){
+    const S=window.StickerStudio,m=currentModel(),empty=!state.messages.length,left=searchesLeft(m);
+    const cantPay=state.wallet&&state.wallet.remaining<m.credits;
+    const voice=voiceReady()?`<button type="button" class="dc-pro-icon-btn ${state.listening?'on':''}" data-conversation="voice" aria-pressed="${state.listening}" aria-label="${state.listening?'Stop listening':'Speak your search'}" ${state.busy?'disabled':''}>${S.icon(state.listening?'stop':'mic')}</button>`:'';
+    const welcome=`<div class="dc-pro-welcome"><span class="dc-pro-face">${S.friend('bao',52,'span')}</span><h2>${escape(greeting())}</h2>${renderCue()}</div>${renderSuggestions()}${renderTrending()}`;
+    return `<section id="discover-conversation" class="dc-shell dc-pro"><header class="dc-pro-head"><span class="dc-pro-title">${S.friend('bao',30,'span')}<span><strong>Ask Bao</strong><small>Your fashion search assistant</small></span></span>${renderModes()}<button type="button" class="dc-pro-icon-btn" data-conversation="new-chat" aria-label="New chat" title="New chat" ${state.busy?'disabled':''}>${S.icon('edit')}</button></header>${renderChatLimit()}<div class="dc-pro-panel"><div class="dc-thread" aria-live="polite">${empty?welcome:state.messages.map(renderMessage).join('')}${renderChoices()}${renderResults()}${renderLoading()}</div><form id="dc-compose" class="dc-pro-composer"><input id="dc-image-input" type="file" accept="image/jpeg,image/png,image/webp" hidden>${state.pending?`<div class="dc-pending"><img src="${escape(state.pending)}" alt="Screenshot ready to send"><span>Screenshot attached</span><button type="button" data-conversation="remove-image" aria-label="Remove screenshot">×</button></div>`:''}<div id="ss-prompt-photo" class="ss-prompt-photo" aria-live="polite"></div><label class="dc-pro-field"><span class="sr-only">Describe the garment you want to find</span><textarea id="dc-text" rows="1" maxlength="500" enterkeyhint="send" placeholder="${state.listening?'Listening… speak now':'Ask Bao for any piece'}" ${state.busy?'disabled':''}>${escape(state.draft)}</textarea></label><div class="dc-pro-tools"><button type="button" class="dc-pro-icon-btn" data-conversation="attach" aria-label="Attach a screenshot" title="Attach a screenshot">${S.icon('plus')}</button><small class="dc-pro-cost">${escape(m.label)} · ${m.credits} credits${left!=null?` · ${left} ${left===1?'search':'searches'} left`:''}</small>${voice}<button type="submit" class="dc-pro-send dc-send" aria-label="Search" ${state.busy||cantPay?'disabled':''}>${S.icon('arrow-up')}</button></div></form></div></section>`;
+  }
+  // Fits the panel to the visible screen: below the app bar, above the bottom tabs, or above the keyboard
+  // when it is open (the tabs hide while typing, as in most chat apps).
+  let tallest=0;
+  function fitAsk(){
+    const shell=document.querySelector?.('.dc-pro');const html=document.documentElement;
+    if(!shell){html?.classList?.remove('dc-ask-open','dc-keyboard');return;}
+    const vv=globalThis.visualViewport,view=vv?vv.height:globalThis.innerHeight;tallest=Math.max(tallest,globalThis.innerHeight||0,view);
+    const typing=document.activeElement?.id==='dc-text'&&view<tallest*0.82;
+    html.classList.add('dc-ask-open');html.classList.toggle('dc-keyboard',typing);
+    if(typing&&globalThis.scrollY)globalThis.scrollTo(0,0);
+    const top=shell.getBoundingClientRect().top-(vv?vv.offsetTop:0);
+    const nav=typing?null:document.querySelector('.bottom-nav');const navH=nav&&getComputedStyle(nav).display!=='none'?nav.getBoundingClientRect().height:0;
+    shell.style.height=Math.max(300,Math.floor(view-top-navH-(typing?8:14)))+'px';
+    const thread=shell.querySelector('.dc-thread');if(thread&&state.stage!=='results'&&state.messages.length)thread.scrollTop=thread.scrollHeight;
+  }
+  function growBox(box){if(!box?.style)return;box.style.height='auto';box.style.height=Math.min(box.scrollHeight,168)+'px';}
+  if(typeof window.addEventListener==='function'){
+    const refit=()=>requestAnimationFrame?.(fitAsk);
+    globalThis.visualViewport?.addEventListener('resize',refit);globalThis.visualViewport?.addEventListener('scroll',refit);
+    window.addEventListener('resize',refit);window.addEventListener('hashchange',()=>setTimeout(fitAsk,60));
+    document.addEventListener?.('focusin',e=>{if(e.target?.id==='dc-text')setTimeout(fitAsk,250);});
+    document.addEventListener?.('focusout',e=>{if(e.target?.id==='dc-text')setTimeout(fitAsk,250);});
+  }
+
+  function paint(focus=false){renderPill();if(window.StickerStudio)window.dispatchEvent(new Event("sticker-data"));const target=root();if(!target)return;target.outerHTML=content();const thread=document.querySelector?.('.dc-thread');if(thread&&state.stage!=='results'&&state.messages.length)thread.scrollTop=thread.scrollHeight;if(focus)document.getElementById('dc-text')?.focus();if(target&&window.StickerStudio?.friend){growBox(document.getElementById('dc-text'));fitAsk();}}
 
   // ---- images ---------------------------------------------------------------------------------
   async function toImage(file){if(!file||!['image/jpeg','image/png','image/webp'].includes(file.type))throw new Error('Choose a JPG, PNG or WebP screenshot.');if(file.size>10*1024*1024)throw new Error('Choose an image under 10 MB.');const bitmap=await createImageBitmap(file);try{const scale=Math.min(1,1280/Math.max(bitmap.width,bitmap.height));const canvas=document.createElement('canvas');canvas.width=Math.max(1,Math.round(bitmap.width*scale));canvas.height=Math.max(1,Math.round(bitmap.height*scale));canvas.getContext('2d').drawImage(bitmap,0,0,canvas.width,canvas.height);let quality=.86,data=canvas.toDataURL('image/jpeg',quality);while(data.length>3_700_000&&quality>.45){quality-=.12;data=canvas.toDataURL('image/jpeg',quality);}if(data.length>4_100_000)throw new Error('This image is still too large. Try a tighter crop.');return data;}finally{bitmap.close();}}
@@ -322,13 +392,13 @@
     else if(action==='limit-cancel'){state.chatLimit=null;paint();}
   });
   document.addEventListener('change',async event=>{if(event.target.id!=='dc-image-input')return;const file=event.target.files?.[0];if(!file)return;try{state.pending=await toImage(file);paint(true);}catch(error){state.messages.push({role:'assistant',text:error.message});paint();}});
-  document.addEventListener('input',event=>{if(event.target.id==='dc-text')state.draft=event.target.value;});
-  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&state.menuOpen){state.menuOpen=false;paint();}if(event.target.id==='dc-text'&&event.key==='Enter'&&(event.ctrlKey||event.metaKey)){event.preventDefault();send();}});
+  document.addEventListener('input',event=>{if(event.target.id==='dc-text'){state.draft=event.target.value;growBox(event.target);}});
+  document.addEventListener('keydown',event=>{if(event.key==='Escape'&&state.menuOpen){state.menuOpen=false;paint();}if(event.target.id==='dc-text'&&event.key==='Enter'&&(event.ctrlKey||event.metaKey||(window.StickerStudio?.friend&&!event.shiftKey))){event.preventDefault();send();}});
   document.addEventListener('submit',event=>{if(event.target.id==='dc-compose'){event.preventDefault();send();}else if(event.target.id==='dc-refine'){event.preventDefault();refine(event.target);}});
   // Signing in or out changes whose chats these are.
   if(typeof window.addEventListener==='function')window.addEventListener('hashchange',renderPill);
   if(typeof window.addEventListener==='function')window.addEventListener('account-change',()=>{chatsRequested=false;if(!signedIn()){state.chats=[];}else loadChats();shuffleLooks();});
-  const creditsCard = () => {loadWallet();if(!state.wallet)return '';const max=models().find(m=>m.label==='Max')||models()[0],lite=models().find(m=>m.label==='Lite');return `<section class="dc-credits-card"><span class="dc-kicker">Discover credits</span><strong>${state.wallet.remaining} credits left</strong><small>${searchesLeft(max)} ${max.label} searches${lite?` or ${searchesLeft(lite)} ${lite.label}`:''} · free questions don’t count</small></section>`;};
+  const creditsCard = () => {loadWallet();if(!state.wallet)return '';const max=models().find(m=>m.id==='thinking')||models().at(-1),lite=models().find(m=>m.id==='fast');return `<section class="dc-credits-card"><span class="dc-kicker">Discover credits</span><strong>${state.wallet.remaining} credits left</strong><small>${searchesLeft(max)} ${max.label} searches${lite?` or ${searchesLeft(lite)} ${lite.label}`:''} · free questions don’t count</small></section>`;};
   // search(text): My Wardrobe's gaps and "complete this look" open Discover with a search already asked.
-  window.DiscoverConversation={homeChats:()=>{loadWallet();loadChats();return renderChats();},balance:()=>{loadWallet();return state.wallet?.remaining??null;},render:()=>{loadWallet();loadChats();loadLooks();return content();},creditsCard,search:text=>{if(state.busy||!text)return;state.draft=String(text).slice(0,200);send();}};
+  window.DiscoverConversation={homeChats:()=>{loadWallet();loadChats();return renderChats();},balance:()=>{loadWallet();return state.wallet?.remaining??null;},render:()=>{if(!root())cue=CUES[Math.floor(Math.random()*CUES.length)];loadWallet();loadChats();loadLooks();return content();},fit:fitAsk,creditsCard,search:text=>{if(state.busy||!text)return;state.draft=String(text).slice(0,200);send();}};
 })();
