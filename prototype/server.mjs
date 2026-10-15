@@ -12,7 +12,8 @@ import {lookCards} from './lib/looks.mjs';
 import {randomBytes} from 'node:crypto';
 import {createQaStore} from './lib/qa.mjs';
 import {createConnectorStore,STORES} from './lib/connectors.mjs';
-import {readFeed} from './lib/mall-feed.mjs';
+import {readFeed,readBrands,refreshMall} from './lib/mall-feed.mjs';
+import {createMallStore,todayInMall} from './lib/mall-store.mjs';
 import {createCommunity} from './lib/community.mjs';
 import {createWardrobe,productFromPage} from './lib/wardrobe.mjs';
 import {createCutout} from './lib/cutout.mjs';
@@ -27,6 +28,7 @@ const root=fileURLToPath(new URL('./dist/',import.meta.url));
 const mime={'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.svg':'image/svg+xml','.jpg':'image/jpeg','.png':'image/png','.webp':'image/webp','.woff2':'font/woff2','.ttf':'font/ttf'};
 // The bare (req,res) listener is what Vercel's Node runtime invokes; createServer wraps it for local runs.
 export function createHandler(discovery=createDiscovery(),qaStore=createQaStore(),photos=createPhotos(),connectors=createConnectorStore(),community=createCommunity(),credits=createCredits(),chats=createChats(),accounts=createAccounts(),wardrobe=createWardrobe(),cutout=createCutout(),pageFetcher=retailerPage,inbox=createInbox(),styleMe=createStyleMe(),lookPhotos=createLookPhotos()){
+ const mallStore=createMallStore();
 // Wardrobe AI (cutouts, link reading) per guest per hour: a backstop on a shared preview, generous
 // enough for a 100-piece first import. Per instance, like Discover's hourly cap.
 const wardrobeUse=new Map();
@@ -49,9 +51,25 @@ return async(req,res)=>{
   const result=await community.handle(req,pathname,body);
   res.writeHead(200,{'Content-Type':'application/json','Cache-Control':'no-store','X-Content-Type-Options':'nosniff',...result.headers});return res.end(JSON.stringify(result.data));
  }
- if(req.method==='GET'&&pathname==='/api/mall/updates'){
-  const feed=await readFeed();
-  return send(200,feed.generatedAt?feed:mallSnapshot);
+ // The Mall's feed: the daily crawl saved in the database, else a local refresh file, else the bundled snapshot.
+ const mallFeed=async()=>{const saved=await mallStore.latest();if(saved?.generatedAt)return saved;const local=await readFeed();return local.generatedAt?local:mallSnapshot;};
+ if(req.method==='GET'&&pathname==='/api/mall/updates')return send(200,await mallFeed());
+ if(req.method==='GET'&&pathname==='/api/mall/today'){
+  let brands=[];try{brands=await readBrands();}catch{}
+  return send(200,todayInMall(await mallFeed(),brands));
+ }
+ // Daily refresh, called by Vercel cron (vercel.json). Vercel sends Authorization: Bearer $CRON_SECRET.
+ // Crawls the stores not checked in the last 20 hours, saving as it goes, and stops starting new ones after
+ // about four minutes so the function ends inside its limit; the second daily run finishes the rest.
+ if(req.method==='GET'&&pathname==='/api/mall/refresh'){
+  const secret=String(process.env.CRON_SECRET||'');
+  if(secret.length<16||req.headers.authorization!==`Bearer ${secret}`)return send(401,{error:'Not allowed.'});
+  const started=Date.now(),previous=await mallFeed(),brands=await readBrands(),at=new Date().toISOString();
+  const due=brands.filter(b=>{const c=Date.parse(previous.brands?.[b.id]?.checkedAt||previous.brands?.[b.id]?.lastAttemptAt||'');return !Number.isFinite(c)||started-c>=20*3_600_000;});
+  let done=0,feed={...previous,brands:{...previous.brands}};
+  const result=await refreshMall({brands:due,previous,at,concurrency:6,deadline:started+Number(process.env.MALL_REFRESH_BUDGET_MS||240_000),onProgress:async(brand,row)=>{feed.brands[brand.id]=row;feed.generatedAt=at;if(++done%10===0)await mallStore.save(feed).catch(()=>{});}});
+  await mallStore.save({...result,generatedAt:at});
+  return send(200,{due:due.length,refreshed:done,remaining:due.length-done,seconds:Math.round((Date.now()-started)/1000)});
  }
  // Store connectors: local development only (ORDER_CONNECTORS=true, never on Vercel, localhost only).
  if(pathname.startsWith('/api/connectors/')){

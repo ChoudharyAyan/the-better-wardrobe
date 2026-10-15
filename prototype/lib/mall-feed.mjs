@@ -236,11 +236,12 @@ export async function crawlBrand(brand,previous={},crawler=createMallCrawler(),c
  return result;
 }
 
-export async function refreshMall({brands,previous,crawler=createMallCrawler(),at=nowIso(),onProgress=()=>{},concurrency=3}={}){
+// deadline (ms since epoch): stop starting new brands after it, so a serverless run ends inside its time limit.
+export async function refreshMall({brands,previous,crawler=createMallCrawler(),at=nowIso(),onProgress=()=>{},concurrency=3,deadline=Infinity}={}){
  brands??=await readBrands();previous??=await readFeed();
  const feed={generatedAt:at,brands:{...previous.brands}};
  let cursor=0;
- async function worker(){while(cursor<brands.length){
+ async function worker(){while(cursor<brands.length&&Date.now()<deadline){
   const brand=brands[cursor++];
   feed.brands[brand.id]=await crawlBrand(brand,previous.brands?.[brand.id],crawler,at);
   onProgress(brand,feed.brands[brand.id]);

@@ -165,9 +165,31 @@
   </div>`;
   };
   const directory = () => `<details class="mall-directory"><summary>Browse all 100 stores as a list <span aria-hidden="true">+</span></summary><div class="mall-directory-inner">${categories.map((name) => `<div class="mall-directory-group"><h3>${escapeHtml(name)}</h3><div>${brands.filter((brand) => brand.category === name).map((brand) => `<a href="${escapeHtml(safeUrl(brand.url))}" target="_blank" rel="noopener noreferrer">${logo(brand)}<span>${escapeHtml(brand.name)}</span><span aria-hidden="true">↗</span></a>`).join('')}</div></div>`).join('')}</div></details>`;
+  // "Today in the Mall" (owner, 15 Oct 2026: users didn't see how the Mall differs from Myntra). The daily crawl's
+  // newest arrivals and biggest offers across stores, one per store, each with + Cart and a link to the store.
+  let today = {phase: 'idle', arrivals: [], offers: [], generatedAt: null};
+  const loadToday = async () => {
+    today.phase = 'loading';
+    if (typeof fetch !== 'function') { today.phase = 'failed'; return; }
+    try { const r = await fetch('/api/mall/today', {headers: {Accept: 'application/json'}}); if (!r.ok) throw new Error(); today = {...(await r.json()), phase: 'ready'}; }
+    catch { today.phase = 'failed'; }
+    try { update(); } catch {}
+  };
+  const rupees = n => Number.isFinite(n) && n > 0 ? '₹' + Math.round(n).toLocaleString('en-IN') : '';
+  const todayCard = (item, kind) => `<article class="mall-today-card">${window.TBWCart?.button({url: item.url, title: item.title, image: item.image, price: item.price, store: item.store, source: kind === 'offers' ? 'mall-offer' : 'mall-new'}) || ''}<a href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer"><span class="mall-today-img"><img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.title)}" loading="lazy" referrerpolicy="no-referrer">${kind === 'offers' && item.discountPercent ? `<em>${item.discountPercent}% off</em>` : item.isNew ? '<em class="new">New</em>' : ''}</span><small>${escapeHtml(item.store)}</small><strong>${escapeHtml(item.title)}</strong><span>${rupees(item.price) ? `${rupees(item.price)}${kind === 'offers' && rupees(item.originalPrice) ? ` <s>${rupees(item.originalPrice)}</s>` : ''}` : 'See price at store'}</span></a></article>`;
+  const todaySection = () => {
+    if (today.phase === 'idle') void loadToday();
+    const strip = (title, list, kind) => list.length ? `<div class="mall-today-block"><h3>${title}</h3><div class="mall-today-strip">${list.map(item => todayCard(item, kind)).join('')}</div></div>` : '';
+    const when = today.generatedAt ? new Date(today.generatedAt) : null;
+    const fresh = when && Number.isFinite(when.getTime()) ? `Updated ${when.toLocaleDateString('en-IN', {day: 'numeric', month: 'short'})}` : '';
+    if (today.phase !== 'ready') return `<section class="mall-today" aria-busy="true"><div class="mall-today-head"><h2>Today in the Mall</h2></div><div class="mall-today-strip">${'<article class="mall-today-card skeleton"></article>'.repeat(3)}</div></section>`;
+    if (!today.arrivals.length && !today.offers.length) return '';
+    return `<section class="mall-today" aria-label="Today in the Mall"><div class="mall-today-head"><h2>Today in the Mall</h2><span>${fresh}</span></div>${strip('On offer', today.offers, 'offers')}${strip('New in', today.arrivals, 'arrivals')}</section>`;
+  };
+  const header = () => `<header class="mall-pro-head">${window.StickerStudio?.friend?.('kitsu', 34, 'span') || ''}<div><h2 id="mall-title">The Mall</h2><p>New drops and offers from 100 Indian fashion stores, checked every day.</p></div></header>`;
   const render = () => {
     if (updateFeed.phase === 'idle') void loadUpdates();
-    return `<section id="discover-mall" class="discover-mall" aria-labelledby="mall-title"><div class="mall-heading"><div><p class="hub-eyebrow">Discover / 02</p><h2 id="mall-title">Explore the mall</h2><p>Walk into a district, pick a store, then see what is new.</p></div><span class="mall-source-count">${brands.length} stores</span></div>
+    return `<section id="discover-mall" class="discover-mall mall-pro" aria-labelledby="mall-title">${header()}${todaySection()}<h3 class="mall-walk-title">Walk the districts</h3>
     <div class="mall-progress"><div><span class="mall-stamp">✳</span><strong>${progress.districts.size} of ${categories.length} districts explored</strong></div><span>${progress.stores.size} store ${progress.stores.size === 1 ? 'sign' : 'signs'} found</span></div>
     ${stage === 'map' ? map() : stage === 'lanes' ? laneScene() : stores()}
     ${directory()}

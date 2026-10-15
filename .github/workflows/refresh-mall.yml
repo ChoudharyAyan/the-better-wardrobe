@@ -1,8 +1,9 @@
 name: Refresh mall storefronts
 
+# The daily refresh now runs on Vercel cron (GET /api/mall/refresh, see prototype/vercel.json) and saves to
+# Postgres, so it publishes without a pull request. This repo does not let Actions open pull requests, which made
+# every scheduled run here fail at its last step. Kept for a manual snapshot refresh only.
 on:
-  schedule:
-    - cron: '17 2,8,14,20 * * *'
   workflow_dispatch:
 
 permissions:
