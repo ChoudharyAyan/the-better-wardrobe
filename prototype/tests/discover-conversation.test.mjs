@@ -47,9 +47,7 @@ test('asking goes straight to results: one interpret, one search, no confirmatio
  assert.match(html,/Searched for/);assert.match(html,/under ₹2,000/);
  assert.match(html,/Pieces that match/);assert.match(html,/Black linen shirt/);
  assert.match(html,/Search it on/);assert.match(html,/https:\/\/www\.myntra\.com\/black-linen-shirt/);
- assert.match(html,/How I searched · 3 searches · 4\.2s/);
- assert.equal((html.match(/<code>black linen shirt men<\/code>/g)||[]).length,1,'a phrase sent to two routes is listed once');
- assert.match(html,/24 found · 8 off-topic, wrong colour or outside India removed · 6 compared against your piece · <b>1 shown<\/b>/);
+ assert.doesNotMatch(html,/How I searched/,'the search trace is not shown to people');
 });
 
 test('Discover uses server progress instead of cycling through pretend search stages',async()=>{
@@ -151,17 +149,14 @@ test('design QA #20: an empty Discover greets with a mascot instead of the star,
  h.click('mascot');assert.notEqual(h.latest().match(/aria-label="(\w+) the \w+ says hi/)[1],who,'tapping meets a different friend');
 });
 
-test('Sticker Studio trending cards fill the draft and only search on explicit submission',async()=>{
+test('tapping a trending look searches straight away, keeping its researched identity',async()=>{
  const look={id:'don-draper-aviators',who:'Don Draper · Mad Men',label:'Don Draper’s gold aviators',department:'menswear'};
  const h=harness({credits:{remaining:120},looks:{looks:[look]},interpret:{attributes:shirt,query:'gold aviator sunglasses',turn:'look-ticket'},search:found});
  h.context.window.fetch=h.context.fetch;
  h.context.window.dispatchEvent=()=>{};h.context.Event=class {};
  h.context.window.StickerStudio={guide:()=>'',lookArt:()=>'',modelModes:()=>'',promptChips:()=>'',modelModes:()=>'',skeletons:()=>'',lookSource:()=>'',skeletons:()=>''};
  h.context.window.DiscoverConversation.render();for(let i=0;i<4;i++)await h.settle();
- await h.click('look',{index:'0'});
- assert.match(h.latest(),/Don Draper’s gold aviators<\/textarea>/);
- assert.equal(h.calls.filter(c=>['interpret','search'].includes(c.action)).length,0,'card selection must not spend search credits');
- await h.ask(look.label);
+ await h.click('look',{index:'0'});for(let i=0;i<6;i++)await h.settle();
  const interpret=h.calls.find(c=>c.action==='interpret');assert.equal(interpret.body.look,look.id,'researched look identity is preserved');
  assert.equal(h.calls.filter(c=>c.action==='search').length,1);
 });
@@ -241,11 +236,13 @@ test('Ask Bao in the app: one bounded panel, a growing composer, three modes and
  assert.match(html,/class="dc-pro-cue dc-pro-cue-(compliment|quote|tip)"/,'a cue: a compliment, a fashion quote or a tip');
  assert.match(html,/data-conversation="explore-mall"/,'the Mall is one of the suggestions');
  assert.match(html,/<textarea id="dc-text" rows="1"[^>]*enterkeyhint="send"/,'starts one line high and grows');
- assert.match(html,/Balanced · 12 credits · 10 searches left/);
- h.click('model-menu');await h.settle();html=h.latest();
- assert.equal((html.match(/data-conversation="pick-model"/g)||[]).length,3);assert.match(html,/Thinking<\/b><small>Slower, reads more detail · 15 credits · 8 left/);
- h.click('pick-model',{id:'thinking'});await h.settle();assert.match(h.latest(),/Thinking · 15 credits · 8 searches left/);
+ assert.match(html,/10 searches left · 120 credits/);
+ assert.match(html,/class="dc-pro-modebar" role="radiogroup"/,'the three modes are always visible');assert.equal((html.match(/data-conversation="pick-model"/g)||[]).length,3);
+ assert.match(html,/aria-checked="true" data-conversation="pick-model" data-id="balanced"/);
+ h.click('pick-model',{id:'thinking'});await h.settle();assert.match(h.latest(),/aria-checked="true" data-conversation="pick-model" data-id="thinking"/);assert.match(h.latest(),/8 searches left/);
+ assert.match(h.latest(),/class="dc-pro-audience"/);h.click('audience',{value:'womenswear'});await h.settle();
  await h.ask('black linen shirt');
- assert.equal(h.calls.find(c=>c.action==='interpret').body.model,'thinking');
+ const asked=h.calls.find(c=>c.action==='interpret').body;assert.equal(asked.model,'thinking');assert.equal(asked.audience,'womenswear','the For filter travels with the question');
+ assert.doesNotMatch(h.latest(),/How I searched/);
  assert.match(h.latest(),/dc-pro-loader|Pieces that match/);
 });

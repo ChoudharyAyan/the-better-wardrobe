@@ -246,7 +246,9 @@ return async(req,res)=>{
  // Wardrobe imports (detect, orders) stay outside the search allowance and keep the hourly limit.
  let charge=null;const who={guest:guest(),ip:ip(),model:modelKey(body.model)};body.model=who.model;
  // The person's own profile sets Discover's default department; a client can't pick someone else's.
- delete body.department;if(action==='interpret'&&accountId){const a=await accounts.get(accountId);body.department=departmentFor(a?.profile);}
+ const audience=['menswear','womenswear'].includes(body.audience)?body.audience:'';delete body.department;delete body.audience;delete body.audienceLocked;
+ if(action==='interpret'&&audience){body.department=audience;body.audienceLocked=true;}
+ else if(action==='interpret'&&accountId){const a=await accounts.get(accountId);body.department=departmentFor(a?.profile);}
  // Every AI call (search and wardrobe imports) stops before the prepaid balance runs out.
  if(['detect','orders','analyze','interpret'].includes(action))await credits.budgetOk?.();
  if(['interpret','analyze'].includes(action))charge=await credits.charge(who);
