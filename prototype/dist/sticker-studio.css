@@ -126,3 +126,34 @@ main .ss-hero h1 br{display:none}
 .ss-tile-folk .mall-folk svg+svg{display:none}
 .ss-tile:hover .ss-tile-folk svg{animation:folk-hop .5s var(--ss-pop)}
 .ss-tile h2{font-size:26px!important}
+/* Discover home, professional pass (owner's review, 15 Oct 2026). Plain cards, one line each, no stickers. */
+.ss-home-pro{display:flex;flex-direction:column;gap:12px;max-width:760px;margin:0 auto}
+.ss-pro-head{padding-top:4px}
+.ss-pro-head h1{margin:4px 0 4px!important}
+.ss-pro-head .ss-lead{margin:0}
+.ss-pro-ask,.ss-pro-card{display:flex;color:var(--ss-ink);text-decoration:none;background:#fff;border:1px solid var(--ss-line);border-radius:18px;box-shadow:0 1px 2px rgba(43,22,32,.06);transition:border-color .15s,box-shadow .15s}
+.ss-pro-ask:hover,.ss-pro-card:hover{border-color:#D9C6CF;box-shadow:0 4px 14px rgba(43,22,32,.08)}
+.ss-pro-ask:active,.ss-pro-card:active{transform:scale(.99)}
+.ss-pro-ask{flex-direction:column;gap:12px;padding:16px}
+.ss-pro-ask-top{display:flex;align-items:center;gap:12px}
+.ss-pro-ask-top>span:nth-child(2){flex:1;min-width:0;display:flex;flex-direction:column}
+.ss-pro-ask strong,.ss-pro-card strong{font-size:17px;font-weight:800;letter-spacing:-.01em}
+.ss-pro-ask small,.ss-pro-card small{font-size:13px;line-height:1.35;color:var(--ss-body)}
+.ss-pro-icon{display:grid;place-items:center;width:40px;height:40px;flex:none;border-radius:12px;background:#F6E8EE;color:var(--ss-plum)}
+.ss-pro-icon svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.ss-pro-go{display:grid;place-items:center;width:32px;height:32px;flex:none;border-radius:50%;background:var(--ss-plum);color:#fff}
+.ss-pro-go svg,.ss-pro-field svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ss-pro-field{display:flex;align-items:center;gap:10px;min-height:44px;padding:0 14px;border:1px solid var(--ss-line);border-radius:12px;background:#FBF7F3;color:var(--ss-muted);font-size:14px}
+.ss-pro-field span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ss-pro-pair{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.ss-pro-card{flex-direction:column;gap:6px;padding:14px}
+.ss-pro-card .ss-pro-icon{margin-bottom:4px}
+.ss-home-pro .ss-chat-heading{margin-top:8px}.ss-home-pro .ss-chat-heading h2{font-size:17px!important}
+.ss-home-pro .dc-chat-row{border:1px dashed #E3D3DA!important;border-radius:16px!important;padding:14px 16px!important;min-height:0!important}
+.ss-home-pro .dc-chat.new{min-height:40px!important;padding:8px 16px!important}
+/* Animate only when a screen is entered (app.js adds .fade-in then), never on a same-screen re-render. */
+.ss-home,.dc-shell,.discover-mall,.hub-community{animation:none}
+.fade-in .ss-home,.fade-in .dc-shell,.fade-in .discover-mall,.fade-in .hub-community{animation:ss-rise .4s var(--ss-out)}
+@media(min-width:900px){.ss-pro-ask{padding:20px}.ss-pro-pair{gap:16px}}
+.ss-pro-head h1{font-size:var(--t-title)!important;font-weight:800!important;letter-spacing:-.03em!important;line-height:1.15!important}
+.ss-home-pro .dc-chat.new{border:0!important;outline:0!important;background:var(--ss-plum)!important;color:#fff!important}
