@@ -271,3 +271,8 @@ main .ss-hero h1 br{display:none}
 .dc-pro .dc-mall-hint button{background:#fff;color:var(--ss-ink);flex:none}
 .dc-pro .dc-cancel{margin-left:auto}
 .dc-pro .dc-cancel{text-decoration:none}
+.dc-keyboard .ss-subnav{display:none!important}
+/* The web photo preview only appears when there is a photo. */
+.dc-pro .ss-prompt-photo:empty{display:none}
+.dc-pro .ss-prompt-photo a{display:inline-flex;align-items:center;gap:8px;margin-bottom:6px;font-size:11px;color:var(--ss-muted)}
+.dc-pro .ss-prompt-photo img{width:36px;height:36px;border-radius:8px;object-fit:cover}

@@ -62,10 +62,9 @@
     const host=document.getElementById('ss-prompt-photo');if(!host)return;host.innerHTML='';
     if(q.length<8)return;
     referenceTimer=setTimeout(async()=>{
-      host.textContent='Finding a web reference…';
       try{const r=await window.fetch('/api/discover/look-photo?q='+encodeURIComponent(q.slice(0,300))),photo=await r.json();if(version!==referenceVersion||!host.isConnected)return;
-        host.innerHTML=photo.image?`<a href="${esc(photo.source)}" target="_blank" rel="noopener noreferrer"><img src="${esc(photo.image)}" alt="Web reference for ${esc(q)}" referrerpolicy="no-referrer"><span>${photo.portrait?'Person avatar':'Photo thumbnail'} · Source ↗</span></a>`:'No matching web photo found. You can still search this prompt.';
-      }catch{if(version===referenceVersion)host.textContent='Web photo unavailable. You can still search this prompt.';}
+        host.innerHTML=photo.image?`<a href="${esc(photo.source)}" target="_blank" rel="noopener noreferrer"><img src="${esc(photo.image)}" alt="Web reference for ${esc(q)}" referrerpolicy="no-referrer"><span>${photo.portrait?'Person avatar':'Photo thumbnail'} · Source ↗</span></a>`:'';
+      }catch{if(version===referenceVersion)host.innerHTML='';}
     },900);
   });
   const communityIntro = () => `<div class="ss-community-guide">${guide('Some pieces take a search party. Ask the crew.',84,'miso')}</div>`;
