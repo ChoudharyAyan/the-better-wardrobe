@@ -212,7 +212,7 @@ Today had 4 offers and 6 new arrivals.
 | Modes always shown | done (#47). Folded behind a `Balanced ▾` chip in the composer (`modes-toggle`); picking a mode folds it again. |
 | Placeholder text in every text box looks random | done (#47). One global `::placeholder` rule at the end of `dist/sticker-studio.css`: 14px, weight 500, #9A8C93. |
 | "Today in the Mall" full screen, endless, Pinterest-style, "On offer" and "Curated designs for <name>", Men/Women | done (#47). `GET /api/mall/board?kind=offers\|curated&audience=&page=` (`mallBoard()` and `audienceOf()` in `lib/mall-store.mjs`). The overlay `#mall-board` is in `dist/discover-mall.js`: masonry columns, a sentinel loads 24 more, + Cart on every pin, and Men/Women shares `tbw-audience` with Ask Bao. Curated is a fixed daily order that alternates stores. When the pool runs out it says so honestly; the pool grows with the daily crawl. |
-| My Wardrobe, Style Me and My Profile in the same professional + kawaii style, "like a proper B2C marketplace app" | **not started.** Next step; see the spec below. |
+| My Wardrobe, Style Me and My Profile in the same professional + kawaii style, "like a proper B2C marketplace app" | done (#48), first pass: `#main[data-area]` is set per tab in `dist/app.js`; one block of shared rules at the end of `dist/sticker-studio.css`: 26px titles, 1px-border cards with no 3D shadows, a white level card with a plum bar, Style Me's tabs as a segmented control, and Bao's wardrobe bubble replaced by a quiet line with a small face (`.pro-sub`). Seen at 412px only. Possible next polish: the import store chips, Style Me's buddy area and the onboarding card. |
 
 ### Spec for the next step: the uniform pass on My Wardrobe, Style Me and My Profile
 

@@ -375,3 +375,26 @@ input::placeholder,textarea::placeholder{font-family:Montserrat,system-ui,sans-s
 .mall-today-all{border:0;background:none;color:var(--ss-plum);font:800 13px/1 Montserrat,system-ui,sans-serif;padding:6px}
 .mall-today-block h3 button{border:0;background:none;padding:0;font:inherit;color:inherit;letter-spacing:inherit;text-transform:inherit}
 .mall-today-cta{display:block;width:100%;margin-top:12px;min-height:42px;border:0;border-radius:12px;background:var(--ss-plum);color:#fff;font:800 13.5px/1 Montserrat,system-ui,sans-serif}
+/* ===== One look for My Wardrobe, Style Me and My Profile (owner, 15 Oct: professional + kawaii, like a B2C app) =====
+   Same vocabulary as Ask Bao and the Mall: slim headers, white cards with a 1px border, one plum accent, small friend
+   faces instead of speech bubbles, no tilted tags or 3D drop shadows. #main[data-area] is set per tab in app.js. */
+#main:is([data-area="wardrobe"],[data-area="style"],[data-area="profile"]) :is(h1,.wardrobe-head h1,.page-head h1){font-size:26px!important;letter-spacing:-.02em!important;line-height:1.15!important}
+#main:is([data-area="wardrobe"],[data-area="style"],[data-area="profile"]) :is(.unlock-card,.import-hub,.photos-card,.progress-card,.tbw-cart,.profile-card,.ob-profile-card,.dc-credits-card,.sm-panel,.sm-conversation,.more-ways,.wardrobe-card,[class$="-card"]){border:1px solid var(--ss-line)!important;border-radius:20px!important;box-shadow:0 1px 2px rgba(43,22,32,.05)!important}
+#main:is([data-area="wardrobe"],[data-area="style"],[data-area="profile"]) :is(button,a)[class*="primary"],#main:is([data-area="wardrobe"],[data-area="style"],[data-area="profile"]) .ob-cta{box-shadow:none!important}
+.pro-sub{display:flex;align-items:center;gap:8px;margin:-4px 0 14px;font-size:13.5px;color:var(--ss-body)}
+.pro-sub .ss-bao{animation:none!important}
+/* The level card: calm white with a plum bar, not a dark slab. */
+#main[data-area="wardrobe"] .unlock-card{background:#fff!important;color:var(--ss-ink)!important}
+#main[data-area="wardrobe"] .unlock-card strong{color:var(--ss-ink)!important;font-size:15px}
+#main[data-area="wardrobe"] .unlock-card span{background:#F6E8EE!important;color:var(--ss-plum)!important}
+#main[data-area="wardrobe"] .unlock-card p{color:var(--ss-body)!important;font-size:13px}
+#main[data-area="wardrobe"] .unlock-track{background:#F1E7DF!important}#main[data-area="wardrobe"] .unlock-track i{background:var(--ss-plum)!important}
+/* Style Me tabs as one segmented control, like the mode switch. */
+#main[data-area="style"] :is(.sm-tabs,.sm-modes,[role="tablist"]){display:grid!important;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;padding:4px;border-radius:14px;background:#F3E9EE;border:0!important}
+#main[data-area="style"] [role="tablist"] :is(button,a){border:0!important;border-radius:10px!important;background:none!important;color:var(--ss-body)!important;box-shadow:none!important;min-height:38px}
+#main[data-area="style"] [role="tablist"] :is([aria-selected="true"],.active){background:#fff!important;color:var(--ss-plum)!important;box-shadow:0 1px 3px rgba(43,22,32,.12)!important}
+#main[data-area="profile"] .progress-card{background:#fff!important}
+#main[data-area="style"] .sm-subnav{display:grid!important;grid-template-columns:1fr 1fr;gap:4px;padding:4px;border-radius:14px;background:#F3E9EE;border:0!important;box-shadow:none!important}
+#main[data-area="style"] .sm-subnav button{border:0!important;border-radius:10px!important;background:none!important;color:var(--ss-body)!important;box-shadow:none!important;min-height:38px}
+#main[data-area="style"] .sm-subnav [aria-current="page"]{background:#fff!important;color:var(--ss-plum)!important;box-shadow:0 1px 3px rgba(43,22,32,.12)!important}
+#main[data-area="profile"] .progress-level{box-shadow:none!important;border-radius:16px!important}
