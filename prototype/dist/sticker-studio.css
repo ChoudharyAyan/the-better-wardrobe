@@ -290,3 +290,20 @@ main .ss-hero h1 br{display:none}
 /* The header already shows Bao; the greeting stays compact so trending looks fit above the mode switch. */
 .dc-pro-welcome .dc-pro-face{display:none}
 .dc-pro-welcome h2{margin-top:0}
+/* Cart: a toggle on result and Mall cards, and the list on My Profile. */
+.dc-result-wrap{position:relative;display:flex;flex-direction:column}
+.dc-result-wrap .dc-result{flex:1}
+.tbw-cart-btn{position:absolute;top:8px;right:8px;z-index:2;min-height:30px;padding:0 10px;border:1px solid var(--ss-line);border-radius:999px;background:rgba(255,255,255,.94);color:var(--ss-ink);font:800 11.5px/1 Montserrat,system-ui,sans-serif;box-shadow:0 2px 6px rgba(43,22,32,.12)}
+.tbw-cart-btn.on{background:var(--ss-plum);border-color:var(--ss-plum);color:#fff}
+.tbw-cart{margin:0 0 16px;padding:16px;background:#fff;border:1px solid var(--ss-line);border-radius:20px}
+.tbw-cart-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:8px}
+.tbw-cart-head h2{font-size:18px;font-weight:800;margin:0}.tbw-cart-head em{font-style:normal;font-size:12px;margin-left:6px;padding:2px 8px;border-radius:999px;background:#F6E8EE;color:var(--ss-plum)}
+.tbw-cart-head span{font-weight:800;color:var(--ss-plum)}
+.tbw-cart ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.tbw-cart-row{display:grid;grid-template-columns:56px 1fr;gap:4px 12px;padding:10px 0;border-top:1px solid var(--ss-line)}
+.tbw-cart-row img,.tbw-cart-ph{grid-row:span 2;width:56px;height:70px;border-radius:10px;object-fit:cover;background:#F3E9EE}
+.tbw-cart-row div:nth-of-type(1){display:flex;flex-direction:column;gap:2px;min-width:0}
+.tbw-cart-row small{font-size:11px;font-weight:700;color:var(--ss-plum)}.tbw-cart-row strong{font-size:13.5px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.tbw-cart-row span{font-size:13px;font-weight:700}
+.tbw-cart-actions{display:flex;gap:8px;align-items:center}
+.tbw-cart-actions a,.tbw-cart-actions button{min-height:30px;display:inline-flex;align-items:center;padding:0 12px;border:1px solid var(--ss-line);border-radius:999px;background:#fff;color:var(--ss-ink);font:700 12px/1 Montserrat,system-ui,sans-serif;text-decoration:none}
+.tbw-cart-note,.tbw-cart-empty{margin:8px 0 0;font-size:12px;color:var(--ss-muted)}
