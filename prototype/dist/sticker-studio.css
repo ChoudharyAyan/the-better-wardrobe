@@ -157,3 +157,12 @@ main .ss-hero h1 br{display:none}
 @media(min-width:900px){.ss-pro-ask{padding:20px}.ss-pro-pair{gap:16px}}
 .ss-pro-head h1{font-size:var(--t-title)!important;font-weight:800!important;letter-spacing:-.03em!important;line-height:1.15!important}
 .ss-home-pro .dc-chat.new{border:0!important;outline:0!important;background:var(--ss-plum)!important;color:#fff!important}
+/* Home cards with small illustrations (owner: "a good balance between professional and cute"). */
+.ss-pro-art{width:56px!important;height:56px!important;border-radius:16px!important}
+.ss-pro-art svg{width:40px!important;height:40px!important;stroke:none!important;fill:initial}
+.ss-pro-art .ss-bao{width:46px!important;height:46px!important;animation:none!important}
+.ss-pro-art .ss-bao svg{width:46px!important;height:46px!important}
+.ss-pro-pink{background:#F6DDE8!important}.ss-pro-sand{background:#EEDFC8!important}.ss-pro-sage{background:#DEDDC8!important}
+.ss-pro-card:hover .ss-pro-art svg,.ss-pro-ask:hover .ss-pro-art .ss-bao{transform:translateY(-2px) rotate(-3deg);transition:transform .25s var(--ss-pop)}
+.ss-home-pro .ss-pro-head .ss-eyebrow{font-size:14px!important;letter-spacing:.18em!important}
+@media(prefers-reduced-motion:reduce){.ss-pro-card:hover .ss-pro-art svg,.ss-pro-ask:hover .ss-pro-art .ss-bao{transform:none}}
