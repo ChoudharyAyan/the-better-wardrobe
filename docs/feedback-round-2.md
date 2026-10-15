@@ -203,3 +203,36 @@ Today had 4 offers and 6 new arrivals.
   Labs. It was rotated, but deletion needs you to type DELETE in the console.
 - **Pixel screen timeout:** an agent set it to 30 min by mistake. Set it back
   in Settings → Display.
+
+## Round 3 (15 Oct 2026, afternoon): owner feedback and status
+
+| Ask | Status |
+|---|---|
+| Ask Bao felt "stuck": the whole screen should scroll once you search | done (#47). Before the first question the panel fits one screen. After it, `.dc-flow`: the page scrolls and the composer is sticky above the tabs (`fitAsk()` returns early once there are messages). |
+| Modes always shown | done (#47). Folded behind a `Balanced ▾` chip in the composer (`modes-toggle`); picking a mode folds it again. |
+| Placeholder text in every text box looks random | done (#47). One global `::placeholder` rule at the end of `dist/sticker-studio.css`: 14px, weight 500, #9A8C93. |
+| "Today in the Mall" full screen, endless, Pinterest-style, "On offer" and "Curated designs for <name>", Men/Women | done (#47). `GET /api/mall/board?kind=offers\|curated&audience=&page=` (`mallBoard()` and `audienceOf()` in `lib/mall-store.mjs`). The overlay `#mall-board` is in `dist/discover-mall.js`: masonry columns, a sentinel loads 24 more, + Cart on every pin, and Men/Women shares `tbw-audience` with Ask Bao. Curated is a fixed daily order that alternates stores. When the pool runs out it says so honestly; the pool grows with the daily crawl. |
+| My Wardrobe, Style Me and My Profile in the same professional + kawaii style, "like a proper B2C marketplace app" | **not started.** Next step; see the spec below. |
+
+### Spec for the next step: the uniform pass on My Wardrobe, Style Me and My Profile
+
+Use the Ask Bao and Mall vocabulary already in `dist/sticker-studio.css`:
+`.dc-pro-head` / `.mall-pro-head` headers, white cards with a 1px
+`var(--ss-line)` border and 18–22px radius, one plum accent, 11px uppercase
+section labels (`.dc-pro-label`), small friend faces (`StickerStudio.friend`)
+instead of speech bubbles (`guide()`), and no tilted tags or wobble.
+
+- **My Wardrobe** (`dist/app.js` `wardrobe` route + `dist/wardrobe.css`):
+  - the header becomes a slim row (title, piece count, Add);
+  - the import card and the Your photos card become plain white cards;
+  - the almirah stays as the cute element.
+- **Style Me** (`dist/style-me/style-me.css`, `.sm-*`):
+  - the same header row;
+  - the tabs become a segmented control like `.dc-pro-modebar`;
+  - the composer reuses `.dc-pro-composer` styling.
+- **My Profile:**
+  - cart first (done);
+  - the progress and badges card in the same card style;
+  - the onboarding and credits cards aligned.
+- Check each at 412px and 1280px, and keep `npm test` green; many tests
+  match on these routes' text.

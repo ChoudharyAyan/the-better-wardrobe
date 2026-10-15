@@ -179,13 +179,65 @@
   const todayCard = (item, kind) => `<article class="mall-today-card">${window.TBWCart?.button({url: item.url, title: item.title, image: item.image, price: item.price, store: item.store, source: kind === 'offers' ? 'mall-offer' : 'mall-new'}) || ''}<a href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer"><span class="mall-today-img"><img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.title)}" loading="lazy" referrerpolicy="no-referrer">${kind === 'offers' && item.discountPercent ? `<em>${item.discountPercent}% off</em>` : item.isNew ? '<em class="new">New</em>' : ''}</span><small>${escapeHtml(item.store)}</small><strong>${escapeHtml(item.title)}</strong><span>${rupees(item.price) ? `${rupees(item.price)}${kind === 'offers' && rupees(item.originalPrice) ? ` <s>${rupees(item.originalPrice)}</s>` : ''}` : 'See price at store'}</span></a></article>`;
   const todaySection = () => {
     if (today.phase === 'idle') void loadToday();
-    const strip = (title, list, kind) => list.length ? `<div class="mall-today-block"><h3>${title}</h3><div class="mall-today-strip">${list.map(item => todayCard(item, kind)).join('')}</div></div>` : '';
+    const strip = (title, list, kind) => list.length ? `<div class="mall-today-block"><h3><button type="button" data-mall="board-open" data-value="${kind === 'offers' ? 'offers' : 'curated'}">${title} ›</button></h3><div class="mall-today-strip">${list.map(item => todayCard(item, kind)).join('')}</div></div>` : '';
     const when = today.generatedAt ? new Date(today.generatedAt) : null;
     const fresh = when && Number.isFinite(when.getTime()) ? `Updated ${when.toLocaleDateString('en-IN', {day: 'numeric', month: 'short'})}` : '';
     if (today.phase !== 'ready') return `<section class="mall-today" aria-busy="true"><div class="mall-today-head"><h2>Today in the Mall</h2></div><div class="mall-today-strip">${'<article class="mall-today-card skeleton"></article>'.repeat(3)}</div></section>`;
     if (!today.arrivals.length && !today.offers.length) return '';
-    return `<section class="mall-today" aria-label="Today in the Mall"><div class="mall-today-head"><h2>Today in the Mall</h2><span>${fresh}</span></div>${strip('On offer', today.offers, 'offers')}${strip('New in', today.arrivals, 'arrivals')}</section>`;
+    return `<section class="mall-today" aria-label="Today in the Mall"><div class="mall-today-head"><button type="button" class="mall-today-open" data-mall="board-open" data-value="curated"><h2>Today in the Mall</h2><span>${fresh}</span></button><button type="button" class="mall-today-all" data-mall="board-open" data-value="curated">See all ›</button></div>${strip('On offer', today.offers, 'offers')}${strip('New in', today.arrivals, 'arrivals')}<button type="button" class="mall-today-cta" data-mall="board-open" data-value="curated">Scroll today's board →</button></section>`;
   };
+  // ---- The board: "Today in the Mall" full screen (owner, 15 Oct 2026) -------------------------------------
+  // Endless Pinterest-style scroll with two tabs, On offer and Curated designs for <name>, filtered by the same
+  // All / Women / Men choice as Ask Bao (localStorage tbw-audience). Pages of 24 from /api/mall/board; a
+  // sentinel loads the next page as you near the end. Every pin has + Cart and opens the store.
+  const firstName = () => String(window.TBWAccount?.profile?.name || '').trim().split(/\s+/)[0] || '';
+  const board = {open: false, kind: 'curated', audience: '', items: [], next: 0, loading: false, total: 0};
+  try { const a = localStorage.getItem('tbw-audience'); if (['menswear', 'womenswear'].includes(a)) board.audience = a; } catch {}
+  const pin = item => `<article class="mb-pin">${window.TBWCart?.button({url: item.url, title: item.title, image: item.image, price: item.price, store: item.store, source: item.kind === 'offers' ? 'mall-offer' : 'mall-new'}) || ''}<a href="${escapeHtml(item.url)}" target="_blank" rel="noopener noreferrer"><span class="mb-img"><img src="${escapeHtml(item.image)}" alt="${escapeHtml(item.title)}" loading="lazy" referrerpolicy="no-referrer">${item.discountPercent ? `<em>${item.discountPercent}% off</em>` : item.isNew ? '<em class="new">New</em>' : ''}</span><small>${escapeHtml(item.store)}</small><strong>${escapeHtml(item.title)}</strong>${rupees(item.price) ? `<span>${rupees(item.price)}${rupees(item.originalPrice) && item.discountPercent ? ` <s>${rupees(item.originalPrice)}</s>` : ''}</span>` : ''}</a></article>`;
+  const boardHtml = () => {
+    const name = firstName();
+    const tab = (k, label) => `<button type="button" role="tab" aria-selected="${board.kind === k}" data-mall="board-kind" data-value="${k}">${label}</button>`;
+    const aud = [['', 'All'], ['womenswear', 'Women'], ['menswear', 'Men']].map(([v, l]) => `<button type="button" role="radio" aria-checked="${board.audience === v}" data-mall="board-audience" data-value="${v}">${l}</button>`).join('');
+    const end = board.next === null && !board.loading ? `<div class="mb-end">${board.items.length ? (board.kind === 'offers' ? `That's every verified offer today. <button type="button" data-mall="board-kind" data-value="curated">See curated designs →</button>` : `You've seen everything new today. Fresh drops land every morning. <button type="button" data-mall="board-again">Start from the top ↑</button>`) : 'Nothing here yet for this filter. Try All.'}</div>` : '';
+    return `<div class="mb-shell" role="dialog" aria-modal="true" aria-label="Today in the Mall"><header class="mb-head"><button type="button" class="mb-close" data-mall="board-close" aria-label="Close">←</button><div><strong>Today in the Mall</strong><small>${board.total ? `${board.total} pieces from Indian stores` : 'Fresh from Indian stores'}</small></div><div class="mb-aud" role="radiogroup" aria-label="Show styles for">${aud}</div></header><nav class="mb-tabs" role="tablist">${tab('offers', 'On offer')}${tab('curated', `Curated designs${name ? ` for ${escapeHtml(name)}` : ' for you'}`)}</nav><div class="mb-grid">${board.items.map(pin).join('')}</div>${board.loading ? '<div class="mb-loading" aria-live="polite">Loading more…</div>' : ''}${end}<div class="mb-sentinel" aria-hidden="true"></div></div>`;
+  };
+  let boardRoot = null, observer = null;
+  const paintBoard = () => {
+    if (!board.open) { boardRoot?.remove(); boardRoot = null; observer?.disconnect(); document.documentElement.classList.remove('mb-open'); return; }
+    if (!boardRoot) { boardRoot = document.createElement('div'); boardRoot.id = 'mall-board'; document.body.append(boardRoot); document.documentElement.classList.add('mb-open'); }
+    const scroll = boardRoot.querySelector('.mb-shell')?.scrollTop || 0;
+    boardRoot.innerHTML = boardHtml();
+    const shell = boardRoot.querySelector('.mb-shell'); if (shell) shell.scrollTop = scroll;
+    observer?.disconnect();
+    if (typeof IntersectionObserver === 'function' && board.next !== null) {
+      observer = new IntersectionObserver(entries => { if (entries.some(e => e.isIntersecting)) void loadBoard(); }, {root: shell, rootMargin: '900px 0px'});
+      const s = boardRoot.querySelector('.mb-sentinel'); if (s) observer.observe(s);
+    }
+  };
+  const loadBoard = async (reset = false) => {
+    if (board.loading || (!reset && board.next === null)) return;
+    if (reset) { board.items = []; board.next = 0; board.total = 0; }
+    board.loading = true; paintBoard();
+    try {
+      const r = await fetch(`/api/mall/board?kind=${board.kind}&audience=${board.audience}&page=${board.next}`, {headers: {Accept: 'application/json'}});
+      if (!r.ok) throw new Error();
+      const d = await r.json(); const have = new Set(board.items.map(i => i.url));
+      board.items.push(...d.items.filter(i => !have.has(i.url))); board.next = d.next; board.total = d.total;
+    } catch { board.next = null; }
+    board.loading = false; paintBoard();
+  };
+  const openBoard = kind => { board.open = true; board.kind = kind === 'offers' ? 'offers' : 'curated'; void loadBoard(true); };
+  document.addEventListener('click', event => {
+    const b = event.target.closest?.('[data-mall^="board"]'); if (!b) return;
+    const action = b.dataset.mall;
+    if (action === 'board-open') openBoard(b.dataset.value);
+    else if (action === 'board-close') { board.open = false; paintBoard(); }
+    else if (action === 'board-kind') { board.kind = b.dataset.value === 'offers' ? 'offers' : 'curated'; boardRoot?.querySelector('.mb-shell')?.scrollTo?.(0, 0); void loadBoard(true); }
+    else if (action === 'board-audience') { board.audience = b.dataset.value || ''; try { localStorage.setItem('tbw-audience', board.audience); } catch {} void loadBoard(true); }
+    else if (action === 'board-again') { boardRoot?.querySelector('.mb-shell')?.scrollTo?.({top: 0, behavior: 'smooth'}); }
+  });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && board.open) { board.open = false; paintBoard(); } });
+  window.addEventListener?.('hashchange', () => { if (board.open) { board.open = false; paintBoard(); } });
   const header = () => `<header class="mall-pro-head">${window.StickerStudio?.friend?.('kitsu', 34, 'span') || ''}<div><h2 id="mall-title">The Mall</h2><p>New drops and offers from 100 Indian fashion stores, checked every day.</p></div></header>`;
   const render = () => {
     if (updateFeed.phase === 'idle') void loadUpdates();

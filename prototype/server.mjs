@@ -13,7 +13,7 @@ import {randomBytes} from 'node:crypto';
 import {createQaStore} from './lib/qa.mjs';
 import {createConnectorStore,STORES} from './lib/connectors.mjs';
 import {readFeed,readBrands,refreshMall} from './lib/mall-feed.mjs';
-import {createMallStore,todayInMall} from './lib/mall-store.mjs';
+import {createMallStore,todayInMall,mallBoard} from './lib/mall-store.mjs';
 import {createCommunity} from './lib/community.mjs';
 import {createWardrobe,productFromPage} from './lib/wardrobe.mjs';
 import {createCutout} from './lib/cutout.mjs';
@@ -57,6 +57,10 @@ return async(req,res)=>{
  if(req.method==='GET'&&pathname==='/api/mall/today'){
   let brands=[];try{brands=await readBrands();}catch{}
   return send(200,todayInMall(await mallFeed(),brands));
+ }
+ if(req.method==='GET'&&pathname==='/api/mall/board'){
+  let brands=[];try{brands=await readBrands();}catch{}const boardQuery=new URL(req.url,'http://localhost').searchParams;
+  return send(200,mallBoard(await mallFeed(),brands,{kind:boardQuery.get('kind')==='offers'?'offers':'curated',audience:boardQuery.get('audience')||'',page:Math.min(50,Number(boardQuery.get('page'))||0)}));
  }
  // Daily refresh, called by Vercel cron (vercel.json). Vercel sends Authorization: Bearer $CRON_SECRET.
  // Crawls the stores not checked in the last 20 hours, saving as it goes, and stops starting new ones after

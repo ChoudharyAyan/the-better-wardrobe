@@ -17,6 +17,8 @@ Pick up from there. Status of its items:
 
 Update this table in each PR that lands one of them.
 
+Round 3 (15 Oct afternoon): see "Round 3" at the bottom of `docs/feedback-round-2.md`. The open item is the uniform style pass on My Wardrobe, Style Me and My Profile, with its spec there.
+
 End of Claude's session (15 Oct): see "Status at end of Claude's session" and "Next, in priority order" at the bottom of `docs/feedback-round-2.md`.
 
 # Current state — 8 October 2026
