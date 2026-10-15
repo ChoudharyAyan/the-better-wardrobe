@@ -276,3 +276,17 @@ main .ss-hero h1 br{display:none}
 .dc-pro .ss-prompt-photo:empty{display:none}
 .dc-pro .ss-prompt-photo a{display:inline-flex;align-items:center;gap:8px;margin-bottom:6px;font-size:11px;color:var(--ss-muted)}
 .dc-pro .ss-prompt-photo img{width:36px;height:36px;border-radius:8px;object-fit:cover}
+/* For: All · Women · Men, in the Ask Bao header. */
+.dc-pro-audience{display:inline-flex;padding:3px;border:1px solid var(--ss-line);border-radius:999px;background:#fff}
+.dc-pro-audience button{min-height:30px;padding:0 11px;border:0;border-radius:999px;background:none;color:var(--ss-body);font:700 12px/1 Montserrat,system-ui,sans-serif}
+.dc-pro-audience [aria-checked="true"]{background:var(--ss-ink);color:#fff}
+/* Fast | Balanced | Thinking: a full-width switch right above the composer. */
+.dc-pro-modebar{flex:none;display:grid;grid-template-columns:repeat(3,1fr);gap:4px;margin:0 10px 8px;padding:4px;border-radius:14px;background:#F3E9EE}
+.dc-pro-modebar button{display:flex;flex-direction:column;align-items:center;gap:1px;padding:7px 4px;border:0;border-radius:10px;background:none;color:var(--ss-body)}
+.dc-pro-modebar b{font-size:13px;font-weight:800}.dc-pro-modebar small{font-size:10.5px;color:var(--ss-muted)}
+.dc-pro-modebar [aria-checked="true"]{background:#fff;color:var(--ss-plum);box-shadow:0 1px 3px rgba(43,22,32,.12)}
+.dc-pro-modebar [aria-checked="true"] small{color:var(--ss-plum)}
+.dc-keyboard .dc-pro-modebar{display:none}
+/* The header already shows Bao; the greeting stays compact so trending looks fit above the mode switch. */
+.dc-pro-welcome .dc-pro-face{display:none}
+.dc-pro-welcome h2{margin-top:0}

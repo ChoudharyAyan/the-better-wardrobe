@@ -262,7 +262,7 @@ export function createDiscovery({env=process.env,fetcher=fetch,pageFetcher=retai
   // A piece the person picked from the photo is always searched, even when the model hedges ("I couldn't find sunglasses").
   const category=(grounded?clean(vague&&d.subtype?d.subtype:d.category,120):'')||clean(body.target,40);const a=category?attributes({...d,category}):null;
   const preferred=departmentOf(body.department);
-  if(a&&!a.department&&preferred&&preferred!=='unisex'&&!/\b(men|mens|man|male|boys?|women|womens|woman|female|ladies|girls?|unisex)\b/i.test(text))a.department=preferred;
+  if(a&&(!a.department||body.audienceLocked)&&preferred&&preferred!=='unisex'&&!/\b(men|mens|man|male|boys?|women|womens|woman|female|ladies|girls?|unisex)\b/i.test(text))a.department=preferred;
   let budget=Number.isFinite(d.budget)&&d.budget>0&&d.budget<10000000?Math.round(d.budget):null;
   // "cheaper"/"same but…" without a number must not silently drop the earlier budget.
   if(budget===null&&previous?.budget)budget=/cheap|less|lower|reduce|tighter|affordable|under|below/i.test(text)?Math.round(previous.budget*0.75):previous.budget;

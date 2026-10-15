@@ -6,12 +6,12 @@ Pick up from there. Status of its items:
 
 | # | Item | Status |
 |---|---|---|
-| 1 | Remove "How I searched" | not started |
-| 2 | Obvious mode picker (segmented Fast/Balanced/Thinking) | not started |
+| 1 | Remove "How I searched" | done (#43) |
+| 2 | Obvious mode picker (segmented Fast/Balanced/Thinking) | done (#43): `renderModeBar()` above the composer |
 | 3 | Cart under My Profile (Discover + Mall items) | not started |
 | 4 | Mall and Community in the Ask Bao visual style | not started |
-| 5 | Tapping a suggestion or trending look starts the search | not started |
-| 6 | For: All · Women · Men filter in Ask Bao | not started |
+| 5 | Tapping a suggestion or trending look starts the search | done (#43) |
+| 6 | For: All · Women · Men filter in Ask Bao | done (#43): `body.audience` → `audienceLocked` in `lib/discovery.mjs` |
 | 7 | Back from a store returns to the app | not started |
 | 8 | Mall: a daily refresh that publishes + "Today in the Mall" | not started |
 
