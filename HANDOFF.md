@@ -1,3 +1,18 @@
+# Current state — 26 November 2026 (read first)
+
+- **Men's/women's search fix:** the department now goes into every search query (`departmentQuery()` in
+  `lib/discovery.mjs`) and women-only pieces and labels are dropped from men's text searches (`titleRejection()`).
+- **Vertex AI switch, in code:** with `GEMINI_BACKEND=vertex` and a Google Cloud API key in `GEMINI_API_KEY`, search,
+  Style Me (`lib/style-engine.mjs` now has a Gemini path), cutouts and email reading all call Gemini on Vertex. No
+  silent OpenRouter fallback (`AI_OPENROUTER_FALLBACK=true` re-allows it); a busy model falls to another mode's
+  Gemini model; Vertex 429s are retried; each mode sends its own thinking level; `GEMINI_MODEL` is ignored on Vertex.
+- **Production switch (owner):** enable the Vertex AI API on the credits project, put that project's API key in
+  `GEMINI_API_KEY`, set `GEMINI_BACKEND=vertex`, delete `VISION_PROVIDER` and `GEMINI_MODEL`, redeploy, then check
+  `/api/discover/status` reports `visionProvider: gemini`. Unverified until then: that every model id in
+  `MODELS`, `gemini-3.5-flash` (SAM boxes) and `gemini-3.1-flash-image` exist on Vertex for that project.
+- **SerpApi:** a new account's key goes in `SERPAPI_API_KEY` on Vercel (Production + Preview).
+- Full audit and plan: the "Wardrobe OS: pitch-readiness audit and action plan" doc (26 Nov).
+
 # Current state — 15 October 2026 (read first)
 
 The owner is switching between Claude Code and Codex. The live backlog with

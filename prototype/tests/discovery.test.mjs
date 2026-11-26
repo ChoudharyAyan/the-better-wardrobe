@@ -300,3 +300,23 @@ test('department words: added once, never doubled, and women-only pieces stay fo
  assert.equal(titleRejection({title:'Linen blend kurta',merchant:'Biba'},men),'Different department','a women-only label');
  assert.equal(titleRejection({title:'Silk dupatta'},attributes({category:'dupatta',subtype:'dupatta',department:'menswear'})),'','a man asking for a dupatta gets one');
 });
+test('on Vertex: Gemini by default, each mode its own model and thinking, a busy model falls to another Gemini, never to OpenRouter',async()=>{
+ const reply={reference:'',category:'shirt',colour:'black',fit:'',pattern:'',details:'linen',subtype:'',features:'',department:'unknown',query:'black linen shirt',budget:null,uncertainty:'',question:''};
+ const ok=()=>({ok:true,status:200,json:async()=>({candidates:[{finishReason:'STOP',content:{parts:[{text:JSON.stringify(reply)}]}}]})});
+ const calls=[];const d=createDiscovery({env:{GEMINI_API_KEY:'g',GEMINI_BACKEND:'vertex',GEMINI_MODEL:'gemini-legacy',OPENROUTER_API_KEY:'still-set'},fetcher:async(url,init)=>{
+  calls.push({url:String(url),body:init?.body?JSON.parse(init.body):null});
+  assert.ok(!String(url).includes('openrouter.ai'),'no OpenRouter call on Vertex');
+  return String(url).includes('gemini-3-flash-preview')?{ok:false,status:404,json:async()=>({})}:ok();
+ }});
+ assert.equal(d.status().visionProvider,'gemini');assert.equal(d.status().model,'gemini-3-flash-preview','GEMINI_MODEL does not override the modes on Vertex');
+ const out=await d.interpret({text:'black linen shirt',model:'balanced'});
+ assert.equal(out.attributes.category,'shirt');
+ assert.deepEqual(calls.map(c=>c.url.match(/models\/([^:]+)/)[1]),['gemini-3-flash-preview','gemini-3.1-flash-lite']);
+ assert.ok(calls.every(c=>c.url.startsWith('https://aiplatform.googleapis.com/')));
+ assert.equal(calls[0].body.generationConfig.thinkingConfig.thinkingLevel,'low');assert.equal(calls[1].body.generationConfig.thinkingConfig.thinkingLevel,'low','the stand-in keeps the thinking of the mode asked for');
+});
+test('on Vertex a 429 is contention: retried with backoff, then answered',async()=>{
+ const reply={reference:'',category:'shirt',colour:'',fit:'',pattern:'',details:'',subtype:'',features:'',department:'unknown',query:'shirt',budget:null,uncertainty:'',question:''};
+ let n=0;const d=createDiscovery({env:{GEMINI_API_KEY:'g',GEMINI_BACKEND:'vertex'},fetcher:async()=>++n===1?{ok:false,status:429}:{ok:true,status:200,json:async()=>({candidates:[{finishReason:'STOP',content:{parts:[{text:JSON.stringify(reply)}]}}]})}});
+ assert.equal((await d.interpret({text:'a shirt',model:'fast'})).attributes.category,'shirt');assert.equal(n,2);
+});

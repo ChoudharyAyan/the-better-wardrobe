@@ -12,3 +12,12 @@ export function geminiRequest(env,model,body){
   if(vertex){const {store,...rest}=body;payload={...rest,contents:(rest.contents||[]).map(c=>c.role?c:{role:'user',...c})};}
   return {url,init:{method:'POST',headers:{'x-goog-api-key':env.GEMINI_API_KEY,'Content-Type':'application/json'},body:JSON.stringify(payload)}};
 }
+
+// Gemini's counterpart to OpenRouter's reasoning effort. Gemini 3 models take a thinking level; 2.x models take a
+// token budget. Unknown models get nothing, and callers retry without it if a model rejects the field.
+export function thinkingConfig(model,effort){
+  const m=String(model||'');if(!effort)return null;
+  if(/^gemini-3/.test(m))return {thinkingLevel:effort==='minimal'?'minimal':effort==='medium'?'medium':effort==='high'?'high':'low'};
+  if(/^gemini-2\.5-flash/.test(m))return {thinkingBudget:effort==='minimal'?0:effort==='medium'?2048:512};
+  return null;
+}

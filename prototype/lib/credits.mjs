@@ -71,7 +71,8 @@ export function createCredits({env=process.env,store,now=Date.now,fetcher=fetch,
  return {
   allowance,summary,balance,
   // Unknown balance (OpenRouter unreachable) does not block: the prepaid account still cannot overspend.
-  async budgetOk(){if(env.VISION_PROVIDER&&env.VISION_PROVIDER!=='openrouter')return;const usd=await balance();if(usd!==null&&usd<minBalance)throw Object.assign(new ApiError(503,'Discover’s AI search is paused for now. Please try again later.'),{reason:'balance'});},
+  async budgetOk(){if(env.VISION_PROVIDER?env.VISION_PROVIDER!=='openrouter':env.GEMINI_BACKEND==='vertex'&&env.GEMINI_API_KEY)return; // On Vertex the OpenRouter balance no longer gates search; Google Cloud budget alerts do.
+  const usd=await balance();if(usd!==null&&usd<minBalance)throw Object.assign(new ApiError(503,'Discover’s AI search is paused for now. Please try again later.'),{reason:'balance'});},
   // Charges guest, IP and global counters together, undoing earlier steps if a later ceiling is hit.
   async charge({guest,ip,model}){
    const cost=costOf(model),k=keys(guest,ip);

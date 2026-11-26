@@ -98,3 +98,14 @@ test('frozen image bytes remain attached to the preview when the live reference 
  assert.deepEqual(received,[{id:itemId,image:original}]);
  await assert.rejects(svc.render('alice',id,{jobId:uuid(),designId:saved.frozen[0].id,photo:'fixture',garmentImages:[{id:itemId,image:'different'}],consent:true,costAccepted:true}),e=>e.status===400);
 });
+test('on Vertex the stylist asks Gemini, never OpenRouter, and keeps internal words out of its reply',async()=>{
+ const response={message:'Three easy beach looks with new pieces you can find in Discover.',looks:[{title:'Linen day',rationale:'Breathable.',instructions:'',assumptions:[],items:[{id:'a',name:'White linen shirt',slot:'top',colour:'White'},{id:'b',name:'Beige shorts',slot:'bottom',colour:'Beige'},{id:'c',name:'Brown sandals',slot:'shoes',colour:'Brown'}]}]};
+ const calls=[];const engine=createStyleEngine({env:{GEMINI_API_KEY:'g',GEMINI_BACKEND:'vertex',OPENROUTER_API_KEY:'still-set'},fetcher:async(url,init)=>{calls.push({url,body:JSON.parse(init.body)});return {ok:true,status:200,json:async()=>({candidates:[{finishReason:'STOP',content:{parts:[{text:JSON.stringify(response)}]}}]})};}});
+ assert.equal(engine.provider,'gemini');assert.equal(engine.enabled,true);
+ const out=await engine.generate({brief:{mode:'from-scratch',request:'Varkala beach holiday'},wardrobe:[]});
+ assert.equal(out.provider,'ai');assert.equal(out.looks.length,1);
+ assert.equal(calls.length,1);assert.match(calls[0].url,/^https:\/\/aiplatform\.googleapis\.com\/v1\/publishers\/google\/models\/gemini-3-flash-preview:generateContent$/);
+ assert.match(calls[0].body.systemInstruction.parts[0].text,/never mention inventory/);
+ assert.equal(calls[0].body.generationConfig.thinkingConfig.thinkingLevel,'low');
+ assert.equal(createStyleEngine({env:{GEMINI_API_KEY:'g',OPENROUTER_API_KEY:'k'}}).provider,'openrouter','AI Studio plus OpenRouter keeps today\'s stylist until the switch');
+});
