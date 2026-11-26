@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {createDiscovery,attributes,imageData,safeURL,normalize,dedupe,matchScore,productMetadata,searchIntent,titleRejection} from '../lib/discovery.mjs';
+import {createDiscovery,attributes,imageData,safeURL,normalize,dedupe,matchScore,productMetadata,searchIntent,titleRejection,departmentQuery} from '../lib/discovery.mjs';
 const image='data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+aXmQAAAAASUVORK5CYII=';
 const attr={category:'Shirt',colour:'pastel blue',fit:'relaxed',pattern:'solid',details:'long sleeves'};
 const response=data=>({ok:true,json:async()=>data});
@@ -280,4 +280,23 @@ test('a piece picked from the photo is searched even when the model says it cann
  const d=createDiscovery({env:{OPENROUTER_API_KEY:'k',VISION_PROVIDER:'openrouter'},fetcher:async()=>({ok:true,status:200,json:async()=>({choices:[{finish_reason:'stop',message:{content:JSON.stringify(reply)}}]})})});
  const r=await d.interpret({text:'',image:image,target:'sunglasses'});
  assert.equal(r.attributes.category,'sunglasses');assert.equal(r.question,'');
+});
+test('a men\'s kurta search asks the engine for men\'s and drops women-only kurta sets (26 Nov bug)',async()=>{
+ const titles=[['Men Cotton Straight Kurta','https://www.myntra.com/kurta/men/1','Myntra'],['Anarkali Kurta with Palazzo and Dupatta','https://www.myntra.com/kurta/2','Myntra'],['Embroidered Straight Kurta','https://www.libas.in/products/3','Libas'],['Rayon Kurti','https://www.ajio.com/kurti/4','AJIO'],['Pathani Kurta Set','https://www.ajio.com/pathani/5','AJIO'],['Printed Silk Kurta','https://www.myntra.com/kurta/6','Myntra']];
+ const queries=[];const d=createDiscovery({env:{SERPAPI_API_KEY:'test'},fetcher:async url=>{queries.push(new URL(url).searchParams.get('q'));return response({shopping_results:titles.map(([title,link,source])=>({title,link,source,thumbnail:'https://images.example.com/k.jpg',price:'₹999',extracted_price:999}))});},pageFetcher:async()=>''});
+ const out=await d.search({attributes:{category:'kurta',department:'menswear'},query:'kurta',market:'in'});
+ assert.equal(out.query,"men's kurta");assert.ok(queries.every(q=>q.startsWith("men's kurta")),queries.join(' | '));
+ const kept=out.results.map(r=>r.title);
+ assert.ok(kept.includes('Men Cotton Straight Kurta')&&kept.includes('Pathani Kurta Set')&&kept.includes('Printed Silk Kurta'));
+ for(const t of ['Anarkali Kurta with Palazzo and Dupatta','Embroidered Straight Kurta','Rayon Kurti'])assert.ok(!kept.includes(t),t+' is a women\'s piece');
+});
+test('department words: added once, never doubled, and women-only pieces stay for women',()=>{
+ assert.equal(departmentQuery('kurta','menswear'),"men's kurta");assert.equal(departmentQuery('kurta','womenswear'),"women's kurta");
+ assert.equal(departmentQuery("men's linen kurta",'menswear'),"men's linen kurta");assert.equal(departmentQuery('kurta for women','menswear'),'kurta for women');
+ assert.equal(departmentQuery('kurta',''),'kurta');assert.equal(departmentQuery('kurta','unisex'),'kurta');
+ const women=attributes({category:'kurta',department:'womenswear'}),men=attributes({category:'kurta',department:'menswear'});
+ assert.equal(titleRejection({title:'Anarkali Kurta with Dupatta'},women),'');assert.equal(titleRejection({title:'Pathani Kurta Set'},women),'Different department');
+ assert.equal(titleRejection({title:'Oxford dress shirt'},attributes({category:'shirt',department:'menswear'})),'','a dress shirt is a men\'s shirt');
+ assert.equal(titleRejection({title:'Linen blend kurta',merchant:'Biba'},men),'Different department','a women-only label');
+ assert.equal(titleRejection({title:'Silk dupatta'},attributes({category:'dupatta',subtype:'dupatta',department:'menswear'})),'','a man asking for a dupatta gets one');
 });
